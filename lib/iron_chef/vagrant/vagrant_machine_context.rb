@@ -23,8 +23,11 @@ module IronChef
 
       def read_file(path)
         result = execute "sudo cp #{path} /vagrant/tmpfile"
-        result.error!
-        IO.read(File.join(bootstrapper.base_path, 'tmpfile'))
+        if result.exitstatus == 0
+          IO.read(File.join(bootstrapper.base_path, 'tmpfile'))
+        else
+          nil
+        end
       end
 
       # Put a file on the machine.  Raises an error if it fails.

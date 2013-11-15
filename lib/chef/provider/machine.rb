@@ -125,30 +125,18 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   end
 
   action :delete do
-    begin
-      node_json = rest.get("nodes/#{new_resource.name}")
-    rescue Net::HTTPServerException => e
-      if e.response.code == "404"
-        node_json = nil
-      else
-        raise
-      end
+    on_machine = new_resource.bootstrapper.machine_context(new_resource.name).resources(self)
+
+    # Destroy the machine
+    on_machine.raw_machine do
+      action :delete
     end
 
-    if node_json
-      on_machine = new_resource.bootstrapper.machine_context(new_resource.name).resources(self)
-
-      # Destroy the machine
-      on_machine.raw_machine new_resource.name do
-        action :delete
-      end
-
-      chef_client new_resource.name do
-        action :delete
-      end
-      chef_node new_resource.name do
-        action :delete
-      end
+    chef_client new_resource.name do
+      action :delete
+    end
+    chef_node new_resource.name do
+      action :delete
     end
   end
 

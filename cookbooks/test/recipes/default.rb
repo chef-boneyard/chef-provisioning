@@ -1,10 +1,16 @@
 include_recipe 'iron-chef'
 
-require 'iron_chef/vagrant/vagrant_bootstrapper'
+vagrant_cluster "#{ENV['HOME']}/machinetest" do
+  vm_config :box => 'precise64'
+end
 
-with_bootstrapper IronChef::Vagrant::VagrantBootstrapper.new("#{ENV['HOME']}/machinetest", :box => 'precise64')
+#machine 'mama_mia' do
+#  recipe 'blah'
+#  tag 'woo'
+#end
 
 machine 'mama_mia' do
-  recipe 'blah'
-  tag 'woo'
+  action :delete
 end
+
+machine 'mario'
