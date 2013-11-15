@@ -1,4 +1,4 @@
-module Cheffish
+module IronChef
   class MachineContextResourcesBase
     def initialize(machine_context, recipe_context)
       @machine_context = machine_context

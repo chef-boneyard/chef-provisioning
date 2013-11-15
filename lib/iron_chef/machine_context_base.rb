@@ -1,4 +1,4 @@
-module Cheffish
+module IronChef
   class MachineContextBase
     def initialize(bootstrapper, name)
       @bootstrapper = bootstrapper

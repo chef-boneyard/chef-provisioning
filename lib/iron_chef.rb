@@ -1,11 +1,11 @@
 # Include recipe basics so require 'iron_chef' will load everything
 require 'iron_chef/recipe_dsl'
-require 'chef/resources/machine'
-require 'chef/resources/chef_converge'
-require 'chef/resources/chef_client_setup'
-require 'chef/providers/machine'
-require 'chef/providers/chef_converge'
-require 'chef/providers/chef_client_setup'
+require 'chef/resource/machine'
+require 'chef/resource/chef_converge'
+require 'chef/resource/chef_client_setup'
+require 'chef/provider/machine'
+require 'chef/provider/chef_converge'
+require 'chef/provider/chef_client_setup'
 
 module IronChef
   @@enclosing_bootstrapper = nil
