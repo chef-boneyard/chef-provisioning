@@ -6,17 +6,19 @@ class Chef::Resource::VagrantCluster < Chef::Resource::LWRPBase
 
   def initialize(*args)
     super
-    @vm_config = {}
+    @vagrant_config = {}
+    @transport_options = {}
   end
 
   actions :create, :delete, :nothing
   default_action :create
 
   attribute :path, :kind_of => String, :name_attribute => true
-  attribute :vm_config, :kind_of => Hash
+  attribute :vagrant_config, :kind_of => Hash
+  attribute :transport_options, :kind_of => Hash
 
   def bootstrapper
-    IronChef::Vagrant::VagrantBootstrapper.new(path, vm_config)
+    IronChef::Vagrant::VagrantBootstrapper.new(path, vagrant_config, transport_options)
   end
 
   def after_created

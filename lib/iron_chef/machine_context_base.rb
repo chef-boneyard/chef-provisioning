@@ -35,13 +35,12 @@ module IronChef
 
     # Read a file from the machine.  Returns nil if the machine is down or inaccessible.
     def read_file(path)
-      result = execute "sudo cat #{path}"
-      result.stdout
+      transport.read_file(path)
     end
 
     # Put a file on the machine.  Raises an error if it fails.
-    def put_file(path, contents)
-      raise "put_file must be defined in #{self.class}"
+    def put_file(path, content)
+      transport.put_file(path, content)
     end
 
     # Deleta a file on the machine.
@@ -70,7 +69,7 @@ module IronChef
 
     # Execute a command inside the machine.  Returns a result with .exitstatus, .stdout and .stderr
     def execute(command)
-      raise "execute must be defined on #{self.class}"
+      transport.execute(command)
     end
 
     # Converge
@@ -80,7 +79,7 @@ module IronChef
 
     # Disconnect any persistent connections to the machine.
     def disconnect
-      raise "disconnect must be defined on #{self.class}"
+      transport.disconnect
     end
   end
 end

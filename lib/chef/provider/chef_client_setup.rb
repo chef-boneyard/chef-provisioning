@@ -35,8 +35,15 @@ class Chef::Provider::ChefClientSetup < Chef::Provider::LWRPBase
       content client_rb
     end
 
+    # Create install.sh
+    install_sh = Net::HTTP.get(URI('http://www.opscode.com/chef/install.sh'))
+    install_sh_path = ::File.join(new_resource.machine_context.configuration_path, 'install.sh')
+    on_machine.file install_sh_path do
+      content install_sh
+    end
+
     # Install chef-client
-    on_machine.execute 'curl -L https://www.opscode.com/chef/install.sh | sudo bash' do
+    on_machine.execute "bash #{install_sh_path}" do
       only_if { new_resource.machine_context.execute('chef-client -v').exitstatus != 0 }
     end
   end

@@ -67,7 +67,7 @@ module IronChef
       end
       if action == :delete
         resource.block { machine_context.delete_file(path) }
-        resource.only_if { machine_context.read_file(path) != nil }
+        resource.only_if { machine_context.file_exists(path) }
       else
         resource.block { machine_context.put_file(path, content) }
         resource.only_if { machine_context.read_file(path) != content }
@@ -80,23 +80,25 @@ module IronChef
     #
     # Attributes include standard resource attributes, plus:
     # command "COMMAND" - command to run
-    # cwd "/path/to/run/in" - path to run command in
     # source "/path/to/source/file.txt" - file to read source data from
     def execute(name, &block)
       resource = recipe_context.ruby_block "run '#{name}' on machine #{machine_context.name}"
-      # Intercept "command" and "cwd"
+      # Intercept "command"
       command = name
       cwd = nil
       each_resource_attribute_pair(block) do |name, *args, &block|
         if name == :command
           command = args[0]
-        elsif name == :cwd
-          cwd = args[0]
         else
           resource.send(name, *args, &block)
         end
       end
-      resource.block { machine_context.execute(command, cwd) }
+      resource.block do
+        result = machine_context.execute(command)
+        if result.exitstatus != 0
+          raise "'#{command}' failed with exit code #{result.exitstatus}"
+        end
+      end
       resource
     end
 

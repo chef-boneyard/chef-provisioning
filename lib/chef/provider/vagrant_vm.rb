@@ -13,7 +13,7 @@ class Chef::Provider::VagrantVm < Chef::Provider::LWRPBase
       content <<EOM
 Vagrant.configure("2") do |config|
   config.vm.define #{machine_context.name.inspect} do |machine|
-#{machine_context.vm_config_string('machine.vm', '    ')}
+#{machine_context.vagrant_config_string('machine.vm', '    ')}
   end
 end
 EOM
@@ -29,9 +29,9 @@ EOM
   action :delete do
     machine_context = new_resource.machine_context || new_resource.bootstrapper.machine_context(new_resource.name)
 
-    # TODO make this idempotent
     execute "vagrant destroy -f #{machine_context.name}" do
       cwd machine_context.bootstrapper.base_path
+      only_if { machine_context.vagrant("status #{machine_context.name}").exitstatus == 0 }
     end
 
     file machine_context.box_file_path do

@@ -1,7 +1,7 @@
 include_recipe 'iron-chef'
 
 vagrant_cluster "#{ENV['HOME']}/machinetest" do
-  vm_config :box => 'precise64'
+  vagrant_config :box => 'precise64'
 end
 
 #machine 'mama_mia' do
@@ -10,6 +10,10 @@ end
 #end
 
 machine 'mama_mia' do
+  action :delete
+end
+
+machine 'mario' do
   action :delete
 end
 

@@ -1,6 +1,9 @@
 require 'chef/mixin/shell_out'
 require 'iron_chef/machine_context_base'
 require 'iron_chef/vagrant/vagrant_machine_context_resources'
+# TODO consider doing the require inline so we don't load these things unless they are needed
+require 'iron_chef/transport/ssh'
+require 'iron_chef/transport/vagrant_ssh'
 
 module IronChef
   module Vagrant
@@ -21,44 +24,60 @@ module IronChef
         result
       end
 
-      def read_file(path)
-        result = execute "sudo cp #{path} /vagrant/tmpfile"
-        if result.exitstatus == 0
-          IO.read(File.join(bootstrapper.base_path, 'tmpfile'))
+      def transport
+        @transport ||= begin
+          options = bootstrapper.transport_options
+          case options[:type]
+          when :vagrant_ssh
+            IronChef::Transport::VagrantSSH.new(bootstrapper.base_path, name)
+          else
+            vagrant_ssh_config = get_ssh_config
+            username = options[:username] || vagrant_ssh_config['User']
+            ssh_options = options[:options] ? options[:options].dup : {}
+            ssh_options[:port] ||= vagrant_ssh_config['Port']
+            ssh_options[:user_known_hosts_file] ||= vagrant_ssh_config['UserKnownHostsFile']
+            ssh_options[:paranoid] ||= yes_or_no(vagrant_ssh_config['StrictHostKeyChecking'])
+            ssh_options[:keys] ||= []
+            ssh_options[:keys] << strip_quotes(vagrant_ssh_config['IdentityFile'])
+            ssh_options[:keys_only] ||= yes_or_no(vagrant_ssh_config['IdentitiesOnly'])
+            ssh_options[:auth_methods] = %w(password) if yes_or_no(vagrant_ssh_config['PasswordAuthentication'])
+            IronChef::Transport::SSH.new(vagrant_ssh_config['HostName'], username, ssh_options)
+          end
+        end
+      end
+
+
+      def get_ssh_config
+        vagrant("ssh-config --host #{name}").stdout.lines.inject({}) do |result, line|
+          line =~ /^\s*(\S+)\s+(.+)/
+          result[$1] = $2
+          result
+        end
+      end
+
+      def yes_or_no(str)
+        case str
+        when 'yes'
+          true
         else
-          nil
+          false
         end
       end
 
-      # Put a file on the machine.  Raises an error if it fails.
-      def put_file(path, contents)
-        File.open(File.join(bootstrapper.base_path, 'tmpfile'), 'w') do |file|
-          file.write(contents)
-        end
-        result = execute "sudo cp /vagrant/tmpfile #{path}"
-        result.error!
-      end
-
-      def execute(command, cwd=nil)
-        # TODO is this enough escaping?
-        command = command.gsub("'", "\\'")
-        if cwd
-          vagrant("ssh #{name} -c 'cd #{cwd} && #{command}'")
+      def strip_quotes(str)
+        if str[0] == '"' && str[-1] == '"' && str.size >= 2
+          str[1..-2]
         else
-          vagrant("ssh #{name} -c '#{command}'")
+          str
         end
-      end
-
-      def disconnect
-        # Vagrant does not connect, so it doesn't disconnect either
       end
 
       # Used by VagrantMachineContext to get the string used to configure vagrant
-      def vm_config_string(variable, line_prefix)
+      def vagrant_config_string(variable, line_prefix)
         hostname = name.gsub(/[^A-Za-z0-9\-]/, '-')
 
         result = ''
-        bootstrapper.vm_config.merge(:hostname => hostname).each_pair do |key, value|
+        bootstrapper.vagrant_config.merge(:hostname => hostname).each_pair do |key, value|
           result += "#{line_prefix}#{variable}.#{key} = #{value.inspect}\n"
         end
         result
