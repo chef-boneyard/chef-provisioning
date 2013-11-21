@@ -1,9 +1,10 @@
 require 'net/ssh'
 require 'net/scp'
+require 'iron_chef/transport'
 
 module IronChef
-  module Transport
-    class SSH
+  class Transport
+    class SSH < Transport
       def initialize(host, username, ssh_options, options = {})
         @host = host
         @username = username
@@ -76,11 +77,11 @@ module IronChef
         end
       end
 
+      protected
+
       def session
         @session ||= Net::SSH.start(host, username, ssh_options)
       end
-
-      private
 
       class SSHResult
         def initialize(stdout, stderr, exitstatus)
