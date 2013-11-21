@@ -8,20 +8,27 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
   def initialize(*args)
     super
     @chef_environment = Cheffish.enclosing_environment
-    @bootstrapper = IronChef.enclosing_bootstrapper
+    @provisioner = IronChef.enclosing_provisioner
   end
 
   actions :create, :delete, :converge, :nothing
   default_action :create
 
+  # Provisioner attributes
+  attribute :provisioner, :kind_of => Symbol
+  attribute :provisioner_options
+
+  # Node attributes
   Cheffish.node_attributes(self)
 
-  attribute :bootstrapper, :kind_of => Symbol
+  # Client attributes
   attribute :public_key_path, :kind_of => String
   attribute :private_key_path, :kind_of => String
   attribute :admin, :kind_of => [TrueClass, FalseClass]
   attribute :validator, :kind_of => [TrueClass, FalseClass]
-  attribute :extra_files, :kind_of => Hash
+
+  # Allows you to turn convergence off in the :create action by writing "converge false"
+  attribute :converge, :kind_of => [TrueClass, FalseClass], :default => true
 
   # chef client version and omnibus
   # chef-zero boot method?

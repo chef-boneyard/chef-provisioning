@@ -10,22 +10,27 @@ class Chef::Provider::VagrantCluster < Chef::Provider::LWRPBase
 
   action :create do
     the_base_path = new_resource.path
-    directory new_resource.path
-    file ::File.join(new_resource.path, 'Vagrantfile') do
-      content <<EOM
+    IronChef.inline_resource(self) do
+      directory the_base_path
+      file ::File.join(the_base_path, 'Vagrantfile') do
+        content <<EOM
 Dir.glob('#{::File.join(the_base_path, '*.vm')}') do |vm_file|
   eval(IO.read(vm_file), nil, vm_file)
 end
 EOM
+      end
     end
   end
 
   action :delete do
-    file ::File.join(new_resource.path, 'Vagrantfile') do
-      action :delete
-    end
-    directory new_resource.path do
-      action :delete
+    the_base_path = new_resource.path
+    IronChef.inline_resource(self) do
+      file ::File.join(the_base_path, 'Vagrantfile') do
+        action :delete
+      end
+      directory the_base_path do
+        action :delete
+      end
     end
   end
 
