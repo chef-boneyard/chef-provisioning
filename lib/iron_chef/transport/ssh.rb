@@ -1,11 +1,11 @@
-require 'net/ssh'
-require 'net/scp'
 require 'iron_chef/transport'
 
 module IronChef
   class Transport
     class SSH < Transport
-      def initialize(host, username, ssh_options, options = {})
+      def initialize(host, username, ssh_options, options)
+        require 'net/ssh'
+        require 'net/scp'
         @host = host
         @username = username
         @ssh_options = ssh_options
@@ -62,9 +62,14 @@ module IronChef
           file.write(content)
           file.close
 
-          # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-          remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
-          Net::SCP.new(session).upload!(file.path, remote_tempfile)
+          if options[:prefix]
+            # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
+            remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
+            Net::SCP.new(session).upload!(file.path, remote_tempfile)
+            execute("mv #{remote_tempfile} #{path}")
+          else
+            Net::SCP.new(session).upload!(file.path, path)
+          end
         ensure
           file.unlink
         end
@@ -72,7 +77,10 @@ module IronChef
 
       def disconnect
         if @session
-          @session.close
+          begin
+            @session.close
+          rescue
+          end
           @session = nil
         end
       end
@@ -80,7 +88,9 @@ module IronChef
       protected
 
       def session
-        @session ||= Net::SSH.start(host, username, ssh_options)
+        @session ||= begin
+          Net::SSH.start(host, username, ssh_options)
+        end
       end
 
       class SSHResult

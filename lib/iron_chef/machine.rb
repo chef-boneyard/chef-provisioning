@@ -30,6 +30,10 @@ module IronChef
       raise "write_file not overridden on #{self.class}"
     end
 
+    def create_dir(provider, path)
+      raise "create_dir not overridden on #{self.class}"
+    end
+
     # Delete file
     def delete_file(provider, path)
       raise "delete_file not overridden on #{self.class}"

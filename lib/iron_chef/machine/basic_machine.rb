@@ -23,7 +23,6 @@ module IronChef
         convergence_strategy.converge(provider, self)
       end
 
-
       def execute(provider, command)
         provider.converge_by "run '#{command}' on #{node['name']}" do
           transport.execute(command)

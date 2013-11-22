@@ -21,56 +21,39 @@ module IronChef
     end
   end
 
+  def self.with_provisioner_options(provisioner_options)
+    old_provisioner_options = IronChef.enclosing_provisioner_options
+    IronChef.enclosing_provisioner_options = provisioner_options
+    if block_given?
+      begin
+        yield
+      ensure
+        IronChef.enclosing_provisioner_options = old_provisioner_options
+      end
+    end
+  end
+
   def self.with_vagrant_cluster(cluster_path, &block)
     require 'iron_chef/vagrant/vagrant_provisioner'
 
-    old_vagrant_cluster = IronChef.enclosing_vagrant_cluster
-    IronChef.enclosing_vagrant_cluster = cluster_path
-    new_provisioner = IronChef.enclosing_vagrant_options ?
-                      IronChef::Vagrant::VagrantProvisioner.new(cluster_path, IronChef.enclosing_vagrant_options) :
-                      IronChef.enclosing_provisioner
-    if block
-      begin
-        with_provisioner(new_provisioner, &block)
-      ensure
-        IronChef.enclosing_vagrant_cluster = old_vagrant_cluster
-      end
-    else
-      with_provisioner(new_provisioner)
-    end
+    with_provisioner(IronChef::Vagrant::VagrantProvisioner.new(cluster_path), &block)
   end
 
-  def self.with_vagrant_box(box_name, vagrant_options = {}, &block)
+  def self.with_vagrant_box(box_name, provisioner_options = nil, &block)
     require 'chef/resource/vagrant_box'
 
     if box_name.is_a?(Chef::Resource::VagrantBox)
-      vagrant_options = vagrant_options || box_name.vagrant_options
-      vagrant_options['vm.box'] = box_name.name
-      vagrant_options['vm.box_url'] = box_name.url
+      provisioner_options ||= box_name.provisioner_options || {}
+      provisioner_options['vagrant_options'] ||= {}
+      provisioner_options['vagrant_options']['vm.box'] = box_name.name
+      provisioner_options['vagrant_options']['vm.box_url'] = box_name.url if box_name.url
     else
-      vagrant_options['vm.box'] = box_name
+      provisioner_options ||= {}
+      provisioner_options['vagrant_options'] ||= {}
+      provisioner_options['vagrant_options']['vm.box'] = box_name
     end
 
-    with_vagrant_options(vagrant_options, &block)
-  end
-
-  def self.with_vagrant_options(vagrant_options, &block)
-    require 'iron_chef/vagrant/vagrant_provisioner'
-
-    old_vagrant_options = IronChef.enclosing_vagrant_options
-    IronChef.enclosing_vagrant_options = vagrant_options
-    new_provisioner = IronChef.enclosing_vagrant_cluster ?
-                      IronChef::Vagrant::VagrantProvisioner.new(IronChef.enclosing_vagrant_cluster, vagrant_options) :
-                      IronChef.enclosing_provisioner
-    if block
-      begin
-        with_provisioner(new_provisioner, &block)
-      ensure
-        IronChef.enclosing_vagrant_options = old_vagrant_options
-      end
-    else
-      with_provisioner(new_provisioner)
-    end
+    with_provisioner_options(provisioner_options, &block)
   end
 
   def self.inline_resource(provider, &block)
@@ -85,19 +68,11 @@ module IronChef
     @@enclosing_provisioner = provisioner
   end
 
-  @@enclosing_vagrant_cluster = nil
-  def self.enclosing_vagrant_cluster
-    @@enclosing_vagrant_cluster
+  @@enclosing_provisioner_options = nil
+  def self.enclosing_provisioner_options
+    @@enclosing_provisioner_options
   end
-  def self.enclosing_vagrant_cluster=(vagrant_cluster)
-    @@enclosing_vagrant_cluster = vagrant_cluster
-  end
-
-  @@enclosing_vagrant_options = nil
-  def self.enclosing_vagrant_options
-    @@enclosing_vagrant_options
-  end
-  def self.enclosing_vagrant_options=(vagrant_options)
-    @@enclosing_vagrant_options = vagrant_options
+  def self.enclosing_provisioner_options=(provisioner_options)
+    @@enclosing_provisioner_options = provisioner_options
   end
 end

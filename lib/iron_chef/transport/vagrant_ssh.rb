@@ -1,7 +1,7 @@
 require 'chef/mixin/shell_out'
 
 module IronChef
-  module Transport
+  class Transport
     class VagrantSSH
       include Chef::Mixin::ShellOut
 

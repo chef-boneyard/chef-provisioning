@@ -9,6 +9,7 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
     super
     @chef_environment = Cheffish.enclosing_environment
     @provisioner = IronChef.enclosing_provisioner
+    @provisioner_options = IronChef.enclosing_provisioner_options
   end
 
   actions :create, :delete, :converge, :nothing
@@ -28,7 +29,8 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
   attribute :validator, :kind_of => [TrueClass, FalseClass]
 
   # Allows you to turn convergence off in the :create action by writing "converge false"
-  attribute :converge, :kind_of => [TrueClass, FalseClass], :default => true
+  # or force it with "true"
+  attribute :converge, :kind_of => [TrueClass, FalseClass]
 
   # chef client version and omnibus
   # chef-zero boot method?
