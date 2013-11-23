@@ -23,7 +23,7 @@ module IronChef
 
       # Return true or false depending on whether file exists
       def file_exists?(path)
-        parse_boolean(transport.execute("Test-Path #{escape(path)}"))
+        parse_boolean(transport.execute("Test-Path #{escape(path)}").stdout)
       end
 
       def create_dir(provider, path)
@@ -42,8 +42,20 @@ module IronChef
 #      def get_attributes(path)
 #      end
 
+      def dirname_on_machine(path)
+        path.split(/[\\\/]/)[0..-2].join('\\')
+      end
+
       def escape(string)
         transport.escape(string)
+      end
+
+      def parse_boolean(string)
+        if string =~ /^\s*true\s*$/mi
+          true
+        else
+          false
+        end
       end
     end
   end

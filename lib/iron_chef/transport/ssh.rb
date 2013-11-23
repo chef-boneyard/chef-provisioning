@@ -105,7 +105,7 @@ module IronChef
         attr_reader :exitstatus
 
         def error!
-          raise "Error: code #{exitstatus}" if exitstatus != 0
+          raise "Error: code #{exitstatus}.\nSTDOUT:#{stdout}\nSTDERR:#{stderr}" if exitstatus != 0
         end
       end
     end

@@ -25,7 +25,7 @@ module IronChef
 
       def execute(provider, command)
         provider.converge_by "run '#{command}' on #{node['name']}" do
-          transport.execute(command)
+          transport.execute(command).error!
         end
       end
 
@@ -37,8 +37,11 @@ module IronChef
         transport.read_file(path)
       end
 
-      def write_file(provider, path, content)
+      def write_file(provider, path, content, options = {})
         if transport.read_file(path) != content
+          if options[:ensure_dir]
+            create_dir(provider, dirname_on_machine(path))
+          end
           provider.converge_by "write file #{path} on #{node['name']}" do
             transport.write_file(path, content)
           end

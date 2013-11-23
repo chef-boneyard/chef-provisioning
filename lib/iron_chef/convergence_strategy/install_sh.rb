@@ -1,4 +1,5 @@
 require 'iron_chef/convergence_strategy/precreate_chef_objects'
+require 'pathname'
 
 module IronChef
   class ConvergenceStrategy
@@ -22,8 +23,7 @@ module IronChef
         if machine.execute_always('chef-client -v').exitstatus != 0
           # TODO ssh verification of install.sh before running arbtrary code would be nice?
           @@install_sh_cache[install_sh_url] ||= Net::HTTP.get(URI(install_sh_url))
-          machine.create_dir(provider, File.dirname(install_sh_path))
-          machine.write_file(provider, install_sh_path, @@install_sh_cache[install_sh_url])
+          machine.write_file(provider, install_sh_path, @@install_sh_cache[install_sh_url], :ensure_dir => true)
           machine.execute(provider, "bash #{install_sh_path}")
         end
       end

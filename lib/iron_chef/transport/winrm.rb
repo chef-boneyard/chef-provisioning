@@ -1,3 +1,5 @@
+require 'base64'
+
 module IronChef
   class Transport
     class WinRM
@@ -17,18 +19,41 @@ module IronChef
       end
 
       def read_file(path)
-        execute("Get-Content #{escape_string(path)}")
+        result = execute("[Convert]::ToBase64String((Get-Content #{escape(path)} -Encoding byte -ReadCount 0))")
+        if result.exitstatus == 0
+          Base64.decode64(result.stdout)
+        else
+          nil
+        end
       end
 
       def write_file(path, content)
-        execute("Set-Content #{escape_string(path)} #{escape_string(path)}")
+        chunk_size = options[:chunk_size] || 1024
+        # TODO if we could marshal this data directly, we wouldn't have to base64 or do this godawful slow stuff :(
+        index = 0
+        execute("
+$ByteArray = [System.Convert]::FromBase64String(#{escape(Base64.encode64(content[index..index+chunk_size-1]))})
+$file = [System.IO.File]::Open(#{escape(path)}, 'Create', 'Write')
+$file.Write($ByteArray, 0, $ByteArray.Length)
+$file.Close
+").error!
+        index += chunk_size
+        while index < content.length
+          execute("
+$ByteArray = [System.Convert]::FromBase64String(#{escape(Base64.encode64(content[index..index+chunk_size-1]))})
+$file = [System.IO.File]::Open(#{escape(path)}, 'Append', 'Write')
+$file.Write($ByteArray, 0, $ByteArray.Length)
+$file.Close
+").error!
+          index += chunk_size
+        end
       end
 
       def disconnect
         # 
       end
 
-      def escape_string(string)
+      def escape(string)
         "'#{string.gsub("'", "''")}'"
       end
 
@@ -36,6 +61,7 @@ module IronChef
 
       def session
         @session ||= begin
+          require 'kconv' # Really, people? *sigh*
           require 'winrm'
           ::WinRM::WinRMWebService.new(endpoint, type, options)
         end
@@ -57,7 +83,7 @@ module IronChef
         attr_reader :exitstatus
 
         def error!
-          raise "Error: code #{exitstatus}" if exitstatus != 0
+          raise "Error: code #{exitstatus}.\nSTDOUT:#{stdout}\nSTDERR:#{stderr}" if exitstatus != 0
         end
       end
     end

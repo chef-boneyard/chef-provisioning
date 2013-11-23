@@ -74,6 +74,10 @@ module IronChef
         end
         result
       end
+
+      def dirname_on_machine(path)
+        path.split('/')[0..-2].join('/')
+      end
     end
   end
 end

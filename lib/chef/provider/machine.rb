@@ -16,7 +16,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
     machine = new_resource.provisioner.acquire_machine(self, node_json)
     begin
       machine.setup_convergence(self, new_resource)
-      if new_resource.converge || (new_resource.nil? && new_resource.updated_by_last_action?)
+      if new_resource.converge || (new_resource.converge.nil? && new_resource.updated_by_last_action?)
         machine.converge(self)
       end
     ensure
@@ -35,9 +35,6 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
     ensure
       machine.disconnect
     end
-  end
-
-  def create_machine(converge)
   end
 
   action :delete do

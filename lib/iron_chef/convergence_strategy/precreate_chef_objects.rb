@@ -1,4 +1,5 @@
 require 'iron_chef/convergence_strategy'
+require 'pathname'
 
 module IronChef
   class ConvergenceStrategy
@@ -17,14 +18,8 @@ module IronChef
         private_key = create_chef_objects(provider, machine, machine_resource)
 
         # Create client.rb and client.pem on machine
-        machine.create_dir(provider, File.dirname(@client_rb_path))
-        machine.create_dir(provider, File.dirname(@client_pem_path)) if File.dirname(@client_pem_path) != File.dirname(@client_rb_path)
-        machine.write_file(provider, client_pem_path, private_key)
-        machine.write_file(provider, client_rb_path, client_rb_content(machine))
-      end
-
-      def converge(provider, machine)
-        machine.execute(provider, 'chef-client')
+        machine.write_file(provider, client_pem_path, private_key, :ensure_dir => true)
+        machine.write_file(provider, client_rb_path, client_rb_content(machine), :ensure_dir => true)
       end
 
       def delete_chef_objects(provider, node)
@@ -81,8 +76,8 @@ module IronChef
 
       def client_rb_content(machine)
         <<EOM
-node_name #{machine.node['name']}
-client_key #{client_pem_path}
+node_name '#{machine.node['name']}'
+client_key '#{client_pem_path}'
 EOM
       end
     end

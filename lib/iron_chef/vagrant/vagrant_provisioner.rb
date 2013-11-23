@@ -47,6 +47,8 @@ module IronChef
       #                If not specified, ssh is used unless vm.guest is :windows.  If that is
       #                the case, the windows options are used and the port forward for 5985
       #                is detected.
+      #           -- up_timeout: maximum time, in seconds, to wait for vagrant
+      #              to bring up the machine.  Defaults to 10 minutes.
       #
       #        node['normal']['provisioner_output'] will be populated with information
       #        about the created machine.  For vagrant, it is a hash with this
@@ -94,11 +96,12 @@ module IronChef
 
         # Check current status of vm
         current_status = vagrant_status(vm_name)
+        up_timeout = provisioner_options['up_timeout'] || 10*60
 
         if current_status != 'running'
           # Run vagrant up if vm is not running
           provider.converge_by "run vagrant up #{vm_name} (status was '#{current_status}')" do
-            result = shell_out("vagrant up #{vm_name}", :cwd => cluster_path)
+            result = shell_out("vagrant up #{vm_name}", :cwd => cluster_path, :timeout => up_timeout)
             if result.exitstatus != 0
               raise "vagrant up #{vm_name} failed!\nSTDOUT:#{result.stdout}\nSTDERR:#{result.stderr}"
             end
@@ -106,7 +109,7 @@ module IronChef
         elsif vm_file.updated_by_last_action?
           # Run vagrant reload if vm is running and vm file changed
           provider.converge_by "run vagrant reload #{vm_name}" do
-            result = shell_out("vagrant reload #{vm_name}", :cwd => cluster_path)
+            result = shell_out("vagrant reload #{vm_name}", :cwd => cluster_path, :timeout => up_timeout)
             if result.exitstatus != 0
               raise "vagrant reload #{vm_name} failed!\nSTDOUT:#{result.stdout}\nSTDERR:#{result.stderr}"
             end
@@ -157,7 +160,7 @@ module IronChef
       protected
 
       def machine_for(node)
-        if vagrant_option(node, 'vm.guest') == :windows
+        if vagrant_option(node, 'vm.guest').to_s == 'windows'
           require 'iron_chef/machine/windows_machine'
           IronChef::Machine::WindowsMachine.new(node, transport_for(node), convergence_strategy_for(node))
         else
@@ -167,7 +170,7 @@ module IronChef
       end
 
       def convergence_strategy_for(node)
-        if vagrant_option(node, 'vm.guest') == :windows
+        if vagrant_option(node, 'vm.guest').to_s == 'windows'
           require 'iron_chef/convergence_strategy/install_msi'
           IronChef::ConvergenceStrategy::InstallMsi.new
         else
@@ -177,7 +180,7 @@ module IronChef
       end
 
       def transport_for(node)
-        if vagrant_option(node, 'vm.guest') == :windows
+        if vagrant_option(node, 'vm.guest').to_s == 'windows'
           create_winrm_transport(node)
         else
           create_ssh_transport(node)
