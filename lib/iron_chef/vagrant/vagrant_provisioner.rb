@@ -58,8 +58,7 @@ module IronChef
       #           -- vm_name: name of vagrant vm created
       #           -- vm_file_path: path to machine-specific vagrant config file
       #              on disk
-      #           -- port_corrections: hash with key as guest_port => host_port
-      #              TODO check port corrections
+      #           -- forwarded_ports: hash with key as guest_port => host_port
       #
       def acquire_machine(provider, node)
         # Set up the modified node data
@@ -105,6 +104,7 @@ module IronChef
             if result.exitstatus != 0
               raise "vagrant up #{vm_name} failed!\nSTDOUT:#{result.stdout}\nSTDERR:#{result.stderr}"
             end
+            parse_vagrant_up(result.stdout, node)
           end
         elsif vm_file.updated_by_last_action?
           # Run vagrant reload if vm is running and vm file changed
@@ -113,6 +113,7 @@ module IronChef
             if result.exitstatus != 0
               raise "vagrant reload #{vm_name} failed!\nSTDOUT:#{result.stdout}\nSTDERR:#{result.stderr}"
             end
+            parse_vagrant_up(result.stdout, node)
           end
         end
 
@@ -165,6 +166,24 @@ module IronChef
 
       protected
 
+      def parse_vagrant_up(output, node)
+        # Grab forwarded port info
+        in_forwarding_ports = false
+        forwarded_ports = {}
+        output.lines.each do |line|
+          if in_forwarding_ports
+            if line =~ /-- (\d+) => (\d+)/
+              forwarded_ports[$1] = $2
+            else
+              in_forwarding_ports = false
+            end
+          elsif line =~ /Forwarding ports...$/
+            in_forwarding_ports = true
+          end
+        end
+        node['normal']['provisioner_output']['forwarded_ports'] = forwarded_ports
+      end
+
       def machine_for(node)
         if vagrant_option(node, 'vm.guest').to_s == 'windows'
           require 'iron_chef/machine/windows_machine'
@@ -214,11 +233,12 @@ module IronChef
       def create_winrm_transport(node)
         require 'iron_chef/transport/winrm'
 
-        # This only works for one machine and assumes port forwarding.  But it
-        # gets us where we need to go until we have more sophisticated vagrant config.
+        provisioner_output = node['default']['provisioner_output'] || {}
+        forwarded_ports = provisioner_output['forwarded_ports'] || {}
+
         # TODO IPv6 loopback?  What do we do for that?
         hostname = vagrant_option(node, 'winrm.host') || '127.0.0.1'
-        port = vagrant_option(node, 'winrm.port') || 5985
+        port = vagrant_option(node, 'winrm.port') || forwarded_ports[5985] || 5985
         endpoint = "http://#{hostname}:#{port}/wsman"
         type = :plaintext
         options = {

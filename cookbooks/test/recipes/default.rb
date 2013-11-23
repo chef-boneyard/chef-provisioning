@@ -2,13 +2,17 @@ include_recipe 'iron-chef'
 
 vagrant_cluster "#{ENV['HOME']}/machinetest"
 
+if false
 vagrant_box 'precise64'
 
 machine 'luigi' do
-  action :converge
+  action :delete
 end
 
-if false
+machine 'luigi'
+
+end
+
 vagrant_box 'opscode-windows-6.1' do
   provisioner_options({
     'vagrant_options' => {
@@ -17,12 +21,12 @@ vagrant_box 'opscode-windows-6.1' do
       'winrm.username' => 'vagrant',
       'winrm.password' => 'vagrant'
     },
-    'vagrant_config' => "config.vm.network :forwarded_port, guest: 5985, host: 5985"
+    'vagrant_config' => "config.vm.network :forwarded_port, guest: 5985, host: 5985",
+    'up_timeout' => 30*60
   })
 end
 
 # small_webapp.rb
-machine 'link' do
+machine 'zelda' do
   recipe 'apache'
-end
 end
