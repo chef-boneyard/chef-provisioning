@@ -25,12 +25,10 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   end
 
   action :converge do
-    # TODO find a faster way of doing this than "create plus converge"
     node_json = node_provider.new_json
     node_json['normal']['provisioner_options'] = new_resource.provisioner_options
-    machine = new_resource.provisioner.acquire_machine(self, node_json)
+    machine = new_resource.provisioner.connect_to_machine(node_json)
     begin
-      machine.setup_convergence(self, new_resource)
       machine.converge(self)
     ensure
       machine.disconnect

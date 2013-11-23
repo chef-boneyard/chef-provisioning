@@ -2,18 +2,13 @@ include_recipe 'iron-chef'
 
 vagrant_cluster "#{ENV['HOME']}/machinetest"
 
-if false
 vagrant_box 'precise64'
 
 machine 'luigi' do
-  recipe 'blah'
-  tag 'woo'
+  action :converge
 end
 
-machine 'mario'
-
-end
-
+if false
 vagrant_box 'opscode-windows-6.1' do
   provisioner_options({
     'vagrant_options' => {
@@ -29,4 +24,5 @@ end
 # small_webapp.rb
 machine 'link' do
   recipe 'apache'
+end
 end

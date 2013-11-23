@@ -120,6 +120,12 @@ module IronChef
         machine_for(node)
       end
 
+      # Connect to machine without acquiring it
+      def connect_to_machine(node)
+        puts node.inspect
+        machine_for(node)
+      end
+
       def delete_machine(provider, node)
         vm_name = node['normal']['provisioner_output']['vm_name'] || node['name']
         current_status = vagrant_status(vm_name)
