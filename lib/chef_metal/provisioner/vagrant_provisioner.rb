@@ -64,11 +64,14 @@ module ChefMetal
         # Set up the modified node data
         provisioner_options = node['normal']['provisioner_options']
         vm_name = node['name']
+        old_provisioner_output = node['normal']['provisioner_output']
         node['normal']['provisioner_output'] = provisioner_output = {
           'provisioner_url' => provisioner_url(provider),
           'vm_name' => vm_name,
-          'vm_file_path' => File.join(cluster_path, "#{vm_name}.vm"),
+          'vm_file_path' => File.join(cluster_path, "#{vm_name}.vm")
         }
+        # Preserve existing forwarded ports
+        provisioner_output['forwarded_ports'] = old_provisioner_output['forwarded_ports'] if old_provisioner_output
 
         # TODO compare new options to existing and fail if we cannot change it
         # over (perhaps introduce a boolean that will force a delete and recreate
