@@ -1,4 +1,4 @@
-module IronChef
+module ChefMetal
   class ConvergenceStrategy
     def setup_convergence(provider, machine, machine_resource)
       raise "setup_convergence not overridden on #{self.class}"

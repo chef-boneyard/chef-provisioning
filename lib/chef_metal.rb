@@ -1,42 +1,43 @@
-# Include recipe basics so require 'iron_chef' will load everything
-require 'iron_chef/recipe_dsl'
+# Include recipe basics so require 'chef_metal' will load everything
+require 'chef_metal/recipe_dsl'
 require 'chef/resource/machine'
 require 'chef/provider/machine'
 require 'chef/resource/vagrant_cluster'
 require 'chef/provider/vagrant_cluster'
 require 'chef/resource/vagrant_box'
 require 'chef/provider/vagrant_box'
-require 'iron_chef/inline_resource'
 
-module IronChef
+require 'chef_metal/inline_resource'
+
+module ChefMetal
   def self.with_provisioner(provisioner)
-    old_provisioner = IronChef.enclosing_provisioner
-    IronChef.enclosing_provisioner = provisioner
+    old_provisioner = ChefMetal.enclosing_provisioner
+    ChefMetal.enclosing_provisioner = provisioner
     if block_given?
       begin
         yield
       ensure
-        IronChef.enclosing_provisioner = old_provisioner
+        ChefMetal.enclosing_provisioner = old_provisioner
       end
     end
   end
 
   def self.with_provisioner_options(provisioner_options)
-    old_provisioner_options = IronChef.enclosing_provisioner_options
-    IronChef.enclosing_provisioner_options = provisioner_options
+    old_provisioner_options = ChefMetal.enclosing_provisioner_options
+    ChefMetal.enclosing_provisioner_options = provisioner_options
     if block_given?
       begin
         yield
       ensure
-        IronChef.enclosing_provisioner_options = old_provisioner_options
+        ChefMetal.enclosing_provisioner_options = old_provisioner_options
       end
     end
   end
 
   def self.with_vagrant_cluster(cluster_path, &block)
-    require 'iron_chef/vagrant/vagrant_provisioner'
+    require 'chef_metal/provisioner/vagrant_provisioner'
 
-    with_provisioner(IronChef::Vagrant::VagrantProvisioner.new(cluster_path), &block)
+    with_provisioner(ChefMetal::Provisioner::VagrantProvisioner.new(cluster_path), &block)
   end
 
   def self.with_vagrant_box(box_name, provisioner_options = nil, &block)

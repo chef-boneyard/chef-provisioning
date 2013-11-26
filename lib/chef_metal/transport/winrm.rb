@@ -1,6 +1,6 @@
 require 'base64'
 
-module IronChef
+module ChefMetal
   class Transport
     class WinRM
       def initialize(endpoint, type, options = {})

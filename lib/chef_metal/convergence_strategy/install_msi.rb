@@ -1,7 +1,7 @@
-require 'iron_chef/convergence_strategy/precreate_chef_objects'
+require 'chef_metal/convergence_strategy/precreate_chef_objects'
 require 'pathname'
 
-module IronChef
+module ChefMetal
   class ConvergenceStrategy
     class InstallMsi < PrecreateChefObjects
       @@install_msi_cache = {}

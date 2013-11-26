@@ -1,6 +1,6 @@
 require 'chef/resource/lwrp_base'
 require 'cheffish'
-require 'iron_chef'
+require 'chef_metal'
 
 class Chef::Resource::Machine < Chef::Resource::LWRPBase
   self.resource_name = 'machine'
@@ -8,8 +8,8 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
   def initialize(*args)
     super
     @chef_environment = Cheffish.enclosing_environment
-    @provisioner = IronChef.enclosing_provisioner
-    @provisioner_options = IronChef.enclosing_provisioner_options
+    @provisioner = ChefMetal.enclosing_provisioner
+    @provisioner_options = ChefMetal.enclosing_provisioner_options
   end
 
   actions :create, :delete, :converge, :nothing

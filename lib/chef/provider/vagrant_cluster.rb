@@ -10,7 +10,7 @@ class Chef::Provider::VagrantCluster < Chef::Provider::LWRPBase
 
   action :create do
     the_base_path = new_resource.path
-    IronChef.inline_resource(self) do
+    ChefMetal.inline_resource(self) do
       directory the_base_path
       file ::File.join(the_base_path, 'Vagrantfile') do
         content <<EOM
@@ -24,7 +24,7 @@ EOM
 
   action :delete do
     the_base_path = new_resource.path
-    IronChef.inline_resource(self) do
+    ChefMetal.inline_resource(self) do
       file ::File.join(the_base_path, 'Vagrantfile') do
         action :delete
       end

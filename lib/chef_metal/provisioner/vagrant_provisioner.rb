@@ -1,8 +1,8 @@
 require 'chef/mixin/shell_out'
-require 'iron_chef/provisioner'
+require 'chef_metal/provisioner'
 
-module IronChef
-  module Vagrant
+module ChefMetal
+  class Provisioner
 
     # Provisions machines in vagrant.
     class VagrantProvisioner < Provisioner
@@ -27,7 +27,7 @@ module IronChef
       # different from the original node object).
       #
       # ## Parameters
-      # provider_context - the provider object that is calling this method.
+      # provider - the provider object that is calling this method.
       # node - node object (deserialized json) representing this machine.  If
       #        the node has a provisioner_options hash in it, these will be used
       #        instead of options provided by the provisioner.  TODO compare and
@@ -86,7 +86,7 @@ module IronChef
         vm_file_content << "  end\nend\n"
 
         # Set up vagrant file
-        vm_file = IronChef.inline_resource(provider) do
+        vm_file = ChefMetal.inline_resource(provider) do
           file provisioner_output['vm_file_path'] do
             content vm_file_content
             action :create
@@ -123,7 +123,6 @@ module IronChef
 
       # Connect to machine without acquiring it
       def connect_to_machine(node)
-        puts node.inspect
         machine_for(node)
       end
 
@@ -142,12 +141,13 @@ module IronChef
         convergence_strategy_for(node).delete_chef_objects(provider, node)
 
         vm_file_path = node['normal']['provisioner_output']['vm_file_path'] || File.join(cluster_path, "#{vm_name}.vm")
-        IronChef.inline_resource(provider) do
+        ChefMetal.inline_resource(provider) do
           file vm_file_path do
             action :delete
           end
         end
       end
+
 
       def provisioner_url(provider)
         "vagrant_cluster://#{provider.node['name']}#{cluster_path}"
@@ -186,21 +186,21 @@ module IronChef
 
       def machine_for(node)
         if vagrant_option(node, 'vm.guest').to_s == 'windows'
-          require 'iron_chef/machine/windows_machine'
-          IronChef::Machine::WindowsMachine.new(node, transport_for(node), convergence_strategy_for(node))
+          require 'chef_metal/machine/windows_machine'
+          ChefMetal::Machine::WindowsMachine.new(node, transport_for(node), convergence_strategy_for(node))
         else
-          require 'iron_chef/machine/unix_machine'
-          IronChef::Machine::UnixMachine.new(node, transport_for(node), convergence_strategy_for(node))
+          require 'chef_metal/machine/unix_machine'
+          ChefMetal::Machine::UnixMachine.new(node, transport_for(node), convergence_strategy_for(node))
         end
       end
 
       def convergence_strategy_for(node)
         if vagrant_option(node, 'vm.guest').to_s == 'windows'
-          require 'iron_chef/convergence_strategy/install_msi'
-          IronChef::ConvergenceStrategy::InstallMsi.new
+          require 'chef_metal/convergence_strategy/install_msi'
+          ChefMetal::ConvergenceStrategy::InstallMsi.new
         else
-          require 'iron_chef/convergence_strategy/install_sh'
-          IronChef::ConvergenceStrategy::InstallSh.new
+          require 'chef_metal/convergence_strategy/install_sh'
+          ChefMetal::ConvergenceStrategy::InstallSh.new
         end
       end
 
@@ -231,7 +231,7 @@ module IronChef
       end
 
       def create_winrm_transport(node)
-        require 'iron_chef/transport/winrm'
+        require 'chef_metal/transport/winrm'
 
         provisioner_output = node['default']['provisioner_output'] || {}
         forwarded_ports = provisioner_output['forwarded_ports'] || {}
@@ -247,11 +247,11 @@ module IronChef
           :disable_sspi => true
         }
 
-        IronChef::Transport::WinRM.new(endpoint, type, options)
+        ChefMetal::Transport::WinRM.new(endpoint, type, options)
       end
 
       def create_ssh_transport(node)
-        require 'iron_chef/transport/ssh'
+        require 'chef_metal/transport/ssh'
 
         vagrant_ssh_config = vagrant_ssh_config_for(node)
         hostname = vagrant_ssh_config['HostName']
@@ -267,7 +267,7 @@ module IronChef
         options = {
           :prefix => 'sudo '
         }
-        IronChef::Transport::SSH.new(hostname, username, ssh_options, options)
+        ChefMetal::Transport::SSH.new(hostname, username, ssh_options, options)
       end
 
       def vagrant_ssh_config_for(node)

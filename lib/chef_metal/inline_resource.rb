@@ -1,4 +1,4 @@
-module IronChef
+module ChefMetal
   class InlineResource
     def initialize(provider)
       @provider = provider

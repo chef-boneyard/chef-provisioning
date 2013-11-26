@@ -1,7 +1,7 @@
-require 'iron_chef/convergence_strategy'
+require 'chef_metal/convergence_strategy'
 require 'pathname'
 
-module IronChef
+module ChefMetal
   class ConvergenceStrategy
     class PrecreateChefObjects < ConvergenceStrategy
       def initialize(options = {})
@@ -23,7 +23,7 @@ module IronChef
       end
 
       def delete_chef_objects(provider, node)
-        IronChef.inline_resource(provider) do
+        ChefMetal.inline_resource(provider) do
           chef_node node['name'] do
             action :delete
           end
@@ -37,7 +37,7 @@ module IronChef
 
       def create_chef_objects(provider, machine, machine_resource)
         # Save the node and create the client.  TODO strip automatic attributes first so we don't race with "current state"
-        IronChef.inline_resource(provider) do
+        ChefMetal.inline_resource(provider) do
           chef_node machine.node['name'] do
             raw_json machine.node
           end
@@ -53,7 +53,7 @@ module IronChef
 
         # Create or update the client
         final_private_key = nil
-        IronChef.inline_resource(provider) do
+        ChefMetal.inline_resource(provider) do
           chef_client machine.node['name'] do
             public_key_path machine_resource.public_key_path
             private_key_path machine_resource.private_key_path

@@ -1,4 +1,4 @@
-module IronChef
+module ChefMetal
   class Transport
     def execute(command)
       raise "execute not overridden on #{self.class}"

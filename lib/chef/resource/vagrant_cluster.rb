@@ -1,5 +1,5 @@
 require 'chef/resource/lwrp_base'
-require 'iron_chef/vagrant/vagrant_provisioner'
+require 'chef_metal'
 
 class Chef::Resource::VagrantCluster < Chef::Resource::LWRPBase
   self.resource_name = 'vagrant_cluster'
@@ -11,6 +11,6 @@ class Chef::Resource::VagrantCluster < Chef::Resource::LWRPBase
 
   def after_created
     super
-    IronChef.with_vagrant_cluster path
+    ChefMetal.with_vagrant_cluster path
   end
 end

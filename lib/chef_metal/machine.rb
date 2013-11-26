@@ -1,4 +1,4 @@
-module IronChef
+module ChefMetal
   class Machine
     def initialize(node)
       @node = node

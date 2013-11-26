@@ -1,4 +1,4 @@
-module IronChef
+module ChefMetal
   class Provisioner
     # Acquire a machine, generally by provisioning it.  Returns a Machine
     # object pointing at the machine, allowing useful actions like setup,
@@ -7,7 +7,7 @@ module IronChef
     # different from the original node object).
     #
     # ## Parameters
-    # provider_context - the provider object that is calling this method.
+    # provider - the provider object that is calling this method.
     # node - node object (deserialized json) representing this machine.  If
     #        the node has a provisioner_options hash in it, these will be used
     #        instead of options provided by the provisioner.  TODO compare and

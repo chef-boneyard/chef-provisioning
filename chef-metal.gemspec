@@ -1,9 +1,9 @@
 $:.unshift(File.dirname(__FILE__) + '/lib')
-require 'iron_chef/version'
+require 'chef_metal/version'
 
 Gem::Specification.new do |s|
-  s.name = 'iron-chef'
-  s.version = IronChef::VERSION
+  s.name = 'chef-metal'
+  s.version = ChefMetal::VERSION
   s.platform = Gem::Platform::RUBY
   s.extra_rdoc_files = ['README.md', 'LICENSE' ]
   s.summary = 'A library for creating machines and infrastructures idempotently in Chef.'

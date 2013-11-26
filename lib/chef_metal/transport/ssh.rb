@@ -1,6 +1,6 @@
-require 'iron_chef/transport'
+require 'chef_metal/transport'
 
-module IronChef
+module ChefMetal
   class Transport
     class SSH < Transport
       def initialize(host, username, ssh_options, options)

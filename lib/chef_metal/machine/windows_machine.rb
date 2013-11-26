@@ -1,6 +1,6 @@
-require 'iron_chef/machine/basic_machine'
+require 'chef_metal/machine/basic_machine'
 
-module IronChef
+module ChefMetal
   class Machine
     class WindowsMachine < BasicMachine
       def initialize(node, transport, convergence_strategy)
