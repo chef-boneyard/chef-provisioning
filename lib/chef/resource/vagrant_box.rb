@@ -1,5 +1,5 @@
 require 'chef/resource/lwrp_base'
-require 'chef_metal/vagrant/vagrant_provisioner'
+require 'chef_metal/provisioner/vagrant_provisioner'
 
 class Chef::Resource::VagrantBox < Chef::Resource::LWRPBase
   self.resource_name = 'vagrant_box'
