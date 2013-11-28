@@ -152,10 +152,6 @@ module ChefMetal
       end
 
 
-      def provisioner_url(provider)
-        "vagrant_cluster://#{provider.node['name']}#{cluster_path}"
-      end
-
       # Used by vagrant_cluster and machine to get the string used to configure vagrant
       def self.vagrant_config_string(vagrant_config, variable, line_prefix)
         hostname = name.gsub(/[^A-Za-z0-9\-]/, '-')
@@ -168,6 +164,10 @@ module ChefMetal
       end
 
       protected
+
+      def provisioner_url(provider)
+        "vagrant_cluster://#{provider.node['name']}#{cluster_path}"
+      end
 
       def parse_vagrant_up(output, node)
         # Grab forwarded port info
