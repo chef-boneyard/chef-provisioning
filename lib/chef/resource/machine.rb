@@ -8,6 +8,7 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
   def initialize(*args)
     super
     @chef_environment = Cheffish.enclosing_environment
+    @chef_server = Cheffish.enclosing_chef_server
     @provisioner = ChefMetal.enclosing_provisioner
     @provisioner_options = ChefMetal.enclosing_provisioner_options
   end
