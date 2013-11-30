@@ -177,19 +177,18 @@ module ChefMetal
       def parse_vagrant_up(output, node)
         # Grab forwarded port info
         in_forwarding_ports = false
-        forwarded_ports = {}
         output.lines.each do |line|
           if in_forwarding_ports
             if line =~ /-- (\d+) => (\d+)/
-              forwarded_ports[$1] = $2
+              node['normal']['provisioner_output']['forwarded_ports'][$1] = $2
             else
               in_forwarding_ports = false
             end
           elsif line =~ /Forwarding ports...$/
+            node['normal']['provisioner_output']['forwarded_ports'] = {}
             in_forwarding_ports = true
           end
         end
-        node['normal']['provisioner_output']['forwarded_ports'] = forwarded_ports
       end
 
       def machine_for(node)
