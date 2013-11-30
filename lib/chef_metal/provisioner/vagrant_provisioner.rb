@@ -130,7 +130,12 @@ module ChefMetal
       end
 
       def delete_machine(provider, node)
-        vm_name = node['normal']['provisioner_output']['vm_name'] || node['name']
+        if node['normal'] && node['normal']['provisioner_output']
+          provisioner_output = node['normal']['provisioner_output']
+        else
+          provisioner_output = {}
+        end
+        vm_name = provisioner_output['vm_name'] || node['name']
         current_status = vagrant_status(vm_name)
         if current_status != 'not created'
           provider.converge_by "run vagrant destroy -f #{vm_name} (status was '#{current_status}')" do
@@ -143,7 +148,7 @@ module ChefMetal
 
         convergence_strategy_for(node).delete_chef_objects(provider, node)
 
-        vm_file_path = node['normal']['provisioner_output']['vm_file_path'] || File.join(cluster_path, "#{vm_name}.vm")
+        vm_file_path = provisioner_output['vm_file_path'] || File.join(cluster_path, "#{vm_name}.vm")
         ChefMetal.inline_resource(provider) do
           file vm_file_path do
             action :delete
