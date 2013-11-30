@@ -18,7 +18,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
       machine.setup_convergence(self, new_resource)
       # If we were asked to converge, or anything changed, or if a converge has never succeeded, converge.
       if new_resource.converge || (new_resource.converge.nil? && new_resource.updated_by_last_action?) ||
-         !node['automatic'] || node['automatic'].size == 0
+         !node_json['automatic'] || node_json['automatic'].size == 0
         machine.converge(self)
       end
     ensure
