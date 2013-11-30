@@ -47,8 +47,8 @@ module ChefMetal
       def read_file(path)
         begin
           Net::SCP.new(session).download!(path)
-        rescue Net::SCP::Error
-          if $!.message =~ /SCP did not finish successfully \(1\)/
+        rescue
+          if $!.message =~ /SCP did not finish successfully \(1\)/ || $!.message =~ /No such file or directory/
             nil
           else
             raise
