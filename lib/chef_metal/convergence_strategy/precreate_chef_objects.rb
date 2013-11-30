@@ -19,7 +19,8 @@ module ChefMetal
 
         # Create client.rb and client.pem on machine
         machine.write_file(provider, client_pem_path, private_key, :ensure_dir => true)
-        machine.write_file(provider, client_rb_path, client_rb_content(machine), :ensure_dir => true)
+        content = client_rb_content(machine_resource.chef_server[:chef_server_url], machine.node['name'])
+        machine.write_file(provider, client_rb_path, content, :ensure_dir => true)
       end
 
       def delete_chef_objects(provider, node)
@@ -39,6 +40,7 @@ module ChefMetal
         # Save the node and create the client.  TODO strip automatic attributes first so we don't race with "current state"
         ChefMetal.inline_resource(provider) do
           chef_node machine.node['name'] do
+            chef_server machine_resource.chef_server
             raw_json machine.node
           end
         end
@@ -55,6 +57,7 @@ module ChefMetal
         final_private_key = nil
         ChefMetal.inline_resource(provider) do
           chef_client machine.node['name'] do
+            chef_server machine_resource.chef_server
             public_key_path machine_resource.public_key_path
             private_key_path machine_resource.private_key_path
             private_key desired_private_key
@@ -74,10 +77,11 @@ module ChefMetal
         final_private_key
       end
 
-      def client_rb_content(machine)
+      def client_rb_content(chef_server_url, node_name)
         <<EOM
-node_name '#{machine.node['name']}'
-client_key '#{client_pem_path}'
+chef_server_url #{chef_server_url.inspect}
+node_name #{node_name.inspect}
+client_key #{client_pem_path.inspect}
 EOM
       end
     end
