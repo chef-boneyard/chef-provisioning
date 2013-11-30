@@ -48,6 +48,10 @@ module ChefMetal
         end
       end
 
+      def forward_remote_port_to_local(remote_port, local_port)
+        transport.forward_remote_port_to_local(remote_port, local_port)
+      end
+
       def disconnect
         transport.disconnect
       end

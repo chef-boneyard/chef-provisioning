@@ -17,9 +17,17 @@ module ChefMetal
         # Create node and client on chef server
         private_key = create_chef_objects(provider, machine, machine_resource)
 
+        # If the chef server lives on localhost, tunnel the port through to the guest
+        chef_server_url = machine_resource.chef_server[:chef_server_url]
+        url = URI(chef_server_url)
+        # TODO IPv6
+        if url.host == "127.0.0.1"
+          machine.forward_remote_port_to_local(url.port, url.port)
+        end
+
         # Create client.rb and client.pem on machine
         machine.write_file(provider, client_pem_path, private_key, :ensure_dir => true)
-        content = client_rb_content(machine_resource.chef_server[:chef_server_url], machine.node['name'])
+        content = client_rb_content(chef_server_url, machine.node['name'])
         machine.write_file(provider, client_rb_path, content, :ensure_dir => true)
       end
 

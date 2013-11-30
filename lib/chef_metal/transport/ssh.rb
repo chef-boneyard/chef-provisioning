@@ -75,6 +75,11 @@ module ChefMetal
         end
       end
 
+      def forward_remote_port_to_local(remote_port, local_port)
+        # TODO IPv6
+        session.forward.remote(local_port, "127.0.0.1", remote_port)
+      end
+
       def disconnect
         if @session
           begin

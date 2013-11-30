@@ -54,6 +54,11 @@ module ChefMetal
       raise "get_attributes not overridden on #{self.class}"
     end
 
+    # Forward a remote port to local for the duration of the current connection
+    def forward_remote_port_to_local(remote_port, local_port)
+      raise "forward_remote_port_to_local not overridden on #{self.class}"
+    end
+
     def disconnect
       raise "disconnect not overridden on #{self.class}"
     end
