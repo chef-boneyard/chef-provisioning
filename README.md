@@ -1,9 +1,9 @@
 ChefMetal
 =========
 
-This library solves the problem of repeatably creating machines and infrastructures in Chef.  It has a plugin model that lets you write bootstrappers for your favorite infrastructures, including VirtualBox, EC2, LXC, bare metal, and many more! (*)
+This library solves the problem of repeatably creating machines and infrastructures in Chef.  It has a plugin model that lets you write bootstrappers for your favorite infrastructures, including VirtualBox, EC2, LXC, bare metal, and many more!
 
-Currently, chef-metal supports vagrant, Unixes/ssh, and Windows/winrm with real chef-servers or with automagical chef-zero tunneling.  Fog and Docker support (to cover EC2 and LXC) are next up.
+Currently, chef-metal supports vagrant, Unixes/ssh, and Windows/winrm with real chef-servers or with automagical chef-zero tunneling.  Fog and Docker support (to cover EC2 and LXC) are next up.  Further out, we'd like to extend support to image factories (using the machine resource to produce images) and PXE support.
 
 Try It Out
 ----------
@@ -22,7 +22,7 @@ To give it a spin, get chef 11.8 or greater try this:
     cd chef-metal
     chef-client -z -o myapp::vagrant,myapp::linux,myapp::small
 
-This will create two vagrant boxes, "mario" and "luigi1", in `~/machinetest`, bootstrapped to an empty runlist.  For Windows, you can replace myapp::linux with myapp::windows, but you'll need your own Windows vagrant box to do that (licensing!).
+This will create two vagrant precise64 linux boxes, "mario" and "luigi1", in `~/machinetest`, bootstrapped to an empty runlist.  For Windows, you can replace `myapp::linux` with `myapp::windows`, but you'll need your own Windows vagrant box to do that (licensing!).
 
 What Is Chef Metal?
 -------------------
