@@ -6,6 +6,9 @@ require 'chef/resource/vagrant_cluster'
 require 'chef/provider/vagrant_cluster'
 require 'chef/resource/vagrant_box'
 require 'chef/provider/vagrant_box'
+require 'chef/resource/fog_key_pair'
+require 'chef/provider/fog_key_pair'
+require 'chef_metal/provisioner/fog_provisioner'
 
 require 'chef_metal/inline_resource'
 

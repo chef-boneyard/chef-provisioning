@@ -17,7 +17,7 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
   default_action :create
 
   # Provisioner attributes
-  attribute :provisioner, :kind_of => Symbol
+  attribute :provisioner
   attribute :provisioner_options
 
   # Node attributes
