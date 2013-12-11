@@ -6,7 +6,7 @@ module ChefMetal
     end
 
     def first
-      @credentials.first.value
+      @credentials.first[1]
     end
 
     def keys

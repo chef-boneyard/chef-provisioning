@@ -12,9 +12,13 @@ class Chef::Resource::FogKeyPair < Chef::Resource::LWRPBase
   default_action :create
 
   attribute :provisioner
-  attribute :source_key
-  attribute :source_key_path, :kind_of => String
-  attribute :source_key_pass_phrase
+  # Private key to use as input (will be generated if it does not exist)
+  attribute :private_key_path, :kind_of => String
+  # Public key to use as input (will be generated if it does not exist)
+  attribute :public_key_path, :kind_of => String
+  # List of parameters to the private_key resource used for generation of the key
+  attribute :private_key_options, :kind_of => Hash
+
   # TODO what is the right default for this?
   attribute :allow_overwrite, :kind_of => [TrueClass, FalseClass], :default => false
 

@@ -27,7 +27,18 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
   def create_key
     if current_resource_exists?
       # If the public keys are different, update the server public key
-      if desired_key && Cheffish::KeyFormatter.encode(desired_key, :format => :fingerprint) != @current_fingerprint
+      if !current_resource.private_key_path
+        if new_resource.allow_overwrite
+          ensure_keys
+        else
+          raise "#{key_description} already exists on the server, but the private key #{new_resource.private_key_path} does not exist!"
+        end
+      elsif !current_resource.public_key_path
+        ensure_keys
+      end
+
+      public_key, format = Cheffish::KeyFormatter.decode(IO.read(new_resource.public_key_path))
+      if Cheffish::KeyFormatter.encode(public_key, :format => :fingerprint) != @current_fingerprint
         if new_resource.allow_overwrite
           converge_by "update #{key_description} to match local key at #{new_resource.source_key_path}" do
             compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
@@ -37,10 +48,29 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         end
       end
     else
+      # Generate the private and/or public keys if they do not exist
+      ensure_keys
+
       # Create key
-      if desired_key
-        converge_by "create #{key_description} from local key at #{new_resource.source_key_path}" do
-          compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
+      converge_by "create #{key_description} from local key at #{new_resource.source_key_path}" do
+        compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
+      end
+    end
+
+    # Make the credentials usable
+    new_resource.provisioner.key_pairs[new_resource.name] = {
+      :private_key_path => new_resource.private_key_path,
+      :public_key_path => new_resource.public_key_path
+    }
+  end
+
+  def ensure_keys
+    resource = new_resource
+    Cheffish.inline_resource(self) do
+      private_key resource.source_key_path do
+        public_key_path resource.public_key_path
+        resource.private_key_options.each_pair do |key,value|
+          send(key, value)
         end
       end
     end
@@ -52,25 +82,6 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
 
   def compute
     new_resource.provisioner.compute
-  end
-
-  def desired_key
-    @desired_key ||= begin
-      if new_resource.source_key.is_a?(String)
-        key, key_format = Cheffish::KeyFormatter.decode(current_key_pair.public_key)
-      elsif new_resource.source_key
-        key = new_resource.source_key
-      elsif new_resource.source_key_path
-        key, key_format = Cheffish::KeyFormatter.decode(IO.read(new_resource.source_key_path), new_resource.source_key_pass_phrase, new_resource.source_key_path)
-      else
-        key = nil
-      end
-
-      if key && key.private?
-        key = key.public_key
-      end
-      key
-    end
   end
 
   def current_public_key
@@ -87,6 +98,13 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
       @current_fingerprint = current_key_pair.fingerprint
     else
       current_resource.action :delete
+    end
+
+    if new_resource.private_key_path && ::File.exist?(new_resource.private_key_path)
+      current_resource.private_key_path new_resource.private_key_path
+    end
+    if new_resource.public_key_path && ::File.exist?(new_resource.public_key_path)
+      current_resource.public_key_path new_resource.public_key_path
     end
   end
 end

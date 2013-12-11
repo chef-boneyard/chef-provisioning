@@ -45,5 +45,17 @@ module ChefMetal
     def delete_machine(provider, node)
       raise "#{self.class} does not override delete_machine"
     end
+
+    protected
+
+    def save_node(provider, node, chef_server)
+      # Save the node and create the client.  TODO strip automatic attributes first so we don't race with "current state"
+      ChefMetal.inline_resource(provider) do
+        chef_node node['name'] do
+          chef_server chef_server
+          raw_json node
+        end
+      end
+    end
   end
 end
