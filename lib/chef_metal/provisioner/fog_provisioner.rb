@@ -172,9 +172,9 @@ module ChefMetal
       end
 
       def provisioner_url
-        provider_identifier = case compute_options['provider']
+        provider_identifier = case compute_options[:provider]
           when 'AWS'
-            compute_options['aws_access_key_id']
+            compute_options[:aws_access_key_id]
           else
             '???'
         end
@@ -199,6 +199,18 @@ module ChefMetal
         provisioner_options = node['normal']['provisioner_options'] || {}
         bootstrap_options = @base_bootstrap_options_for[machine] || current_base_bootstrap_options
         bootstrap_options = bootstrap_options.merge(symbolize_keys(provisioner_options['bootstrap_options'] || {}))
+        require 'socket'
+        require 'etc'
+        tags = {
+            'ChefServer' => machine.chef_server[:chef_server_url],
+            'BootstrapHost' => Socket.gethostname,
+            'BootstrapUser' => Etc.getlogin
+        }
+        if machine.chef_server[:options] && machine.chef_server[:options][:data_store]
+          tags['ChefLocalRepository'] = machine.chef_server[:options][:data_store].chef_fs.fs_description
+        end
+        tags.merge!(bootstrap_options[:tags]) if bootstrap_options[:tags]
+        bootstrap_options.merge!({ :tags => tags })
       end
 
       def machine_for(node, server = nil)
