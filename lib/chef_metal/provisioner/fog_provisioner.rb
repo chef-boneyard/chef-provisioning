@@ -36,21 +36,22 @@ module ChefMetal
         end
         @key_pairs = {}
         @compute_options = compute_options
+        @base_bootstrap_options_for = {}
       end
 
       attr_reader :compute_options
       attr_reader :aws_credentials
       attr_reader :key_pairs
 
-      def base_bootstrap_options
+      def current_base_bootstrap_options
         result = @base_bootstrap_options.dup
         if compute_options[:provider] == 'AWS'
           if key_pairs.size > 0
             last_pair_name = key_pairs.keys.last
             last_pair = key_pairs[last_pair_name]
             result[:key_name] ||= last_pair_name
-            result[:private_key_path] ||= last_pair[:private_key_path]
-            result[:public_key_path] ||= last_pair[:public_key_path]
+            result[:private_key_path] ||= last_pair.private_key_path
+            result[:public_key_path] ||= last_pair.public_key_path
           end
         end
         result
@@ -111,15 +112,13 @@ module ChefMetal
               server.start
             end
           end
-          machine_for(node, server)
         else
 
           # If the server does not exist, create it
+          bootstrap_options = bootstrap_options_for(provider.new_resource, node)
 
-          bootstrap_options = base_bootstrap_options.dup
-          bootstrap_options = bootstrap_options.merge(symbolize_keys(provisioner_options['bootstrap_options'] || {}))
           description = [ "create machine #{node['name']} on #{provisioner_url}" ]
-          bootstrap_options.each_pair { |key,value| description << "  - #{key}: #{value.inspect}" }
+          bootstrap_options.each_pair { |key,value| description << "    #{key}: #{value.inspect}" }
           server = nil
           provider.converge_by description do
             server = compute.servers.create(bootstrap_options)
@@ -127,7 +126,6 @@ module ChefMetal
             # Save quickly in case something goes wrong
             save_node(provider, node, provider.new_resource.chef_server)
           end
-
 
           if server
             provider.converge_by "machine #{node['name']} created as #{server.id} on #{provisioner_url}" do
@@ -137,10 +135,10 @@ module ChefMetal
               server.wait_for { ready? }
             end
           end
-
-          # Create machine object for callers to use
-          machine_for(node, server)
         end
+
+        # Create machine object for callers to use
+        machine_for(node, server)
       end
 
       # Connect to machine without acquiring it
@@ -159,6 +157,11 @@ module ChefMetal
           raise "Server for node #{node['name']} has not been created!"
         end
       end
+
+      def resource_created(machine)
+        @base_bootstrap_options_for[machine] = current_base_bootstrap_options
+      end
+
 
       def compute
         @compute ||= begin
@@ -192,10 +195,14 @@ module ChefMetal
         end
       end
 
+      def bootstrap_options_for(machine, node)
+        provisioner_options = node['normal']['provisioner_options'] || {}
+        bootstrap_options = @base_bootstrap_options_for[machine] || current_base_bootstrap_options
+        bootstrap_options = bootstrap_options.merge(symbolize_keys(provisioner_options['bootstrap_options'] || {}))
+      end
+
       def machine_for(node, server = nil)
-        if !server
-          server = server_for(node)
-        end
+        server ||= server_for(node)
 
         if node['normal']['provisioner_options'] && node['normal']['provisioner_options']['is_windows']
           require 'chef_metal/machine/windows_machine'
@@ -224,16 +231,22 @@ module ChefMetal
       def create_ssh_transport(server)
         require 'chef_metal/transport/ssh'
 
+        if compute_options[:provider] == 'AWS'
+          private_key_path = key_pairs[server.key_name].private_key_path
+        else
+          # TODO generalize for others?
+          private_key_path = nil
+        end
         ssh_options = {
 #          :user_known_hosts_file => vagrant_ssh_config['UserKnownHostsFile'],
 #          :paranoid => yes_or_no(vagrant_ssh_config['StrictHostKeyChecking']),
-          :keys => [ server.private_key ],
+          :keys => [ server.private_key || private_key_path ],
           :keys_only => true
         }
         options = {
           :prefix => 'sudo '
         }
-        ChefMetal::Transport::SSH.new(server.ip_address, server.username, ssh_options, options)
+        ChefMetal::Transport::SSH.new(server.public_ip_address, 'ubuntu', ssh_options, options)
       end
     end
   end

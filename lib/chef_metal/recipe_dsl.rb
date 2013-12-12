@@ -1,4 +1,5 @@
 require 'chef_metal'
+require 'chef_metal/provisioner/fog_provisioner'
 
 class Chef
   class Recipe
@@ -16,6 +17,10 @@ class Chef
 
     def with_vagrant_box(box_name, vagrant_options = {}, &block)
       ChefMetal.with_vagrant_box(box_name, vagrant_options, &block)
+    end
+
+    def with_fog_ec2_provisioner(options, &block)
+      ChefMetal.with_provisioner(ChefMetal::Provisioner::FogProvisioner.new({ :provider => 'AWS' }.merge(options)), &block)
     end
   end
 end

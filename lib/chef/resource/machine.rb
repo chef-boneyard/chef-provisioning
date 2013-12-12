@@ -13,6 +13,11 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
     @provisioner_options = ChefMetal.enclosing_provisioner_options
   end
 
+  def after_created
+    # Notify the provisioner of this machine's creation
+    @provisioner.resource_created(self)
+  end
+
   actions :create, :delete, :converge, :nothing
   default_action :create
 
@@ -23,9 +28,20 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
   # Node attributes
   Cheffish.node_attributes(self)
 
-  # Client attributes
+  # Client keys
+  # Options to generate private key (size, type, etc.) when the server doesn't have it
+  attribute :private_key_options, :kind_of => String
+
+  # Optionally pull the public key out to a file
   attribute :public_key_path, :kind_of => String
-  attribute :private_key_path, :kind_of => String
+  attribute :public_key_format, :kind_of => String
+
+  # If you really want to force the private key to be a certain key, pass these
+  attribute :source_key
+  attribute :source_key_path, :kind_of => String
+  attribute :source_key_pass_phrase
+
+  # Client attributes
   attribute :admin, :kind_of => [TrueClass, FalseClass]
   attribute :validator, :kind_of => [TrueClass, FalseClass]
 

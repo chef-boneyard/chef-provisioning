@@ -33,14 +33,14 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         else
           raise "#{key_description} already exists on the server, but the private key #{new_resource.private_key_path} does not exist!"
         end
-      elsif !current_resource.public_key_path
+      else
         ensure_keys
       end
 
       public_key, format = Cheffish::KeyFormatter.decode(IO.read(new_resource.public_key_path))
       if Cheffish::KeyFormatter.encode(public_key, :format => :fingerprint) != @current_fingerprint
         if new_resource.allow_overwrite
-          converge_by "update #{key_description} to match local key at #{new_resource.source_key_path}" do
+          converge_by "update #{key_description} to match local key at #{new_resource.private_key_path}" do
             compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
           end
         else
@@ -52,25 +52,21 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
       ensure_keys
 
       # Create key
-      converge_by "create #{key_description} from local key at #{new_resource.source_key_path}" do
+      converge_by "create #{key_description} from local key at #{new_resource.private_key_path}" do
         compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
       end
     end
-
-    # Make the credentials usable
-    new_resource.provisioner.key_pairs[new_resource.name] = {
-      :private_key_path => new_resource.private_key_path,
-      :public_key_path => new_resource.public_key_path
-    }
   end
 
   def ensure_keys
     resource = new_resource
     Cheffish.inline_resource(self) do
-      private_key resource.source_key_path do
+      private_key resource.private_key_path do
         public_key_path resource.public_key_path
-        resource.private_key_options.each_pair do |key,value|
-          send(key, value)
+        if resource.private_key_options
+          resource.private_key_options.each_pair do |key,value|
+            send(key, value)
+          end
         end
       end
     end

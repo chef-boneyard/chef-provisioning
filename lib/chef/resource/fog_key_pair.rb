@@ -8,6 +8,11 @@ class Chef::Resource::FogKeyPair < Chef::Resource::LWRPBase
     @provisioner = ChefMetal.enclosing_provisioner
   end
 
+  def after_created
+    # Make the credentials usable
+    provisioner.key_pairs[name] = self
+  end
+
   actions :create, :delete, :nothing
   default_action :create
 

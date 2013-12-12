@@ -46,6 +46,11 @@ module ChefMetal
       raise "#{self.class} does not override delete_machine"
     end
 
+    # Provider notification that happens at the point a resource is declared
+    # (after all properties have been set on it)
+    def resource_created(machine)
+    end
+
     protected
 
     def save_node(provider, node, chef_server)
