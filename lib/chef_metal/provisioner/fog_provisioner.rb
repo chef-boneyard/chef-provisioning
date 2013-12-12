@@ -23,16 +23,16 @@ module ChefMetal
       #     will be used.  You may pass a Cheffish::AWSCredentials object.
       def initialize(compute_options)
         @base_bootstrap_options = compute_options.delete(:base_bootstrap_options) || {}
-        aws_credentials = compute_options.delete(:aws_credentials)
-        if aws_credentials
-          if aws_credentials.is_a?(String)
-            @aws_credentials = ChefMetal::AWSCredentials.new
-            @aws_credentials.load(File.expand_path(aws_credentials))
-          else
+        if compute_options[:provider] == 'AWS'
+          aws_credentials = compute_options.delete(:aws_credentials)
+          if aws_credentials
             @aws_credentials = aws_credentials
+          else
+            @aws_credentials = ChefMetal::AWSCredentials.new
+            @aws_credentials.load_default
           end
-          compute_options[:aws_access_key_id] ||= @aws_credentials.first[:access_key_id]
-          compute_options[:aws_secret_access_key] ||= @aws_credentials.first[:secret_access_key]
+          compute_options[:aws_access_key_id] ||= @aws_credentials.default[:access_key_id]
+          compute_options[:aws_secret_access_key] ||= @aws_credentials.default[:secret_access_key]
         end
         @key_pairs = {}
         @compute_options = compute_options

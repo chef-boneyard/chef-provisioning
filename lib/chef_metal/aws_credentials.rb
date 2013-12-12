@@ -5,8 +5,8 @@ module ChefMetal
       @credentials = {}
     end
 
-    def first
-      @credentials.first[1]
+    def default
+      @credentials['default'] || @credentials.first[1]
     end
 
     def keys
@@ -17,7 +17,19 @@ module ChefMetal
       @credentials[name]
     end
 
-    def load(credentials_csv_file)
+    def load_ini(credentials_ini_file)
+      require 'inifile'
+      inifile = IniFile.load(File.expand_path(credentials_ini_file))
+      inifile.each_section do |section|
+        @credentials[section] = {
+          :access_key_id => inifile[section]['aws_access_key_id'],
+          :secret_access_key => inifile[section]['aws_secret_access_key'],
+          :region => inifile[section]['region']
+        }
+      end
+    end
+
+    def load_csv(credentials_csv_file)
       require 'csv'
       CSV.new(File.open(credentials_csv_file), :headers => :first_row).each do |row|
         @credentials[row['User Name']] = {
@@ -26,6 +38,10 @@ module ChefMetal
           :secret_access_key => row['Secret Access Key']
         }
       end
+    end
+
+    def load_default
+      load_ini('~/.aws/config')
     end
 
     def self.method_missing(name, *args, &block)
