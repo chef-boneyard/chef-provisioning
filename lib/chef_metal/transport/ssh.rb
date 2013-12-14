@@ -56,22 +56,29 @@ module ChefMetal
         end
       end
 
-      def write_file(path, content)
-        file = Tempfile.new('putfile')
-        begin
-          file.write(content)
-          file.close
+      def download_file(path, local_path)
+        Net::SCP.new(session).download!(path, local_path)
+      end
 
-          if options[:prefix]
-            # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-            remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
-            Net::SCP.new(session).upload!(file.path, remote_tempfile)
-            execute("mv #{remote_tempfile} #{path}")
-          else
-            Net::SCP.new(session).upload!(file.path, path)
-          end
-        ensure
-          file.unlink
+      def write_file(path, content)
+        if options[:prefix]
+          # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
+          remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
+          Net::SCP.new(session).upload!(StringIO.new(content), remote_tempfile)
+          execute("mv #{remote_tempfile} #{path}")
+        else
+          Net::SCP.new(session).upload!(StringIO.new(content), path)
+        end
+      end
+
+      def upload_file(local_path, path)
+        if options[:prefix]
+          # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
+          remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
+          Net::SCP.new(session).upload!(local_path, remote_tempfile)
+          execute("mv #{remote_tempfile} #{path}")
+        else
+          Net::SCP.new(session).upload!(local_path, path)
         end
       end
 

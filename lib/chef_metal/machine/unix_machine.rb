@@ -23,7 +23,9 @@ module ChefMetal
 
       # Return true or false depending on whether file exists
       def file_exists?(path)
-        transport.execute("ls -d #{path}").stdout != ''
+        result = transport.execute("ls -d #{path}")
+        result.error!
+        result.stdout != ''
       end
 
       def create_dir(provider, path)

@@ -202,9 +202,10 @@ module ChefMetal
         require 'socket'
         require 'etc'
         tags = {
-            'ChefServer' => machine.chef_server[:chef_server_url],
+            'BootstrapChefServer' => machine.chef_server[:chef_server_url],
             'BootstrapHost' => Socket.gethostname,
-            'BootstrapUser' => Etc.getlogin
+            'BootstrapUser' => Etc.getlogin,
+            'BootstrapNodeName' => node['name']
         }
         if machine.chef_server[:options] && machine.chef_server[:options][:data_store]
           tags['ChefLocalRepository'] = machine.chef_server[:options][:data_store].chef_fs.fs_description

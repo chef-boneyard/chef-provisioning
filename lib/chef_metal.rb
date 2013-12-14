@@ -2,6 +2,8 @@
 require 'chef_metal/recipe_dsl'
 require 'chef/resource/machine'
 require 'chef/provider/machine'
+require 'chef/resource/machine_file'
+require 'chef/provider/machine_file'
 require 'chef/resource/vagrant_cluster'
 require 'chef/provider/vagrant_cluster'
 require 'chef/resource/vagrant_box'

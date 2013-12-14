@@ -37,12 +37,35 @@ module ChefMetal
         transport.read_file(path)
       end
 
+      def download_file(provider, path, local_path)
+        # TODO seriously, checksum or some shit
+        content = transport.read_file(path)
+        if IO.read(local_path) != content
+          provider.converge_by "download file #{path} on #{node['name']} to #{local_path}" do
+            IO.write(local_path, content)
+          end
+        end
+      end
+
       def write_file(provider, path, content, options = {})
         if transport.read_file(path) != content
           if options[:ensure_dir]
             create_dir(provider, dirname_on_machine(path))
           end
           provider.converge_by "write file #{path} on #{node['name']}" do
+            transport.write_file(path, content)
+          end
+        end
+      end
+
+      def upload_file(provider, local_path, path, options = {})
+        # TODO seriously, checksum or some shit
+        content = IO.read(local_path)
+        if content != transport.read_file(path)
+          if options[:ensure_dir]
+            create_dir(provider, dirname_on_machine(path))
+          end
+          provider.converge_by "upload file #{local_path} to #{path} on #{node['name']}" do
             transport.write_file(path, content)
           end
         end

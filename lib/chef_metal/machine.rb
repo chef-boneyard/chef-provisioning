@@ -26,7 +26,15 @@ module ChefMetal
       raise "read_file not overridden on #{self.class}"
     end
 
+    def download_file(provider, path, local_path)
+      raise "read_file not overridden on #{self.class}"
+    end
+
     def write_file(provider, path, content)
+      raise "write_file not overridden on #{self.class}"
+    end
+
+    def upload_file(provider, local_path, path)
       raise "write_file not overridden on #{self.class}"
     end
 
