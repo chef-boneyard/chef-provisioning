@@ -28,5 +28,9 @@ module ChefMetal
     def disconnect
       raise "disconnect not overridden on #{self.class}"
     end
+
+    def available?
+      raise "available? not overridden on #{self.class}"
+    end
   end
 end

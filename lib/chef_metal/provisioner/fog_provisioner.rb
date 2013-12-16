@@ -107,13 +107,24 @@ module ChefMetal
 
           # TODO verify that the server info matches the specification (ami, etc.)\
           server = server_for(node)
-          if !server.ready?
-            provider.converge_by "start machine #{node['name']} (#{server.id} on #{provisioner_url})" do
-              server.start
+          if server.state == 'terminated' # Can't come back from that
+            need_to_create = true
+          else
+            need_to_create = false
+            if !server.ready?
+              provider.converge_by "start machine #{node['name']} (#{server.id} on #{provisioner_url})" do
+                server.start
+              end
+            else
+              transport = transport_for(server)
+              server.wait_for { ready? && transport.available? }
             end
           end
         else
+          need_to_create = true
+        end
 
+        if need_to_create
           # If the server does not exist, create it
           bootstrap_options = bootstrap_options_for(provider.new_resource, node)
 
@@ -132,7 +143,8 @@ module ChefMetal
             end
             provider.converge_by "wait for machine #{node['name']} to be ready" do
               # Wait for the node to be ready
-              server.wait_for { ready? }
+              transport = transport_for(server)
+              server.wait_for { ready? && transport.available? }
             end
           end
         end
@@ -202,6 +214,7 @@ module ChefMetal
         require 'socket'
         require 'etc'
         tags = {
+            'Name' => node['name'],
             'BootstrapChefServer' => machine.chef_server[:chef_server_url],
             'BootstrapHost' => Socket.gethostname,
             'BootstrapUser' => Etc.getlogin,
@@ -210,6 +223,7 @@ module ChefMetal
         if machine.chef_server[:options] && machine.chef_server[:options][:data_store]
           tags['ChefLocalRepository'] = machine.chef_server[:options][:data_store].chef_fs.fs_description
         end
+        # User-defined tags override the ones we set
         tags.merge!(bootstrap_options[:tags]) if bootstrap_options[:tags]
         bootstrap_options.merge!({ :tags => tags })
       end
@@ -241,21 +255,25 @@ module ChefMetal
         create_ssh_transport(server)
       end
 
-      def create_ssh_transport(server)
-        require 'chef_metal/transport/ssh'
-
+      def ssh_options_for(server)
         if compute_options[:provider] == 'AWS'
           private_key_path = key_pairs[server.key_name].private_key_path
         else
           # TODO generalize for others?
           private_key_path = nil
         end
-        ssh_options = {
+        {
 #          :user_known_hosts_file => vagrant_ssh_config['UserKnownHostsFile'],
 #          :paranoid => yes_or_no(vagrant_ssh_config['StrictHostKeyChecking']),
           :keys => [ server.private_key || private_key_path ],
           :keys_only => true
         }
+      end
+
+      def create_ssh_transport(server)
+        require 'chef_metal/transport/ssh'
+
+        ssh_options = ssh_options_for(server)
         options = {
           :prefix => 'sudo '
         }

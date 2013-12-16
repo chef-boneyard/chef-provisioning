@@ -97,6 +97,13 @@ module ChefMetal
         end
       end
 
+      def available?
+        execute('pwd')
+        true
+      rescue Errno::ECONNREFUSED, Net::SSH::AuthenticationFailed, Net::SSH::Disconnect
+        false
+      end
+
       protected
 
       def session
