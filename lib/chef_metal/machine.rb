@@ -52,6 +52,11 @@ module ChefMetal
       raise "file_exists? not overridden on #{self.class}"
     end
 
+    # Return true or false depending on whether remote file differs from local path or content
+    def files_different?(path, local_path, content=nil)
+      raise "file_different? not overridden on #{self.class}"
+    end
+
     # Set file attributes { mode, :owner, :group }
     def set_attributes(provider, path, attributes)
       raise "set_attributes not overridden on #{self.class}"

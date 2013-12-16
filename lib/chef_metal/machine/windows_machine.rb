@@ -26,6 +26,38 @@ module ChefMetal
         parse_boolean(transport.execute("Test-Path #{escape(path)}").stdout)
       end
 
+      def files_different?(path, local_path, content=nil)
+        # Get remote checksum of file (from http://stackoverflow.com/a/13926809)
+        result = transport.execute <<-EOM
+$md5 = [System.Security.Cryptography.MD5]::Create("MD5")
+$fd = [System.IO.File]::OpenRead(#{path.inspect})
+$buf = new-object byte[] (1024*1024*8) # 8mb buffer
+while (($read_len = $fd.Read($buf,0,$buf.length)) -eq $buf.length){
+    $total += $buf.length
+    $md5.TransformBlock($buf,$offset,$buf.length,$buf,$offset)
+}
+# finalize the last read
+$md5.TransformFinalBlock($buf,0,$read_len)
+$hash = $md5.Hash
+# convert hash bytes to hex formatted string
+$hash | foreach { $hash_txt += $_.ToString("x2") }
+$hash_txt
+EOM
+        result.error!
+        remote_sum = result.stdout.split(' ')[0]
+        digest = Digest::SHA256.new
+        if content
+          digest.update(content)
+        else
+          File.open(local_path, 'rb') do |io|
+            while (buf = io.read(4096)) && buf.length > 0
+              digest.update(buf)
+            end
+          end
+        end
+        remote_sum != digest.hexdigest
+      end
+
       def create_dir(provider, path)
         if !file_exists?(path)
           provider.converge_by "create directory #{path} on #{node['name']}" do

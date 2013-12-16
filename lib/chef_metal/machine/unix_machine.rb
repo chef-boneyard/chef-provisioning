@@ -1,4 +1,5 @@
 require 'chef_metal/machine/basic_machine'
+require 'digest'
 
 module ChefMetal
   class Machine
@@ -24,8 +25,30 @@ module ChefMetal
       # Return true or false depending on whether file exists
       def file_exists?(path)
         result = transport.execute("ls -d #{path}")
+        result.exitstatus == 0 && result.stdout != ''
+      end
+
+      def files_different?(path, local_path, content=nil)
+        if !file_exists?(path)
+          return true
+        end
+
+        # Get remote checksum of file
+        result = transport.execute("md5sum -b #{path}")
         result.error!
-        result.stdout != ''
+        remote_sum = result.stdout.split(' ')[0]
+
+        digest = Digest::MD5.new
+        if content
+          digest.update(content)
+        else
+          File.open(local_path, 'rb') do |io|
+            while (buf = io.read(4096)) && buf.length > 0
+              digest.update(buf)
+            end
+          end
+        end
+        remote_sum != digest.hexdigest
       end
 
       def create_dir(provider, path)
