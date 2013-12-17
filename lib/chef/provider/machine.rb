@@ -37,6 +37,12 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
     end
   end
 
+  action :stop do
+    node_json = node_provider.new_json
+    node_json['normal']['provisioner_options'] = new_resource.provisioner_options
+    new_resource.provisioner.stop_machine(self, node_json)
+  end
+
   action :delete do
     # Grab the node json by asking the provider for it
     node_data = node_provider.current_json

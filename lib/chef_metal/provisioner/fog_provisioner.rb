@@ -9,6 +9,12 @@ module ChefMetal
 
       include Chef::Mixin::ShellOut
 
+      DEFAULT_OPTIONS = {
+        :create_timeout => 600,
+        :start_timeout => 600,
+        :ssh_timeout => 20
+      }
+
       # Create a new vagrant provisioner.
       #
       # ## Parameters
@@ -21,6 +27,9 @@ module ChefMetal
       #     containing your aws key information.  If you do not specify aws_access_key_id
       #     and aws_secret_access_key explicitly, the first line from this file
       #     will be used.  You may pass a Cheffish::AWSCredentials object.
+      #   - :create_timeout - the time to wait for the instance to boot to ssh (defaults to 600)
+      #   - :start_timeout - the time to wait for the instance to start (defaults to 600)
+      #   - :ssh_timeout - the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
       def initialize(compute_options)
         @base_bootstrap_options = compute_options.delete(:base_bootstrap_options) || {}
         if compute_options[:provider] == 'AWS'
@@ -75,10 +84,13 @@ module ChefMetal
       #           -- provisioner_url: fog:<relevant_fog_options>
       #           -- bootstrap_options: hash of options to pass to compute.servers.create
       #           -- is_windows: true if windows.  TODO detect this from ami?
+      #           -- create_timeout - the time to wait for the instance to boot to ssh (defaults to 600)
+      #           -- start_timeout - the time to wait for the instance to start (defaults to 600)
+      #           -- ssh_timeout - the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
       #
       #        Example bootstrap_options for ec2:
-      #           :image_id=>'ami-311f2b45',
-      #           :flavor_id=>'t1.micro',
+      #           :image_id =>'ami-311f2b45',
+      #           :flavor_id =>'t1.micro',
       #           :key_name => 'pey-pair-name'
       #
       #        node['normal']['provisioner_output'] will be populated with information
@@ -107,7 +119,7 @@ module ChefMetal
 
           # TODO verify that the server info matches the specification (ami, etc.)\
           server = server_for(node)
-          if server.state == 'terminated' # Can't come back from that
+          if !server || server.state == 'terminated' # Can't come back from that
             need_to_create = true
           else
             need_to_create = false
@@ -115,9 +127,11 @@ module ChefMetal
               provider.converge_by "start machine #{node['name']} (#{server.id} on #{provisioner_url})" do
                 server.start
               end
+              provider.converge_by "wait for machine #{node['name']} (#{server.id} on #{provisioner_url}) to be ready" do
+                wait_until_ready(server, option_for(node, :start_timeout))
+              end
             else
-              transport = transport_for(server)
-              server.wait_for { ready? && transport.available? }
+              wait_until_ready(server, option_for(node, :ssh_timeout))
             end
           end
         else
@@ -139,12 +153,12 @@ module ChefMetal
           end
 
           if server
+            # Re-retrieve it in a more malleable form
+            server = compute.servers.get(server.id)
             provider.converge_by "machine #{node['name']} created as #{server.id} on #{provisioner_url}" do
             end
             provider.converge_by "wait for machine #{node['name']} to be ready" do
-              # Wait for the node to be ready
-              transport = transport_for(server)
-              server.wait_for { ready? && transport.available? }
+              wait_until_ready(server, option_for(node, :create_timeout))
             end
           end
         end
@@ -165,8 +179,16 @@ module ChefMetal
             server.destroy
           end
           convergence_strategy_for(node).delete_chef_objects(provider, node)
-        else
-          raise "Server for node #{node['name']} has not been created!"
+        end
+      end
+
+      def stop_machine(provider, node)
+        # If the machine doesn't exist, we silently do nothing
+        if node['normal']['provisioner_output'] && node['normal']['provisioner_output']['server_id']
+          server = compute.servers.get(node['normal']['provisioner_output']['server_id'])
+          provider.converge_by "stop machine #{node['name']} (#{server.id} at #{provisioner_url}" do
+            server.stop
+          end
         end
       end
 
@@ -193,7 +215,22 @@ module ChefMetal
         "fog:#{compute_options['provider']}:#{provider_identifier}"
       end
 
+      def transport_for(server)
+        # TODO winrm
+        create_ssh_transport(server)
+      end
+
       protected
+
+      def option_for(node, key)
+        if node['normal']['provisioner_options'] && node['normal']['provisioner_options'][key.to_s]
+          node['normal']['provisioner_options'][key.to_s]
+        elsif compute_options[key]
+          compute_options[key]
+        else
+          DEFAULT_OPTIONS[key]
+        end
+      end
 
       def symbolize_keys(options)
         options.inject({}) { |result,key,value| result[key.to_sym] = value; result }
@@ -201,9 +238,9 @@ module ChefMetal
 
       def server_for(node)
         if node['normal']['provisioner_output'] && node['normal']['provisioner_output']['server_id']
-          server = compute.servers.get(node['normal']['provisioner_output']['server_id'])
+          compute.servers.get(node['normal']['provisioner_output']['server_id'])
         else
-          raise "Server for node #{node['name']} has not been created!"
+          nil
         end
       end
 
@@ -230,6 +267,9 @@ module ChefMetal
 
       def machine_for(node, server = nil)
         server ||= server_for(node)
+        if !server
+          raise "Server for node #{node['name']} has not been created!"
+        end
 
         if node['normal']['provisioner_options'] && node['normal']['provisioner_options']['is_windows']
           require 'chef_metal/machine/windows_machine'
@@ -250,11 +290,6 @@ module ChefMetal
         end
       end
 
-      def transport_for(server)
-        # TODO winrm
-        create_ssh_transport(server)
-      end
-
       def ssh_options_for(server)
         if compute_options[:provider] == 'AWS'
           private_key_path = key_pairs[server.key_name].private_key_path
@@ -265,6 +300,7 @@ module ChefMetal
         {
 #          :user_known_hosts_file => vagrant_ssh_config['UserKnownHostsFile'],
 #          :paranoid => yes_or_no(vagrant_ssh_config['StrictHostKeyChecking']),
+          :auth_methods => [ 'publickey' ],
           :keys => [ server.private_key || private_key_path ],
           :keys_only => true
         }
@@ -278,6 +314,22 @@ module ChefMetal
           :prefix => 'sudo '
         }
         ChefMetal::Transport::SSH.new(server.public_ip_address, 'ubuntu', ssh_options, options)
+      end
+
+      def wait_until_ready(server, timeout)
+        transport = nil
+        _self = self
+        server.wait_for(timeout) do
+          if transport
+            transport.available?
+          elsif ready?
+            # Don't create the transport until the machine is ready (we won't have the host till then)
+            transport = _self.transport_for(server)
+            transport.available?
+          else
+            false
+          end
+        end
       end
     end
   end

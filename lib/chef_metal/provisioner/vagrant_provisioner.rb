@@ -265,6 +265,7 @@ module ChefMetal
         username = vagrant_ssh_config['User']
         ssh_options = {
           :port => vagrant_ssh_config['Port'],
+          :auth_methods => ['publickey'],
           :user_known_hosts_file => vagrant_ssh_config['UserKnownHostsFile'],
           :paranoid => yes_or_no(vagrant_ssh_config['StrictHostKeyChecking']),
           :keys => [ strip_quotes(vagrant_ssh_config['IdentityFile']) ],

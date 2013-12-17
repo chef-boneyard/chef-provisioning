@@ -18,7 +18,7 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
     @provisioner.resource_created(self)
   end
 
-  actions :create, :delete, :converge, :nothing
+  actions :create, :delete, :stop, :converge, :nothing
   default_action :create
 
   # Provisioner attributes

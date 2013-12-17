@@ -47,8 +47,8 @@ module ChefMetal
       def read_file(path)
         begin
           Net::SCP.new(session).download!(path)
-        rescue
-          if $!.message =~ /SCP did not finish successfully \(1\)/ || $!.message =~ /No such file or directory/
+        rescue Net::SCP::Error, ArgumentError
+          if $!.message =~ /No such file or directory/
             nil
           else
             raise
@@ -100,7 +100,7 @@ module ChefMetal
       def available?
         execute('pwd')
         true
-      rescue Errno::ECONNREFUSED, Net::SSH::AuthenticationFailed, Net::SSH::Disconnect
+      rescue Errno::ETIMEDOUT, Errno::ECONNREFUSED, Net::SSH::AuthenticationFailed, Net::SSH::Disconnect, Net::SSH::HostKeyMismatch
         false
       end
 
