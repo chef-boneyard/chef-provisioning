@@ -119,8 +119,11 @@ module ChefMetal
 
           # TODO verify that the server info matches the specification (ami, etc.)\
           server = server_for(node)
-          if !server || server.state == 'terminated' # Can't come back from that
-            Chef::Log.warn "Machine #{node['name']} (#{server.id} on #{provisioner_url}) was started but SSH is misconfigured. Rebooting machine in an attempt to fix it ..."
+          if !server
+            Chef::Log.warn "Machine #{node['name']} (#{provisioner_output['server_id']} on #{provisioner_url}) is not associated with the ec2 account.  Recreating ..."
+            need_to_create = true
+          elsif server.state == 'terminated' # Can't come back from that
+            Chef::Log.warn "Machine #{node['name']} (#{server.id} on #{provisioner_url}) is terminated.  Recreating ..."
             need_to_create = true
           else
             need_to_create = false
