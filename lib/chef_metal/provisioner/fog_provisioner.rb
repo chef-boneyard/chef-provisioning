@@ -120,6 +120,7 @@ module ChefMetal
           # TODO verify that the server info matches the specification (ami, etc.)\
           server = server_for(node)
           if !server || server.state == 'terminated' # Can't come back from that
+            Chef::Log.warn "Machine #{node['name']} (#{server.id} on #{provisioner_url}) was started but SSH is misconfigured. Rebooting machine in an attempt to fix it ..."
             need_to_create = true
           else
             need_to_create = false
@@ -142,6 +143,9 @@ module ChefMetal
           # If the server does not exist, create it
           bootstrap_options = bootstrap_options_for(provider.new_resource, node)
 
+          start_time = Time.now
+          timeout = option_for(node, :create_timeout)
+
           description = [ "create machine #{node['name']} on #{provisioner_url}" ]
           bootstrap_options.each_pair { |key,value| description << "    #{key}: #{value.inspect}" }
           server = nil
@@ -160,8 +164,8 @@ module ChefMetal
             # Wait for the machine to come up and for ssh to start listening
             transport = nil
             _self = self
-            provider.converge_by "wait for machine #{node['name']} to be ready" do
-              server.wait_for(option_for(node, :create_timeout)) do
+            provider.converge_by "wait for machine #{node['name']} to boot" do
+              server.wait_for(timeout - (Time.now - start_time)) do
                 if ready?
                   transport ||= _self.transport_for(server)
                   begin
@@ -178,24 +182,19 @@ module ChefMetal
               end
             end
 
-            #
-            # SSH is up.  Check if it is set up correctly.
-            #
+            # If there is some other error, we just wait patiently for SSH
             begin
-              transport.execute('pwd')
-            rescue Net::SSH::AuthenticationFailed, Net::SSH::HostKeyMismatch
-              # Sometimes (on EC2) the machine comes up but is inaccessible to SSH.  If this is the case, we
-              # restart the server to unstick it.
-              provider.converge_by "reboot machine #{node['name']} to try to unstick key" do
+              server.wait_for(option_for(node, :ssh_timeout)) { transport.available? }
+            rescue Fog::Errors::TimeoutError
+              # Sometimes (on EC2) the machine comes up but gets stuck or has
+              # some other problem.  If this is the case, we restart the server
+              # to unstick it.  Reboot covers a multitude of sins.
+              Chef::Log.warn "Machine #{node['name']} (#{server.id} on #{provisioner_url}) was started but SSH did not come up.  Rebooting machine in an attempt to unstick it ..."
+              provider.converge_by "reboot machine #{node['name']} to try to unstick it" do
                 server.reboot
               end
               provider.converge_by "wait for machine #{node['name']} to be ready after reboot" do
                 wait_until_ready(server, option_for(node, :start_timeout))
-              end
-            rescue
-              # If there is some other error, we just wait patiently for SSH
-              provider.converge_by "wait for ssh to be ready on machine #{node['name']}" do
-                server.wait_for(option_for(node, :ssh_timeout)) { transport.available? }
               end
             end
           end
@@ -329,19 +328,21 @@ module ChefMetal
       end
 
       def ssh_options_for(server)
-        if compute_options[:provider] == 'AWS'
-          private_key_path = key_pairs[server.key_name].private_key_path
-        else
-          # TODO generalize for others?
-          private_key_path = nil
-        end
-        {
+        result = {
 #          :user_known_hosts_file => vagrant_ssh_config['UserKnownHostsFile'],
 #          :paranoid => yes_or_no(vagrant_ssh_config['StrictHostKeyChecking']),
           :auth_methods => [ 'publickey' ],
-          :keys => [ server.private_key || private_key_path ],
+          :keys => [ server.private_key ],
           :keys_only => true
         }
+        if compute_options[:provider] == 'AWS'
+          # TODO generalize for others?
+          result[:keys] = [ server.private_key || key_pairs[server.key_name].private_key_path ]
+          result[:host_key_alias] = "#{server.id}.ec2"
+        else
+          private_key_path = nil
+        end
+        result
       end
 
       def create_ssh_transport(server)

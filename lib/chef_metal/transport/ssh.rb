@@ -18,6 +18,7 @@ module ChefMetal
       attr_reader :options
 
       def execute(command)
+        Chef::Log.info("Executing #{command} on #{username}@#{host}")
         stdout = ''
         stderr = ''
         exitstatus = nil
@@ -41,10 +42,14 @@ module ChefMetal
 
         channel.wait
 
+        Chef::Log.info("Completed #{command} on #{username}@#{host}: exit status #{exitstatus}")
+        Chef::Log.debug("Stdout was:\n#{stdout}") if stdout != ''
+        Chef::Log.info("Stderr was:\n#{stderr}") if stderr != ''
         SSHResult.new(stdout, stderr, exitstatus)
       end
 
       def read_file(path)
+        Chef::Log.debug("Reading file #{path} from #{username}@#{host}")
         begin
           Net::SCP.new(session).download!(path)
         rescue Net::SCP::Error, ArgumentError
@@ -57,6 +62,7 @@ module ChefMetal
       end
 
       def download_file(path, local_path)
+        Chef::Log.debug("Downloading file #{path} from #{username}@#{host} to local #{local_path}")
         Net::SCP.new(session).download!(path, local_path)
       end
 
@@ -64,9 +70,11 @@ module ChefMetal
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
           remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
+          Chef::Log.debug("Writing #{content.length} bytes to #{remote_tempfile} on #{username}@#{host}")
           Net::SCP.new(session).upload!(StringIO.new(content), remote_tempfile)
           execute("mv #{remote_tempfile} #{path}")
         else
+          Chef::Log.debug("Writing #{content.length} bytes to #{path} on #{username}@#{host}")
           Net::SCP.new(session).upload!(StringIO.new(content), path)
         end
       end
@@ -75,21 +83,25 @@ module ChefMetal
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
           remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
+          Chef::Log.debug("Uploading #{local_path} to #{remote_tempfile} on #{username}@#{host}")
           Net::SCP.new(session).upload!(local_path, remote_tempfile)
           execute("mv #{remote_tempfile} #{path}")
         else
+          Chef::Log.debug("Uploading #{local_path} to #{path} on #{username}@#{host}")
           Net::SCP.new(session).upload!(local_path, path)
         end
       end
 
       def forward_remote_port_to_local(remote_port, local_port)
         # TODO IPv6
+        Chef::Log.debug("Forwarding local server 127.0.0.1:#{local_port} to port #{remote_port} on #{username}@#{host}")
         session.forward.remote(local_port, "127.0.0.1", remote_port)
       end
 
       def disconnect
         if @session
           begin
+            Chef::Log.debug("Closing SSH session on #{username}@#{host}")
             @session.close
           rescue
           end
@@ -101,6 +113,7 @@ module ChefMetal
         execute('pwd')
         true
       rescue Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, Net::SSH::AuthenticationFailed, Net::SSH::Disconnect, Net::SSH::HostKeyMismatch
+        Chef::Log.debug("#{username}@#{host} unavailable: could not execute 'pwd' on #{host}: #{$!.inspect}")
         false
       end
 
@@ -108,6 +121,7 @@ module ChefMetal
 
       def session
         @session ||= begin
+          Chef::Log.debug("Opening SSH connection to #{username}@#{host} with options #{ssh_options.inspect}")
           Net::SSH.start(host, username, ssh_options)
         end
       end
