@@ -153,12 +153,50 @@ module ChefMetal
           end
 
           if server
-            # Re-retrieve it in a more malleable form
+            # Re-retrieve the server in a more malleable form and wait for it to be ready
             server = compute.servers.get(server.id)
             provider.converge_by "machine #{node['name']} created as #{server.id} on #{provisioner_url}" do
             end
+            # Wait for the machine to come up and for ssh to start listening
+            transport = nil
+            _self = self
             provider.converge_by "wait for machine #{node['name']} to be ready" do
-              wait_until_ready(server, option_for(node, :create_timeout))
+              server.wait_for(option_for(node, :create_timeout)) do
+                if ready?
+                  transport ||= _self.transport_for(server)
+                  begin
+                    transport.execute('pwd')
+                    true
+                  rescue Errno::ECONNREFUSED, Net::SSH::Disconnect
+                    false
+                  rescue
+                    true
+                  end
+                else
+                  false
+                end
+              end
+            end
+
+            #
+            # SSH is up.  Check if it is set up correctly.
+            #
+            begin
+              transport.execute('pwd')
+            rescue Net::SSH::AuthenticationFailed, Net::SSH::HostKeyMismatch
+              # Sometimes (on EC2) the machine comes up but is inaccessible to SSH.  If this is the case, we
+              # restart the server to unstick it.
+              provider.converge_by "reboot machine #{node['name']} to try to unstick key" do
+                server.reboot
+              end
+              provider.converge_by "wait for machine #{node['name']} to be ready after reboot" do
+                wait_until_ready(server, option_for(node, :start_timeout))
+              end
+            rescue
+              # If there is some other error, we just wait patiently for SSH
+              provider.converge_by "wait for ssh to be ready on machine #{node['name']}" do
+                server.wait_for(option_for(node, :ssh_timeout)) { transport.available? }
+              end
             end
           end
         end
