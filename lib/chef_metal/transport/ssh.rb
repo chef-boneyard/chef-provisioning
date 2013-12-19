@@ -100,7 +100,7 @@ module ChefMetal
       def available?
         execute('pwd')
         true
-      rescue Errno::ETIMEDOUT, Errno::ECONNREFUSED, Net::SSH::AuthenticationFailed, Net::SSH::Disconnect, Net::SSH::HostKeyMismatch
+      rescue Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, Net::SSH::AuthenticationFailed, Net::SSH::Disconnect, Net::SSH::HostKeyMismatch
         false
       end
 
