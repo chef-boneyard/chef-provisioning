@@ -156,6 +156,24 @@ module ChefMetal
         end
       end
 
+      def stop_machine(provider, node)
+        if node['normal'] && node['normal']['provisioner_output']
+          provisioner_output = node['normal']['provisioner_output']
+        else
+          provisioner_output = {}
+        end
+        vm_name = provisioner_output['vm_name'] || node['name']
+        current_status = vagrant_status(vm_name)
+        if current_status == 'running'
+          provider.converge_by "run vagrant halt #{vm_name} (status was '#{current_status}')" do
+            result = shell_out("vagrant halt #{vm_name}", :cwd => cluster_path)
+            if result.exitstatus != 0
+              raise "vagrant halt failed!\nSTDOUT:#{result.stdout}\nSTDERR:#{result.stderr}"
+            end
+          end
+        end
+      end
+
 
       # Used by vagrant_cluster and machine to get the string used to configure vagrant
       def self.vagrant_config_string(vagrant_config, variable, line_prefix)
