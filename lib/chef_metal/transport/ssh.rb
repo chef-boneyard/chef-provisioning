@@ -50,20 +50,14 @@ module ChefMetal
 
       def read_file(path)
         Chef::Log.debug("Reading file #{path} from #{username}@#{host}")
-        begin
-          Net::SCP.new(session).download!(path)
-        rescue Net::SCP::Error, ArgumentError
-          if $!.message =~ /No such file or directory/
-            nil
-          else
-            raise
-          end
-        end
+        result = StringIO.new
+        download(path, result)
+        result.string
       end
 
       def download_file(path, local_path)
         Chef::Log.debug("Downloading file #{path} from #{username}@#{host} to local #{local_path}")
-        Net::SCP.new(session).download!(path, local_path)
+        download(path, local_path)
       end
 
       def write_file(path, content)
@@ -123,6 +117,23 @@ module ChefMetal
         @session ||= begin
           Chef::Log.debug("Opening SSH connection to #{username}@#{host} with options #{ssh_options.inspect}")
           Net::SSH.start(host, username, ssh_options)
+        end
+      end
+
+      def download(path, local_path)
+        channel = Net::SCP.new(session).download(path, local_path)
+        begin
+          channel.wait
+        rescue Net::SCP::Error
+          nil
+        rescue
+          # This works around https://github.com/net-ssh/net-scp/pull/10 until a new net-scp is merged.
+          channel.close
+          begin
+            channel.wait
+          rescue Net::SCP::Error
+            nil
+          end
         end
       end
 
