@@ -128,8 +128,8 @@ module ChefMetal
           nil
         rescue
           # This works around https://github.com/net-ssh/net-scp/pull/10 until a new net-scp is merged.
-          channel.close
           begin
+            channel.close
             channel.wait
           rescue Net::SCP::Error
             nil
