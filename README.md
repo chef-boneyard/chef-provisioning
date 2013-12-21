@@ -54,7 +54,8 @@ end
 
 You will notice the dynamic nature of the number of web servers.  It's all code, your imagination is the limit :)
 
-### Provisioners
+Provisioners
+------------
 
 Provisioners handle the real work of getting those abstract definitions into real, physical form.  They handle the following tasks, idempotently (you can run the resource again and again and it will only create the machine once--though it may notice things are wrong and fix them!):
 
@@ -64,9 +65,17 @@ Provisioners handle the real work of getting those abstract definitions into rea
 
 The provisioner API is separated out so that new provisioners can be made with minimal effort (without having to rewrite ssh, tunneling, bootstrapping, and OS support).  But to the user, they appear as a single thing, so that the machine acquisition can use its smarts to autodetect the other bits (transports, OS's, etc.).
 
-Provisioners save their data in the Chef node itself, so that .
+Provisioners save their data in the Chef node itself, so that they will be accessible to everyone who is using the Chef server to manage the nodes.
 
-You can see an example of provisioner definitions for vagrant in the myapp::vagrant and myapp::linux [sample recipes](https://github.com/jkeiser/chef-metal/tree/master/cookbooks/myapp/recipes), copy/pasted here for your convenience:
+### Vagrant
+
+chef-zero comes with a provisioner for Vagrant, an abstraction that covers VirtualBox, VMWare and other Virtual Machine providers. To run it, you can check out the sample recipes with:
+
+```
+chef-client -z -o myapp::vagrant,myapp::linux,myapp::small
+```
+
+The provisioner specification is in myapp::vagrant and myapp::linux [sample recipes](https://github.com/jkeiser/chef-metal/tree/master/cookbooks/myapp/recipes), copy/pasted here for your convenience:
 
 ```ruby
 vagrant_cluster "#{ENV['HOME']}/machinetest"
@@ -83,9 +92,65 @@ end
 
 `vagrant_box` makes sure a particular vagrant box exists, and lets you specify `provisioner_options` for things like port forwarding, OS definitions, and any other vagrant-isms.  A more complicated vagrant box, with provisioner options, can be found in [myapp::windows](https://github.com/jkeiser/chef-metal/blob/master/cookbooks/myapp/recipes/windows.rb).
 
-`with_chef_local_server` creates a chef-zero server pointed at the given repository.  nodes, clients, data bags, and all data will be stored here on your provisioner machine if you do this.  You can use `with_chef_server` instead if you want to point at OSS, Hosted or Enterprise Chef, and if you don't specify a Chef server at all, it will use the one you are running chef-client against.
+`with_chef_local_server` is a generic directive that creates a chef-zero server pointed at the given repository.  nodes, clients, data bags, and all data will be stored here on your provisioner machine if you do this.  You can use `with_chef_server` instead if you want to point at OSS, Hosted or Enterprise Chef, and if you don't specify a Chef server at all, it will use the one you are running chef-client against.
 
-Typically, you declare these in separate files from your machine resources.  Chef Metal picks up the provisioners you have declared, and uses them to instantiate the machines you request.
+Typically, you declare these in separate files from your machine resources.  Chef Metal picks up the provisioners you have declared, and uses them to instantiate the machines you request.  The actual machine definitions, in this case, are in `myapp::small`, and are generic--you could use them against EC2 as well:
+
+```ruby
+machine 'mario' do
+  recipe 'postgresql'
+  recipe 'mydb'
+  tag 'mydb_master'
+end
+
+num_webservers = 1
+
+1.upto(num_webservers) do |i|
+  machine "luigi#{i}" do
+    recipe 'apache'
+    recipe 'mywebapp'
+  end
+end
+```
+
+### Fog (EC2 and friends)
+
+chef-metal also comes with a [Fog](http://fog.io/) provisioner that handles provisioning to Amazon's EC2 and other cloud providers.  (Only EC2 has been tested so far.)  Before you begin, you will need to put your AWS credentials in ~/.aws/config in the format [mentioned in Option 1 here](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#d0e726).
+
+Once your credentials are in, basic usage looks like this:
+
+```
+chef-client -z -o myapp::vagrant,myapp::small
+```
+
+The provisioner definition in `myapp::vagrant` looks like this:
+
+```ruby
+ec2testdir = File.expand_path('~/ec2test')
+
+directory ec2testdir
+
+with_fog_ec2_provisioner # :provider => 'AWS'
+
+with_provisioner_options :image_id => 'ami-5ee70037'
+
+fog_key_pair 'me' do
+  private_key_path "#{ec2testdir}/me"
+  public_key_path "#{ec2testdir}/me.pub"
+end
+```
+
+`with_fog_ec2_provisioner` tells chef-metal to use the Fog provisioner against EC2.  If you specify your credentials in `~/.aws/config`, you don't *have* to specify anything else; it will use the Fog defaults.  You may pass a hash of parameters to `with_fog_ec2_provisioner` that is described [here](https://github.com/jkeiser/chef-metal/blob/master/lib/chef_metal/provisioner/fog_provisioner.rb#L21-L32).
+
+`fog_key_pair` creates a new key pair (if the files do not already exist) and automatically tells the Provisioner to use it to bootstrap subsequent machines.  The private/public key pair will be automatically authorized to log on to the instance on first boot.
+
+To pass options like ami, you can say something like this:
+
+```ruby
+with_provisioner_options :image_id => 'ami-5ee70037'
+```
+
+You will notice that we are still using `myapp::small` here.  Machine definitions are generally provisioner-independent.  This is an important feature that allows you to spin up your clusters in different places to create staging, test or miniature dev environments.
 
 Bugs and The Plan
 -----------------
