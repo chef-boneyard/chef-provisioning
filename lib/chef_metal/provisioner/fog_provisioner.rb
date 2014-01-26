@@ -54,14 +54,12 @@ module ChefMetal
 
       def current_base_bootstrap_options
         result = @base_bootstrap_options.dup
-        if compute_options[:provider] == 'AWS'
-          if key_pairs.size > 0
-            last_pair_name = key_pairs.keys.last
-            last_pair = key_pairs[last_pair_name]
-            result[:key_name] ||= last_pair_name
-            result[:private_key_path] ||= last_pair.private_key_path
-            result[:public_key_path] ||= last_pair.public_key_path
-          end
+        if key_pairs.size > 0
+          last_pair_name = key_pairs.keys.last
+          last_pair = key_pairs[last_pair_name]
+          result[:key_name] ||= last_pair_name
+          result[:private_key_path] ||= last_pair.private_key_path
+          result[:public_key_path] ||= last_pair.public_key_path
         end
         result
       end
@@ -122,7 +120,7 @@ module ChefMetal
           if !server
             Chef::Log.warn "Machine #{node['name']} (#{provisioner_output['server_id']} on #{provisioner_url}) is not associated with the ec2 account.  Recreating ..."
             need_to_create = true
-          elsif server.state == 'terminated' # Can't come back from that
+          elsif %w(terminated archive).include?(server.state) # Can't come back from that
             Chef::Log.warn "Machine #{node['name']} (#{server.id} on #{provisioner_url}) is terminated.  Recreating ..."
             need_to_create = true
           else
@@ -249,12 +247,15 @@ module ChefMetal
         provider_identifier = case compute_options[:provider]
           when 'AWS'
             compute_options[:aws_access_key_id]
+          when 'DigitalOcean'
+            compute_options[:digitalocean_client_id]
           else
             '???'
         end
-        "fog:#{compute_options['provider']}:#{provider_identifier}"
+        "fog:#{compute_options[:provider]}:#{provider_identifier}"
       end
 
+      # Not meant to be part of public interface
       def transport_for(server)
         # TODO winrm
         create_ssh_transport(server)
@@ -303,6 +304,28 @@ module ChefMetal
         # User-defined tags override the ones we set
         tags.merge!(bootstrap_options[:tags]) if bootstrap_options[:tags]
         bootstrap_options.merge!({ :tags => tags })
+
+        # Provide reasonable defaults for DigitalOcean
+        if compute_options[:provider] == 'DigitalOcean'
+          if !bootstrap_options[:image_id]
+            bootstrap_options[:image_name] ||= 'CentOS 6.4 x32'
+            bootstrap_options[:image_id] = compute.images.select { |image| image.name == bootstrap_options[:image_name] }.first.id
+          end
+          if !bootstrap_options[:flavor_id]
+            bootstrap_options[:flavor_name] ||= '512MB'
+            bootstrap_options[:flavor_id] = compute.flavors.select { |flavor| flavor.name == bootstrap_options[:flavor_name] }.first.id
+          end
+          if !bootstrap_options[:region_id]
+            bootstrap_options[:region_name] ||= 'San Francisco 1'
+            bootstrap_options[:region_id] = compute.regions.select { |region| region.name == bootstrap_options[:region_name] }.first.id
+          end
+          bootstrap_options[:ssh_key_ids] ||= [ compute.ssh_keys.select { |k| k.name == bootstrap_options[:key_name] }.first.id ]
+
+          # You don't get to specify name yourself
+          bootstrap_options[:name] = node['name']
+        end
+
+        bootstrap_options
       end
 
       def machine_for(node, server = nil)
@@ -332,18 +355,21 @@ module ChefMetal
 
       def ssh_options_for(server)
         result = {
+# TODO create a user known hosts file
 #          :user_known_hosts_file => vagrant_ssh_config['UserKnownHostsFile'],
-#          :paranoid => yes_or_no(vagrant_ssh_config['StrictHostKeyChecking']),
+#          :paranoid => true,
           :auth_methods => [ 'publickey' ],
-          :keys => [ server.private_key ],
-          :keys_only => true
+          :keys_only => true,
+          :host_key_alias => "#{server.id}.#{compute_options[:provider]}"
         }
-        if compute_options[:provider] == 'AWS'
+        if server.respond_to?(:private_key) && server.private_key
+          result[:keys] = [ server.private_key ]
+        elsif server.respond_to?(:key_name) && key_pairs[server.key_name]
           # TODO generalize for others?
-          result[:keys] = [ server.private_key || key_pairs[server.key_name].private_key_path ]
-          result[:host_key_alias] = "#{server.id}.ec2"
+          result[:keys] ||= [ key_pairs[server.key_name].private_key_path ]
         else
-          private_key_path = nil
+          # TODO need a way to know which key if there were multiple
+          result[:keys] = [ key_pairs.first[1].private_key_path ]
         end
         result
       end
@@ -351,11 +377,18 @@ module ChefMetal
       def create_ssh_transport(server)
         require 'chef_metal/transport/ssh'
 
-        ssh_options = ssh_options_for(server)
-        options = {
-          :prefix => 'sudo '
-        }
-        ChefMetal::Transport::SSH.new(server.public_ip_address, 'ubuntu', ssh_options, options)
+        ssh_options, options = ssh_options_for(server)
+        # If we're on AWS, the default is to use ubuntu, not root
+        if compute_options[:provider] == 'AWS'
+          username = compute_options[:ssh_username] || 'ubuntu'
+        else
+          username = compute_options[:ssh_username] || 'root'
+        end
+        options = {}
+        if compute_options[:sudo] || (!compute_options.has_key?(:sudo) && username != 'root')
+          options[:prefix] = 'sudo '
+        end
+        ChefMetal::Transport::SSH.new(server.public_ip_address, username, ssh_options, options)
       end
 
       def wait_until_ready(server, timeout)

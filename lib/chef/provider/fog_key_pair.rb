@@ -15,7 +15,12 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
   action :delete do
     if current_resource_exists?
       converge_by "delete #{key_description}" do
-        compute.key_pairs.delete(new_resource.name)
+        case new_resource.provisioner.compute_options[:provider]
+        when 'DigitalOcean'
+          compute.destroy_key_pair(@current_id)
+        else
+          compute.key_pairs.delete(new_resource.name)
+        end
       end
     end
   end
@@ -37,11 +42,22 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         ensure_keys
       end
 
-      public_key, format = Cheffish::KeyFormatter.decode(IO.read(new_resource.public_key_path))
-      if Cheffish::KeyFormatter.encode(public_key, :format => :fingerprint) != @current_fingerprint
+      new_fingerprint = case new_resource.provisioner.compute_options[:provider]
+      when 'DigitalOcean'
+        Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)
+      else
+        Cheffish::KeyFormatter.encode(desired_key, :format => :fingerprint)
+      end
+
+      if new_fingerprint != @current_fingerprint
         if new_resource.allow_overwrite
           converge_by "update #{key_description} to match local key at #{new_resource.private_key_path}" do
-            compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
+            case new_resource.provisioner.compute_options[:provider]
+            when 'DigitalOcean'
+              compute.create_ssh_key(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
+            else
+              compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
+            end
           end
         else
           raise "#{key_description} does not match local private key, and allow_overwrite is false!"
@@ -53,7 +69,12 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
 
       # Create key
       converge_by "create #{key_description} from local key at #{new_resource.private_key_path}" do
-        compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
+        case new_resource.provisioner.compute_options[:provider]
+        when 'DigitalOcean'
+          compute.create_ssh_key(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
+        else
+          compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
+        end
       end
     end
   end
@@ -68,6 +89,18 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
             send(key, value)
           end
         end
+      end
+    end
+  end
+
+  def desired_key
+    @desired_key ||= begin
+      if new_resource.public_key_path
+        public_key, format = Cheffish::KeyFormatter.decode(IO.read(new_resource.public_key_path))
+        public_key
+      else
+        private_key, format = Cheffish::KeyFormatter.decode(IO.read(new_resource.private_key_path))
+        private_key.public_key
       end
     end
   end
@@ -89,11 +122,22 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
       raise 'ec2_key_pair only works with fog_provisioner'
     end
     @current_resource = Chef::Resource::FogKeyPair.new(new_resource.name)
-    current_key_pair = compute.key_pairs.get(new_resource.name)
-    if current_key_pair
-      @current_fingerprint = current_key_pair.fingerprint
+    case new_resource.provisioner.compute_options[:provider]
+    when 'DigitalOcean'
+      current_key_pair = compute.ssh_keys.select { |key| key.name == new_resource.name }.first
+      if current_key_pair
+        @current_id = current_key_pair.id
+        @current_fingerprint = current_key_pair ? compute.ssh_keys.get(@current_id).ssh_pub_key : nil
+      else
+        current_resource.action :delete
+      end
     else
-      current_resource.action :delete
+      current_key_pair = compute.key_pairs.get(new_resource.name)
+      if current_key_pair
+        @current_fingerprint = current_key_pair ? current_key_pair.fingerprint : nil
+      else
+        current_resource.action :delete
+      end
     end
 
     if new_resource.private_key_path && ::File.exist?(new_resource.private_key_path)
