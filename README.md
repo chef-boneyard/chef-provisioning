@@ -18,11 +18,17 @@ To give it a spin, get chef 11.8 or greater try this:
     git clone https://github.com/jkeiser/chef-metal.git
     cd chef-metal
     rake install
-    
-    cd chef-metal
-    chef-client -z -o myapp::vagrant,myapp::linux,myapp::small
 
-This will create two vagrant precise64 linux boxes, "mario" and "luigi1", in `~/machinetest`, bootstrapped to an empty runlist.  For Windows, you can replace `myapp::linux` with `myapp::windows`, but you'll need your own Windows vagrant box to do that (licensing!).
+    cd chef-metal
+    chef-client -z -o stacks::vagrant,os::linux,pods::small
+
+This will create two vagrant precise64 linux boxes, "mario" and "luigi1", in `vms/`, bootstrapped to an empty runlist.  For Windows, you can replace `os::linux` with `os::windows`, but you'll need your own Windows vagrant box to do that (licensing!).
+
+You an also try
+
+    chef-client -z o pods::tiered
+
+This will provision two servers, a front-end and back-end, intended for a tiered Enterprise Chef setup.
 
 What Is Chef Metal?
 -------------------
