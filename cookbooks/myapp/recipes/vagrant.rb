@@ -1,5 +1,5 @@
 require 'cheffish'
-require 'chef_metal'
+require 'chef_metal/vagrant'
 
 # Set up a vagrant cluster (place for vms) in ~/machinetest
 vagrant_cluster "#{ENV['HOME']}/machinetest"

@@ -1,4 +1,4 @@
-require 'chef_metal'
+require 'chef_metal/fog'
 
 api_key = ENV['DIGITALOCEAN_API_KEY']
 client_id = ENV['DIGITALOCEAN_CLIENT_ID']
