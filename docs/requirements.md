@@ -46,13 +46,43 @@ EC2 and OpenStack providers must be available and support the same CentOS that E
 
 Jenna's task is to develop the test.
 
-- She builds a Metal recipe that can spin up a client and a server:
+1. She installs VirtualBox and Vagrant.
 
+2. She has a repository that has her cookbooks, data bags, roles, etc. in it:
+```
+cookbooks/
+  bling/
+    recipes/
+      server.rb
+      client.rb
+```
 
+3. She builds a Metal recipe, `client_server.rb`:
+```ruby
+machine 'myserver' do
+  recipe 'bling::server'
+end
 
-- She runs this recipe
+machine 'myclient' do
+  recipe 'bling::client'
+end
+```
 
+4. She builds a Metal recipe that describes *where* to spin up the client and server, and what architecture to do it on: 'vagrant.rb':
+```ruby
+require 'chef_metal/vagrant'
+vagrant_cluster "#{Chef::Config.chef_repo_path}/vagrantboxes"
+vagrant_box 'precise64' do
+  url 'http://files.vagrantup.com/precise64.box' 
+end
+```
+**Ed.: should we build some kind of default mechanism, or global place to put these?**
+**Ed.: should we build some way to specify "current directory" or "test directory" or dispense with that entirely and allow relative directories?**
 
+5. She runs the recipes!
+    chef-client -z vagrant.rb client_server.rb
+
+Now she has a client and a server, registered against the same (local) chef instance.
 
 ### CI
 
