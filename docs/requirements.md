@@ -26,7 +26,7 @@ Jenna is a senior software developer at BlingCo. She has deep background in dist
 
 ### Bubbles (OpsDev)
 
-Bubbles is a big dude.  Bubbles is working on changing his name.
+Bubbles is a big dude. He eats routers for breakfast, can configure a server in morse code, and knows a little Ruby too. Bubbles is working on changing his name.
 
 ## Act I: Chef CI
 
@@ -42,9 +42,9 @@ Seth wants to support Jenna by running her tests automatically on every checkin,
 
 EC2 and OpenStack providers must be available and support the same CentOS that EC2 supports.
 
-#### Single-client test
+#### Single-client install
 
-Jenna's task is to develop the test.
+Jenna's task is to develop the test.  The first thing she does is get Metal to *start* the client and server, and get them talking to each other:
 
 1. She installs VirtualBox and Vagrant.
 
@@ -56,11 +56,13 @@ Jenna's task is to develop the test.
          server.rb
          client.rb
    ```
+   It is worth noting that `client.rb` does a `search('tags:bling_server')`.
 
 3. She builds a Metal recipe, `client_server.rb`:
    ```ruby
    machine 'myserver' do
      recipe 'bling::server'
+     tag 'bling_server'
    end
 
    machine 'myclient' do
@@ -84,11 +86,47 @@ Jenna's task is to develop the test.
 
 Now she has a client and a server, registered against the same (local) chef instance.
 
+### Local Test
+
+Now that the instance is tested, Jenna needs to write the actual test.  This is where test kitchen comes in!  Using the Metal driver for test kitchen, Jenna wants to write a test that will:
+
+1. Bring up the server and client (connected to one another)
+2. Verify that the earring is not on
+3. Set the earring to the left ear
+4. Verify that the earring is on the left ear
+5. Set the earring to the right ear
+6. Verify that the earring is on the right ear
+
+To do all these things, she has to:
+
+1. Install the `kitchen-metal` driver.
+
+2. Create a `kitchen.yml` file:
+   ```
+   ```
+
+3. Create the rspec test:
+   ```
+   ```
+
+When she runs `kitchen verify`, all these things run and life is good for earring wearers everywhere.
+
 ### CI
+
+Seth hooks up Jenna's test to Travis, using a traditional `.travis.yml` file that looks like this:
+
+```
+```
+
+And we're done!  At this point, on every single checkin, Travis will bring up two Vagrant / VirtualBox instances, run the server and client on them, and run the earring movement test.
 
 ## Act II: CI (Full Acceptance)
 
+This is where we support other OS's, from an Ubuntu host.
+
 ## Act III: Local Development
+
+This is where we support everything from other host OS's.  It is also where we solve the problem of sharing data between the host and guest.
 
 ## Act IV: Stress!
 
