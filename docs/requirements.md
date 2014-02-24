@@ -26,7 +26,7 @@ Jenna is a senior software developer at BlingCo. She has deep background in dist
 
 ### Bubbles (OpsDev)
 
-Bubbles is a big dude. He eats routers for breakfast, can configure a server in morse code, and knows a little Ruby too. Bubbles is working on changing his name.
+Bubbles is a big dude. His hobbies include bar fights and defending his honor. He eats routers for breakfast, can configure a server in morse code, and knows a little Ruby too.
 
 ## Act I: Chef CI
 
@@ -97,12 +97,21 @@ Now that the instance is tested, Jenna needs to write the actual test.  This is 
 5. Set the earring to the right ear
 6. Verify that the earring is on the right ear
 
-To do all these things, she has to:
+To do all these things, she just sets up Kitchen with her recipes and runs an rspec test:
 
 1. Install the `kitchen-metal` driver.
 
 2. Create a `kitchen.yml` file:
    ```
+   ---
+   driver:
+     name: metal
+     layout: client_server.rb
+
+   platforms:
+     - name: vagrant.rb
+
+   ...
    ```
 
 3. Create the rspec test:
@@ -132,6 +141,7 @@ This is where we support everything from other host OS's.  It is also where we s
 
 ## Act V: Production
 
+## Act VI: Heterogeneous OS Test
 
 
 
