@@ -70,7 +70,7 @@ Jenna's task is to develop the test.  The first thing she does is get Metal to *
    end
    ```
 
-4. She builds a Metal recipe that describes *where* to spin up the client and server, and what architecture to do it on: 'vagrant.rb':
+4. She builds a Metal recipe that describes *where* to spin up the client and server, and what architecture to do it on: 'vagrant_linux.rb':
    ```ruby
    require 'chef_metal/vagrant'
    vagrant_cluster "#{Chef::Config.chef_repo_path}/vagrantboxes"
@@ -82,7 +82,7 @@ Jenna's task is to develop the test.  The first thing she does is get Metal to *
    **Ed.: should we build some way to specify "current directory" or "test directory" or dispense with that entirely and allow relative directories?**
 
 5. She runs the recipes!
-       chef-client -z vagrant.rb client_server.rb
+       chef-client -z vagrant_linux.rb client_server.rb
 
 Now she has a client and a server, registered against the same (local) chef instance.
 
@@ -109,9 +109,9 @@ To do all these things, she just sets up Kitchen with her recipes and runs an rs
      layout: client_server.rb
 
    platforms:
-     - name: vagrant.rb
+     - name: vagrant_linux.rb
 
-   ...
+   
    ```
 
 3. Create the rspec test:
@@ -139,44 +139,16 @@ This is where we support everything from other host OS's.  It is also where we s
 
 ## Act IV: Stress!
 
+This is where we support large numbers of machines, in a performant way.  Also, EC2.
+
 ## Act V: Production
+
+This is where we talk about how a large production cluster can be deployed, updated and versioned.
 
 ## Act VI: Heterogeneous OS Test
 
+This is where we talk about testing machines with different OS's talking to each other.
 
+## Act VII: Orchestration
 
-## 0.9: Chef CI
-
-Our most pressing need, and our first use case, is leveling up Chef's CI infrastructure.  To do that, we'd like to be able to run tests that span multiple machines, particularly
-
-### Small CI test clusters
-
-### Kitchen Integration
-
-### Chef test clusters
-
-The specific test clusters we must be able to support
-
-### Permutations
-
-Initial providers must be openstack, EC2, and vagrant+virtualbox.  These are the providers Chef uses internally at the moment.  Host OS's (places Metal runs on) must include OS X and Ubuntu.  Guest OS's include Ubuntu, CentOS and Red Hat on all providers.
-
-## 1.0: Windows
-
-Metal *will not go 1.0* without Windows support.  It already exists to a large degree, but Windows Host support is not yet tested.
-
-### Permutations
-
-This release will support Windows Guest OS's on all providers.
-
-
-
-### HA test clusters
-
-Still on the subject of HA test clusters
-
-## Future
-
-### Container Support
-
-## 
+This is where we talk about an HA orchestration.
