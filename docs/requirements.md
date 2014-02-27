@@ -94,16 +94,13 @@ Now that the instance is tested, Jenna needs to write the actual test.  This is 
 2. Verify that the earring is not on
 3. Set the earring to the left ear
 4. Verify that the earring is on the left ear
-5. Set the earring to the right ear
-6. Verify that the earring is on the right ear
 
 To do all these things, she just sets up Kitchen with her recipes and runs an rspec test:
 
 1. Install the `kitchen-metal` driver.
 
 2. Create a `kitchen.yml` file:
-   ```
-   ---
+   ```yaml
    driver:
      name: metal
      layout: client_server.rb
@@ -111,11 +108,34 @@ To do all these things, she just sets up Kitchen with her recipes and runs an rs
    platforms:
      - name: vagrant_linux.rb
 
-   
+   suites:
+     - type: host-rspec
+       spec: spec/ear_detection.rb
    ```
 
 3. Create the rspec test:
-   ```
+   ```ruby
+   describe 'ear detection' do
+     before :each do
+       @server = Chef::Node.get('bling_server')
+       @server_ip = @server['ip_address']
+       @client = Chef::Node.get('bling_server')
+       @client_ip = @client['ip_address']
+     end
+
+     after :each do
+       HTTP.put("http://#{@client_ip}/reset", true)
+     end
+
+     it 'should start out not in any ear' do
+       HTTP.get("http://#{@server_ip}/jewelry/bling_client")['ear'].should == 'none'
+     end
+
+     it 'should reflect changed ear values' do
+       HTTP.put("http://#{@client_ip}/ear", 'left')
+       HTTP.get("http://#{@server_ip}/jewelry/bling_client")['ear'].should == 'left'
+     end
+   end
    ```
 
 When she runs `kitchen verify`, all these things run and life is good for earring wearers everywhere.
@@ -124,7 +144,17 @@ When she runs `kitchen verify`, all these things run and life is good for earrin
 
 Seth hooks up Jenna's test to Travis, using a traditional `.travis.yml` file that looks like this:
 
+```yaml
+script: bundle exec kitchen verify
 ```
+
+And creates a `Gemfile` including `test-kitchen` and `kitchen-metal`:
+
+```ruby
+source 'https://rubygems.org'
+
+gem 'test-kitchen'
+gem 'kitchen-metal'
 ```
 
 And we're done!  At this point, on every single checkin, Travis will bring up two Vagrant / VirtualBox instances, run the server and client on them, and run the earring movement test.
