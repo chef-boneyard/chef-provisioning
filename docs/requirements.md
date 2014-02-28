@@ -14,7 +14,7 @@ Chef Metal lets you describe and converge entire clusters of machines the same w
 
 Here are some of the sort of people we expect to use Chef Metal.  Any resemblance to persons either real or fictional is purely a resemblance to persons either real or fictional.
 
-BlingCo is a manufacturer of Bling, a client/server jewelry management system where earrings and necklaces run a client OS and a jewelry box is installed with a server OS that tracks the jewelry.  The jewelry, and the jewelry boxes, are not controlled by BlingCo and may run the server or the client on a variety of different OS's.  There may be an arbitrary number of clients, and there may be .  BlingCo would like to release a product that is reliable and easy to use, on all these platforms.
+BlingCo is a manufacturer of Bling, a client/server jewelry management system where earrings and necklaces run a client OS and a jewelry box is installed with a server OS that tracks the jewelry.  The jewelry, and the jewelry boxes, are not controlled by BlingCo and may run the server or the clients on a variety of different OS's.  BlingCo would like to release a product that is reliable and easy to use, on all these platforms.
 
 ### Seth (QA)
 
