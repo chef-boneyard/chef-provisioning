@@ -1,5 +1,6 @@
 require 'chef/mixin/shell_out'
 require 'chef_metal/provisioner'
+require 'lxc'
 
 module ChefMetal
   class Provisioner
@@ -34,11 +35,11 @@ module ChefMetal
       #
       #           -- provisioner_url: lxc://<lxc_path>
       #           -- template: template name
-      #           -- template_options: ???
-      #           -- backingstore: ???
+      #           -- template_options: additional arguments for templates
+      #           -- backingstore: backing storage (lvm, thinpools, btrfs etc)
       #
       #        node['normal']['provisioner_output'] will be populated with information
-      #        about the created machine.  For vagrant, it is a hash with this
+      #        about the created machine.  For lxc, it is a hash with this
       #        format:
       #
       #           -- provisioner_url: lxc://<lxc_path>
@@ -56,17 +57,21 @@ module ChefMetal
         }
 
         # Create the container if it does not exist
-        ct = LXC::Container.new(provisioner_output['name'], lxc_path)
-        if !ct.exists?
+        ct = LXC::Container.new(provisioner_output['name'])
+        unless ct.defined?
           provider.converge_by "create lxc container #{provisioner_output['name']}" do
             ct.create(provisioner_options['template'], provisioner_options['backingstore'], 0, provisioner_options['template_options'])
-            ct.start
+          end
+        end
+        unless ct.running?
+          ct.start
+          while ct.ip_addresses.empty?
+            sleep 1 # wait till dhcp ip allocation is done
           end
         end
 
         if true # do a check on whether sshd is installed.  This is idempotency!
           provider.converge_by "install ssh into container #{provisioner_output['name']}" do
-            ct.attach('apt-get install sshd') # ?????
           end
         end
 
@@ -84,21 +89,20 @@ module ChefMetal
       def delete_machine(provider, node)
         if node['normal'] && node['normal']['provisioner_output']
           provisioner_output = node['normal']['provisioner_output']
-          ct = LXC::Container.new(provisioner_output['name'], lxc_path)
-          if ct.exists?
+          ct = LXC::Container.new(provisioner_output['name'])
+          if ct.defined?
             provider.converge_by "delete lxc container #{provisioner_output['name']}" do
               ct.destroy
             end
           end
         end
-
         convergence_strategy_for(node).delete_chef_objects(provider, node)
       end
 
       def stop_machine(provider, node)
         if node['normal'] && node['normal']['provisioner_output']
           provisioner_output = node['normal']['provisioner_output']
-          ct = LXC::Container.new(provisioner_output['name'], lxc_path)
+          ct = LXC::Container.new(provisioner_output['name'])
           if ct.running?
             provider.converge_by "delete lxc container #{provisioner_output['name']}" do
               ct.stop
@@ -124,25 +128,9 @@ module ChefMetal
       end
 
       def transport_for(node)
-        require 'chef_metal/transport/ssh'
-
-        # TODO This is the stuff vagrant uses ... we need to pick our own values
-        vagrant_ssh_config = vagrant_ssh_config_for(node)
-        hostname = vagrant_ssh_config['HostName']
-        username = vagrant_ssh_config['User']
-        ssh_options = {
-          :port => vagrant_ssh_config['Port'],
-          :auth_methods => ['publickey'],
-          :user_known_hosts_file => vagrant_ssh_config['UserKnownHostsFile'],
-          :paranoid => yes_or_no(vagrant_ssh_config['StrictHostKeyChecking']),
-          :keys => [ strip_quotes(vagrant_ssh_config['IdentityFile']) ],
-          :keys_only => yes_or_no(vagrant_ssh_config['IdentitiesOnly'])
-        }
-        ssh_options[:auth_methods] = %w(password) if yes_or_no(vagrant_ssh_config['PasswordAuthentication'])
-        options = {
-          :prefix => 'sudo '
-        }
-        ChefMetal::Transport::SSH.new(hostname, username, ssh_options, options)
+        require 'chef_metal/transport/lxc'
+        provisioner_output = node['normal']['provisioner_output']
+        ChefMetal::Transport::LXCTransport.new(provisioner_output['name'])
       end
     end
   end

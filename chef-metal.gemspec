@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'net-ssh', '~> 2.0'
   s.add_dependency 'net-scp', '~> 1.0'
   s.add_dependency 'inifile', '~> 2.0'
+  s.add_dependency 'ruby-lxc'
 
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rake'
