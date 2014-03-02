@@ -31,7 +31,7 @@ Chef Metal has two major abstractions: the machine resource, and provisioners.
 
 ### The `machine` resource
 
-You declare what your machines do (recipes, tags, etc.) with the `machine` resource, the fundamental unit of Chef Metal.  You will typically declare `machine` resources in a separate, OS/priovisioning-independent file that declares the *topology* of your app--your machines and the recipes that will run on them.
+You declare what your machines do (recipes, tags, etc.) with the `machine` resource, the fundamental unit of Chef Metal.  You will typically declare `machine` resources in a separate, OS/provisioning-independent file that declares the *topology* of your app--your machines and the recipes that will run on them.
 
 The machine resources from the example [myapp::small](https://github.com/jkeiser/chef-metal/blob/master/cookbooks/myapp/recipes/small.rb) are pretty straightforward.  Here's a copy/paste:
 
