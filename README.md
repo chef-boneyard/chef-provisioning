@@ -10,12 +10,12 @@ Try It Out
 
 To give it a spin, get chef 11.8 or greater try this:
 
-    git clone https://github.com/jkeiser/cheffish.git
+    git clone https://github.com/opscode/cheffish.git
     cd cheffish
     rake install
     cd ..
 
-    git clone https://github.com/jkeiser/chef-metal.git
+    git clone https://github.com/opscode/chef-metal.git
     cd chef-metal
     rake install
     
@@ -33,7 +33,7 @@ Chef Metal has two major abstractions: the machine resource, and provisioners.
 
 You declare what your machines do (recipes, tags, etc.) with the `machine` resource, the fundamental unit of Chef Metal.  You will typically declare `machine` resources in a separate, OS/priovisioning-independent file that declares the *topology* of your app--your machines and the recipes that will run on them.
 
-The machine resources from the example [myapp::small](https://github.com/jkeiser/chef-metal/blob/master/cookbooks/myapp/recipes/small.rb) are pretty straightforward.  Here's a copy/paste:
+The machine resources from the example [myapp::small](https://github.com/opscode/chef-metal/blob/master/cookbooks/myapp/recipes/small.rb) are pretty straightforward.  Here's a copy/paste:
 
 ```ruby
 machine 'mario' do
@@ -75,7 +75,7 @@ chef-zero comes with a provisioner for Vagrant, an abstraction that covers Virtu
 chef-client -z -o myapp::vagrant,myapp::linux,myapp::small
 ```
 
-The provisioner specification is in myapp::vagrant and myapp::linux [sample recipes](https://github.com/jkeiser/chef-metal/tree/master/cookbooks/myapp/recipes), copy/pasted here for your convenience:
+The provisioner specification is in myapp::vagrant and myapp::linux [sample recipes](https://github.com/opscode/chef-metal/tree/master/cookbooks/myapp/recipes), copy/pasted here for your convenience:
 
 ```ruby
 vagrant_cluster "#{ENV['HOME']}/machinetest"
@@ -90,7 +90,7 @@ end
 
 `vagrant_cluster` declares a directory where all the vagrant definitions will be stored, and uses `with_provisioner` internally to tell Chef Metal that this is the provisioner we want to use for machines.
 
-`vagrant_box` makes sure a particular vagrant box exists, and lets you specify `provisioner_options` for things like port forwarding, OS definitions, and any other vagrant-isms.  A more complicated vagrant box, with provisioner options, can be found in [myapp::windows](https://github.com/jkeiser/chef-metal/blob/master/cookbooks/myapp/recipes/windows.rb).
+`vagrant_box` makes sure a particular vagrant box exists, and lets you specify `provisioner_options` for things like port forwarding, OS definitions, and any other vagrant-isms.  A more complicated vagrant box, with provisioner options, can be found in [myapp::windows](https://github.com/opscode/chef-metal/blob/master/cookbooks/myapp/recipes/windows.rb).
 
 `with_chef_local_server` is a generic directive that creates a chef-zero server pointed at the given repository.  nodes, clients, data bags, and all data will be stored here on your provisioner machine if you do this.  You can use `with_chef_server` instead if you want to point at OSS, Hosted or Enterprise Chef, and if you don't specify a Chef server at all, it will use the one you are running chef-client against.
 
@@ -140,7 +140,7 @@ fog_key_pair 'me' do
 end
 ```
 
-`with_fog_ec2_provisioner` tells chef-metal to use the Fog provisioner against EC2.  If you specify your credentials in `~/.aws/config`, you don't *have* to specify anything else; it will use the Fog defaults.  You may pass a hash of parameters to `with_fog_ec2_provisioner` that is described [here](https://github.com/jkeiser/chef-metal/blob/master/lib/chef_metal/provisioner/fog_provisioner.rb#L21-L32).
+`with_fog_ec2_provisioner` tells chef-metal to use the Fog provisioner against EC2.  If you specify your credentials in `~/.aws/config`, you don't *have* to specify anything else; it will use the Fog defaults.  You may pass a hash of parameters to `with_fog_ec2_provisioner` that is described [here](https://github.com/opscode/chef-metal/blob/master/lib/chef_metal/provisioner/fog_provisioner.rb#L21-L32).
 
 `fog_key_pair` creates a new key pair (if the files do not already exist) and automatically tells the Provisioner to use it to bootstrap subsequent machines.  The private/public key pair will be automatically authorized to log on to the instance on first boot.
 
@@ -155,6 +155,6 @@ You will notice that we are still using `myapp::small` here.  Machine definition
 Bugs and The Plan
 -----------------
 
-It's early days.  *Please* submit bugs at https://github.com/jkeiser/chef-metal/issues, contact jkeiser on Twitter at @jkeiser2, email at jkeiser@opscode.com
+It's early days.  *Please* submit bugs at https://github.com/opscode/chef-metal/issues, contact jkeiser on Twitter at @jkeiser2, email at jkeiser@opscode.com
 
 If you are interested in the Plan for Chef Metal, you can peruse our [Trello board](https://trello.com/b/GcSzW0GM/chef-metal)!  Please add suggestions there, vote or comment on issues that are important to you, and feel free to contribute by picking up a card.  Chat with me (jkeiser@opscode.com) if you would like some context on how to go about implementing a card, or just go hog wild and submit a PR :)
