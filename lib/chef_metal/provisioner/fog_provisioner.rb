@@ -1,5 +1,6 @@
 require 'chef_metal/provisioner'
 require 'chef_metal/aws_credentials'
+require 'chef_metal/openstack_credentials'
 
 module ChefMetal
   class Provisioner
