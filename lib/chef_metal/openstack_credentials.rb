@@ -18,7 +18,7 @@ module ChefMetal
     end
 
     def load_yaml(credentials_yaml_file)
-      creds_file = YAML.load(File.expand_path(credentials_yaml_file))
+      creds_file = YAML.load_file(File.expand_path(credentials_yaml_file))
       creds_file.each do |section, creds|
         @credentials[section] = {
           :openstack_username => creds_file[section]['openstack_username'],
