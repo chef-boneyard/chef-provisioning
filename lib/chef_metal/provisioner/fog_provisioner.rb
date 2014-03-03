@@ -47,8 +47,6 @@ module ChefMetal
         when 'OpenStack'
           openstack_credentials = compute_options.delete(:openstack_credentials)
           if openstack_credentials
-            @openstack_credentials = openstack_credentials
-          else
             @openstack_credentials = ChefMetal::OpenstackCredentials.new
             @openstack_credentials.load_default
           end
@@ -265,7 +263,7 @@ module ChefMetal
           when 'DigitalOcean'
             compute_options[:digitalocean_client_id]
           when 'OpenStack'
-            compute_options[:openstack_username]
+            compute_options[:openstack_auth_url]
           else
             '???'
         end

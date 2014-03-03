@@ -18,6 +18,8 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         case new_resource.provisioner.compute_options[:provider]
         when 'DigitalOcean'
           compute.destroy_key_pair(@current_id)
+        when 'OpenStack'
+          compute.key_pairs.destroy(@current_id)
         else
           compute.key_pairs.delete(new_resource.name)
         end
@@ -45,6 +47,8 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
       new_fingerprint = case new_resource.provisioner.compute_options[:provider]
       when 'DigitalOcean'
         Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)
+      when 'OpenStack'
+        Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)
       else
         Cheffish::KeyFormatter.encode(desired_key, :format => :fingerprint)
       end
@@ -55,6 +59,8 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
             case new_resource.provisioner.compute_options[:provider]
             when 'DigitalOcean'
               compute.create_ssh_key(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
+            when 'OpenStack'
+              compute.create_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
             else
               compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
             end
@@ -72,6 +78,8 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         case new_resource.provisioner.compute_options[:provider]
         when 'DigitalOcean'
           compute.create_ssh_key(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
+        when 'OpenStack'
+          compute.create_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
         else
           compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
         end
@@ -130,6 +138,14 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         @current_fingerprint = current_key_pair ? compute.ssh_keys.get(@current_id).ssh_pub_key : nil
       else
         current_resource.action :delete
+      end
+    when 'OpenStack'
+      current_key_pair = compute.key_pairs.get(new_resource.name)
+      if current_key_pair
+        @current_id = current_key_pair.name
+        @current_fingerprint = current_key_pair ? compute.key_pairs.get(@current_id).public_key : nil
+      else
+        current_resource.action :delete  
       end
     else
       current_key_pair = compute.key_pairs.get(new_resource.name)
