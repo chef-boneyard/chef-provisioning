@@ -32,7 +32,8 @@ module ChefMetal
       #   - :ssh_timeout - the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
       def initialize(compute_options)
         @base_bootstrap_options = compute_options.delete(:base_bootstrap_options) || {}
-        if compute_options[:provider] == 'AWS'
+        case compute_options[:provider]
+        when 'AWS'
           aws_credentials = compute_options.delete(:aws_credentials)
           if aws_credentials
             @aws_credentials = aws_credentials
@@ -42,6 +43,18 @@ module ChefMetal
           end
           compute_options[:aws_access_key_id] ||= @aws_credentials.default[:access_key_id]
           compute_options[:aws_secret_access_key] ||= @aws_credentials.default[:secret_access_key]
+        when 'OpenStack'
+          openstack_credentials = compute_options.delete(:openstack_credentials)
+          if openstack_credentials
+            @openstack_credentials = openstack_credentials
+          else
+            @openstack_credentials = ChefMetal::OpenstackCredentials.new
+            @openstack_credentials.load_default
+          end
+          compute_options[:openstack_username] ||= @openstack_credentials.default[:openstack_username]
+          compute_options[:openstack_api_key] ||= @openstack_credentials.default[:openstack_api_key]
+          compute_options[:openstack_auth_url] ||= @openstack_credentials.default[:openstack_auth_url]
+          compute_options[:openstack_tenant] ||= @openstack_credentials.default[:openstack_tenant]
         end
         @key_pairs = {}
         @compute_options = compute_options
@@ -50,6 +63,7 @@ module ChefMetal
 
       attr_reader :compute_options
       attr_reader :aws_credentials
+      attr_reader :openstack_credentials
       attr_reader :key_pairs
 
       def current_base_bootstrap_options
@@ -249,6 +263,8 @@ module ChefMetal
             compute_options[:aws_access_key_id]
           when 'DigitalOcean'
             compute_options[:digitalocean_client_id]
+          when 'OpenStack'
+            compute_options[:openstack_username]
           else
             '???'
         end
