@@ -12,7 +12,12 @@ with_fog_provisioner :provider => 'OpenStack',
     :openstack_api_key => ENV['OS_PASSWORD'],
     :openstack_username => ENV['OS_USERNAME'],
     :openstack_auth_url => ENV['OS_AUTH_URL'],
-    :openstack_tenant => ENV['OS_TENANT_NAME']
+    :openstack_tenant => ENV['OS_TENANT_NAME'],
+    :base_bootstrap_options => {
+      :flavor_ref => 2,
+      :name => 'chef_test',
+      :image_ref => '920c7654-50ec-4a76-98d1-288c554a7ec3'
+    }
 
 fog_key_pair 'me' do
   private_key_path "#{openstack_testdir}/me"

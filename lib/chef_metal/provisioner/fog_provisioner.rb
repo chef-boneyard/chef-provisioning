@@ -33,6 +33,7 @@ module ChefMetal
       #   - :ssh_timeout - the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
       def initialize(compute_options)
         @base_bootstrap_options = compute_options.delete(:base_bootstrap_options) || {}
+        puts "BASE BOOTSTRAP OPTIONS:\n\n#{@base_bootstrap_options}\n\n"
         case compute_options[:provider]
         when 'AWS'
           aws_credentials = compute_options.delete(:aws_credentials)
@@ -50,6 +51,7 @@ module ChefMetal
             @openstack_credentials = ChefMetal::OpenstackCredentials.new
             @openstack_credentials.load_default
           end
+        puts "COMPUTE OPTIONS:\n\n#{compute_options}\n\n"
           compute_options[:openstack_username] ||= @openstack_credentials.default[:openstack_username]
           compute_options[:openstack_api_key] ||= @openstack_credentials.default[:openstack_api_key]
           compute_options[:openstack_auth_url] ||= @openstack_credentials.default[:openstack_auth_url]
