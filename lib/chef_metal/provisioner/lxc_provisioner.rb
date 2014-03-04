@@ -132,7 +132,7 @@ module ChefMetal
       def transport_for(node)
         require 'chef_metal/transport/lxc'
         provisioner_output = node['normal']['provisioner_output']
-        ChefMetal::Transport::LXCTransport.new(provisioner_output['name'])
+        ChefMetal::Transport::LXCTransport.new(provisioner_output['name'], lxc_path)
       end
     end
   end

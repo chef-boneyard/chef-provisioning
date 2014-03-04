@@ -12,18 +12,18 @@ module ChefMetal
         end
       end
 
-      attr_reader :name
-      attr_reader :options
+      attr_reader :name, :options, :lxc_path
 
       include Chef::Mixin::ShellOut
 
-      def initialize(name, options={})
+      def initialize(name, lxc_path, options={})
         @options = options
         @name = name
+        @lxc_path = lxc_path
       end
 
       def ct
-        @container ||= LXC::Container.new(name)
+        @container ||= LXC::Container.new(name, lxc_path)
       end
 
       def rootfs
