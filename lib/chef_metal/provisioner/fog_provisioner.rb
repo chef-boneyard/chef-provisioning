@@ -173,8 +173,18 @@ module ChefMetal
           end
 
           if server
+            @@ip_pool_lock = Mutex.new
             # Re-retrieve the server in a more malleable form and wait for it to be ready
             server = compute.servers.get(server.id)
+            if bootstrap_options[:floating_ip_pool]
+              Chef::Log.info 'Attaching IP from pool'
+              server.wait_for { ready? }
+              attach_ip_from_pool(server, bootstrap_options[:floating_ip_pool])
+            elsif bootstrap_options[:floating_ip]
+              Chef::Log.info 'Attaching given IP'
+              server.wait_for { ready? }
+              attach_ip(server, bootstrap_options[:floating_ip])
+            end
             provider.converge_by "machine #{node['name']} created as #{server.id} on #{provisioner_url}" do
             end
             # Wait for the machine to come up and for ssh to start listening
@@ -218,6 +228,31 @@ module ChefMetal
 
         # Create machine object for callers to use
         machine_for(node, server)
+      end
+
+      # Attach IP to machine from IP pool
+      # Code taken from kitchen-openstack driver
+      #    https://github.com/test-kitchen/kitchen-openstack/blob/master/lib/kitchen/driver/openstack.rb#L196-L207
+      def attach_ip_from_pool(server, pool)
+        @@ip_pool_lock.synchronize do
+          Chef::Log.info "Attaching floating IP from <#{pool}> pool"
+          free_addrs = compute.addresses.collect do |i|
+            i.ip if i.fixed_ip.nil? and i.instance_id.nil? and i.pool == pool
+          end.compact
+          if free_addrs.empty?
+            raise ActionFailed, "No available IPs in pool <#{pool}>"
+          end
+          attach_ip(server, free_addrs[0]) 
+        end
+      end
+
+      # Attach given IP to machine
+      # Code taken from kitchen-openstack driver
+      #    https://github.com/test-kitchen/kitchen-openstack/blob/master/lib/kitchen/driver/openstack.rb#L209-L213
+      def attach_ip(server, ip)
+        Chef::Log.info "Attaching floating IP <#{ip}>"
+        server.associate_address ip
+        (server.addresses['public'] ||= []) << { 'version' => 4, 'addr' => ip }
       end
 
       # Connect to machine without acquiring it
