@@ -15,7 +15,6 @@ with_fog_provisioner :provider => 'OpenStack',
     :openstack_tenant => ENV['OS_TENANT_NAME'],
     :base_bootstrap_options => {
       :flavor_ref => 2,
-      :name => 'chef_test',
       :image_ref => '920c7654-50ec-4a76-98d1-288c554a7ec3',
       :floating_ip => '75.55.110.189',
       :security_groups => %w{ ping-and-ssh }
