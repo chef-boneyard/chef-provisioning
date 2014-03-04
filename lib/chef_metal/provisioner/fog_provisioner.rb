@@ -179,11 +179,15 @@ module ChefMetal
             if bootstrap_options[:floating_ip_pool]
               Chef::Log.info 'Attaching IP from pool'
               server.wait_for { ready? }
-              attach_ip_from_pool(server, bootstrap_options[:floating_ip_pool])
+              provider.converge_by "attach floating IP from #{bootstrap_options[:floating_ip_pool]} pool" do
+                attach_ip_from_pool(server, bootstrap_options[:floating_ip_pool])
+              end
             elsif bootstrap_options[:floating_ip]
               Chef::Log.info 'Attaching given IP'
               server.wait_for { ready? }
-              attach_ip(server, bootstrap_options[:floating_ip])
+              provider.converge_by "attach floating IP #{bootstrap_options[:floating_ip]}" do
+                attach_ip(server, bootstrap_options[:floating_ip])
+              end
             end
             provider.converge_by "machine #{node['name']} created as #{server.id} on #{provisioner_url}" do
             end

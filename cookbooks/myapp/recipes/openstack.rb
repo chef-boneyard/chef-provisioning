@@ -17,7 +17,8 @@ with_fog_provisioner :provider => 'OpenStack',
       :flavor_ref => 2,
       :name => 'chef_test',
       :image_ref => '920c7654-50ec-4a76-98d1-288c554a7ec3',
-      :floating_ip => '75.55.110.189'
+      :floating_ip => '75.55.110.189',
+      :security_groups => %w{ ping-and-ssh }
     }
 
 fog_key_pair 'me' do
