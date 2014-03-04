@@ -46,7 +46,6 @@ module ChefMetal
           compute_options[:aws_access_key_id] ||= @aws_credentials.default[:access_key_id]
           compute_options[:aws_secret_access_key] ||= @aws_credentials.default[:secret_access_key]
         when 'OpenStack'
-          @base_bootstrap_options.merge(:name => provider.new_resource.name)
           openstack_credentials = compute_options.delete(:openstack_credentials)
           if openstack_credentials
             @openstack_credentials = ChefMetal::OpenstackCredentials.new
@@ -159,6 +158,7 @@ module ChefMetal
         if need_to_create
           # If the server does not exist, create it
           bootstrap_options = bootstrap_options_for(provider.new_resource, node)
+          bootstrap_options.merge(:name => provider.new_resource.name)
 
           start_time = Time.now
           timeout = option_for(node, :create_timeout)
