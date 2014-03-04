@@ -64,9 +64,11 @@ module ChefMetal
           end
         end
         unless ct.running?
-          ct.start
-          while ct.ip_addresses.empty?
-            sleep 1 # wait till dhcp ip allocation is done
+          provider.converge_by "start lxc container #{provisioner_output['name']}" do
+            ct.start
+            while ct.ip_addresses.empty?
+              sleep 1 # wait till dhcp ip allocation is done
+            end
           end
         end
 
