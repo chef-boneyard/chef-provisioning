@@ -1,11 +1,16 @@
 require 'chef_metal/transport'
 require 'lxc/extra'
 require 'chef/mixin/shell_out'
-require 'ostruct'
 
 module ChefMetal
   class Transport
     class LXCTransport < Transport
+
+      class LXCExecuteResult < Struct.new(:stdout, :stderr, :exitstatus)
+        def error!
+          raise "Error: code #{exitstatus}.\nSTDOUT:#{stdout}\nSTDERR:#{stderr}" if exitstatus != 0
+        end
+      end
 
       attr_reader :name
       attr_reader :options
@@ -31,19 +36,21 @@ module ChefMetal
 
       def execute(command)
         Chef::Log.info("Executing #{command} on #{name}")
-        res = nil
-        begin 
-          res = ct.execute do
+        res = ct.execute do
+                begin
                   out = shell_out(command)
-                  OpenStruct.new(:stdout=>out.stdout, :stderr=> out.stderr, :exitstatus => out.exitstatus)
+                  LXCExecuteResult.new(out.stdout,out.stderr, out.exitstatus)
+                rescue Exception => e
+                  LXCExecuteResult.new('', e.message, -1)
                 end
-        rescue Exception => e
-          res = OpenStruct.new(:stdout=>'', :stderr=>e.message, :exitstatus => -1)
-        end
+              end
         res
       end
 
       def forward_remote_port_to_local(remote_port, local_port)
+        warn 'Port forwarding is not implemented in lxc transport'
+        warn "You can do this on host using:"
+        warn "   'iptables -t nat -A PREROUTING -p tcp --dport #{remote_port} -j DNAT --to #{ct.ip_addresses.first}:#{local_port}'"
       end
 
       def read_file(path)
