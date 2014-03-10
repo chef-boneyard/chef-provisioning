@@ -120,10 +120,10 @@ chef-metal also comes with a [Fog](http://fog.io/) provisioner that handles prov
 Once your credentials are in, basic usage looks like this:
 
 ```
-chef-client -z -o myapp::vagrant,myapp::small
+chef-client -z -o myapp::ec2,myapp::small
 ```
 
-The provisioner definition in `myapp::vagrant` looks like this:
+The provisioner definition in `myapp::ec2` looks like this:
 
 ```ruby
 ec2testdir = File.expand_path('~/ec2test')
