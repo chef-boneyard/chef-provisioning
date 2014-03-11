@@ -377,7 +377,7 @@ module ChefMetal
       def create_ssh_transport(server)
         require 'chef_metal/transport/ssh'
 
-        ssh_options, options = ssh_options_for(server)
+        ssh_options = ssh_options_for(server)
         # If we're on AWS, the default is to use ubuntu, not root
         if compute_options[:provider] == 'AWS'
           username = compute_options[:ssh_username] || 'ubuntu'
