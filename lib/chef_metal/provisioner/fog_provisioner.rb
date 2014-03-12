@@ -126,10 +126,10 @@ module ChefMetal
           else
             need_to_create = false
             if !server.ready?
-              provider.converge_by "start machine #{node['name']} (#{server.id} on #{provisioner_url})" do
+              provider.perform_action "start machine #{node['name']} (#{server.id} on #{provisioner_url})" do
                 server.start
               end
-              provider.converge_by "wait for machine #{node['name']} (#{server.id} on #{provisioner_url}) to be ready" do
+              provider.perform_action "wait for machine #{node['name']} (#{server.id} on #{provisioner_url}) to be ready" do
                 wait_until_ready(server, option_for(node, :start_timeout))
               end
             else
@@ -150,7 +150,7 @@ module ChefMetal
           description = [ "create machine #{node['name']} on #{provisioner_url}" ]
           bootstrap_options.each_pair { |key,value| description << "    #{key}: #{value.inspect}" }
           server = nil
-          provider.converge_by description do
+          provider.perform_action description do
             server = compute.servers.create(bootstrap_options)
             provisioner_output['server_id'] = server.id
             # Save quickly in case something goes wrong
@@ -160,12 +160,12 @@ module ChefMetal
           if server
             # Re-retrieve the server in a more malleable form and wait for it to be ready
             server = compute.servers.get(server.id)
-            provider.converge_by "machine #{node['name']} created as #{server.id} on #{provisioner_url}" do
+            provider.perform_action "machine #{node['name']} created as #{server.id} on #{provisioner_url}" do
             end
             # Wait for the machine to come up and for ssh to start listening
             transport = nil
             _self = self
-            provider.converge_by "wait for machine #{node['name']} to boot" do
+            provider.perform_action "wait for machine #{node['name']} to boot" do
               server.wait_for(timeout - (Time.now - start_time)) do
                 if ready?
                   transport ||= _self.transport_for(server)
@@ -191,10 +191,10 @@ module ChefMetal
               # some other problem.  If this is the case, we restart the server
               # to unstick it.  Reboot covers a multitude of sins.
               Chef::Log.warn "Machine #{node['name']} (#{server.id} on #{provisioner_url}) was started but SSH did not come up.  Rebooting machine in an attempt to unstick it ..."
-              provider.converge_by "reboot machine #{node['name']} to try to unstick it" do
+              provider.perform_action "reboot machine #{node['name']} to try to unstick it" do
                 server.reboot
               end
-              provider.converge_by "wait for machine #{node['name']} to be ready after reboot" do
+              provider.perform_action "wait for machine #{node['name']} to be ready after reboot" do
                 wait_until_ready(server, option_for(node, :start_timeout))
               end
             end
@@ -213,7 +213,7 @@ module ChefMetal
       def delete_machine(provider, node)
         if node['normal']['provisioner_output'] && node['normal']['provisioner_output']['server_id']
           server = compute.servers.get(node['normal']['provisioner_output']['server_id'])
-          provider.converge_by "destroy machine #{node['name']} (#{server.id} at #{provisioner_url}" do
+          provider.perform_action "destroy machine #{node['name']} (#{server.id} at #{provisioner_url}" do
             server.destroy
           end
           convergence_strategy_for(node).delete_chef_objects(provider, node)
@@ -224,7 +224,7 @@ module ChefMetal
         # If the machine doesn't exist, we silently do nothing
         if node['normal']['provisioner_output'] && node['normal']['provisioner_output']['server_id']
           server = compute.servers.get(node['normal']['provisioner_output']['server_id'])
-          provider.converge_by "stop machine #{node['name']} (#{server.id} at #{provisioner_url}" do
+          provider.perform_action "stop machine #{node['name']} (#{server.id} at #{provisioner_url}" do
             server.stop
           end
         end

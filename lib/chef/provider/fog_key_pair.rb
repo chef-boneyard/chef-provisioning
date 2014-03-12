@@ -1,6 +1,9 @@
 require 'chef/provider/lwrp_base'
+require 'chef_metal/action_handler'
 
 class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
+
+  include ProviderActionHandler
 
   use_inline_resources
 

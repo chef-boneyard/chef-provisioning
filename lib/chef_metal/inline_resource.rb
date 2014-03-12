@@ -6,8 +6,8 @@ module ChefMetal
 
     attr_reader :provider
 
-    def run_context
-      provider.run_context
+    def recipe_context
+      provider.recipe_context
     end
 
     def method_missing(method_symbol, *args, &block)
@@ -16,20 +16,22 @@ module ChefMetal
       # Checks the new platform => short_name => resource mapping initially
       # then fall back to the older approach (Chef::Resource.const_get) for
       # backward compatibility
-      resource_class = Chef::Resource.resource_for_node(method_symbol, provider.run_context.node)
+      resource_class = Chef::Resource.resource_for_node(method_symbol,
+        provider.recipe_context.node)
 
       super unless resource_class
       raise ArgumentError, "You must supply a name when declaring a #{method_symbol} resource" unless args.size > 0
 
       # If we have a resource like this one, we want to steal its state
-      args << run_context
+      args << recipe_context
       resource = resource_class.new(*args)
       resource.source_line = caller[0]
       resource.load_prior_resource
-      resource.cookbook_name = provider.cookbook_name
+      resource.cookbook_name = provider.debug_name
       resource.recipe_name = @recipe_name
       resource.params = @params
-      # Determine whether this resource is being created in the context of an enclosing Provider
+      # Determine whether this resource is being created in the context of an
+      # enclosing Provider
       resource.enclosing_provider = provider.is_a?(Chef::Provider) ? provider : nil
       # Evaluate resource attribute DSL
       resource.instance_eval(&block) if block
@@ -38,13 +40,13 @@ module ChefMetal
       resource.after_created
 
       # Do NOT put this in the resource collection.
-      #run_context.resource_collection.insert(resource)
+      #recipe_context.resource_collection.insert(resource)
 
       # Instead, run the action directly.
       Array(resource.action).each do |action|
         resource.updated_by_last_action(false)
         run_provider_action(resource.provider_for_action(action))
-        provider.new_resource.updated_by_last_action(true) if resource.updated_by_last_action?
+        provider.update! if resource.updated_by_last_action?
       end
       resource
     end

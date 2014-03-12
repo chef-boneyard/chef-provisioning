@@ -1,8 +1,11 @@
 require 'chef/provider/lwrp_base'
 require 'chef/provider/chef_node'
 require 'openssl'
+require 'chef_metal/action_handler'
 
 class Chef::Provider::Machine < Chef::Provider::LWRPBase
+
+  include ProviderActionHandler
 
   use_inline_resources
 

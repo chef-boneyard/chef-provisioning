@@ -8,7 +8,6 @@ module ChefMetal
     class VagrantProvisioner < Provisioner
 
       include Chef::Mixin::ShellOut
-
       # Create a new vagrant provisioner.
       #
       # ## Parameters
@@ -102,7 +101,7 @@ module ChefMetal
 
         if current_status != 'running'
           # Run vagrant up if vm is not running
-          provider.converge_by "run vagrant up #{vm_name} (status was '#{current_status}')" do
+          provider.perform_action "run vagrant up #{vm_name} (status was '#{current_status}')" do
             result = shell_out("vagrant up #{vm_name}", :cwd => cluster_path, :timeout => up_timeout)
             if result.exitstatus != 0
               raise "vagrant up #{vm_name} failed!\nSTDOUT:#{result.stdout}\nSTDERR:#{result.stderr}"
@@ -111,7 +110,7 @@ module ChefMetal
           end
         elsif vm_file.updated_by_last_action?
           # Run vagrant reload if vm is running and vm file changed
-          provider.converge_by "run vagrant reload #{vm_name}" do
+          provider.perform_action "run vagrant reload #{vm_name}" do
             result = shell_out("vagrant reload #{vm_name}", :cwd => cluster_path, :timeout => up_timeout)
             if result.exitstatus != 0
               raise "vagrant reload #{vm_name} failed!\nSTDOUT:#{result.stdout}\nSTDERR:#{result.stderr}"
@@ -138,7 +137,7 @@ module ChefMetal
         vm_name = provisioner_output['vm_name'] || node['name']
         current_status = vagrant_status(vm_name)
         if current_status != 'not created'
-          provider.converge_by "run vagrant destroy -f #{vm_name} (status was '#{current_status}')" do
+          provider.perform_action "run vagrant destroy -f #{vm_name} (status was '#{current_status}')" do
             result = shell_out("vagrant destroy -f #{vm_name}", :cwd => cluster_path)
             if result.exitstatus != 0
               raise "vagrant destroy failed!\nSTDOUT:#{result.stdout}\nSTDERR:#{result.stderr}"
@@ -165,7 +164,7 @@ module ChefMetal
         vm_name = provisioner_output['vm_name'] || node['name']
         current_status = vagrant_status(vm_name)
         if current_status == 'running'
-          provider.converge_by "run vagrant halt #{vm_name} (status was '#{current_status}')" do
+          provider.perform_action "run vagrant halt #{vm_name} (status was '#{current_status}')" do
             result = shell_out("vagrant halt #{vm_name}", :cwd => cluster_path)
             if result.exitstatus != 0
               raise "vagrant halt failed!\nSTDOUT:#{result.stdout}\nSTDERR:#{result.stderr}"
