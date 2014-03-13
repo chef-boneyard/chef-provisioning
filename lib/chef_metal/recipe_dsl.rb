@@ -1,5 +1,4 @@
 require 'chef_metal'
-require 'chef_metal/provisioner/fog_provisioner'
 
 class Chef
   class Recipe
