@@ -14,10 +14,10 @@ with_fog_provisioner :provider => 'OpenStack',
     :openstack_auth_url => ENV['OS_AUTH_URL'],
     :openstack_tenant => ENV['OS_TENANT_NAME'],
     :base_bootstrap_options => {
-      :flavor_ref => 2,
-      :image_ref => '920c7654-50ec-4a76-98d1-288c554a7ec3',
-      :floating_ip => '75.55.110.189',
-      :security_groups => %w{ ping-and-ssh }
+      :flavor_ref => ENV['OS_FLAVOR_REF'],
+      :image_ref => ENV['OS_IMAGE_REF'],
+      :floating_ip => ENV['OS_FLOATING_IP'],
+      :security_groups => ENV['OS_SEC_GROUP']
     }
 
 fog_key_pair 'me' do
@@ -25,7 +25,7 @@ fog_key_pair 'me' do
   public_key_path "#{openstack_testdir}/me.pub"
 end
 
-with_provisioner_options :flavor_ref => 2
+with_provisioner_options :flavor_ref => ENV['OS_FLAVOR_REF']
 
 machine 'chef_test' do
   recipe 'apt'
