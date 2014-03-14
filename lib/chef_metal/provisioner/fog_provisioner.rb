@@ -64,6 +64,20 @@ module ChefMetal
         result
       end
 
+      # Inflate a provisioner from node information; we don't want to force the
+      # driver to figure out what the provisioner really needs, since it varies
+      # from provisioner to provisioner.
+      #
+      # ## Parameters
+      # node - node to inflate the provisioner for
+      #
+      # returns a VagrantProvisioner
+      def self.inflate(node)
+        # TODO, get the options from the node
+        options = {}
+        self.new(options)
+      end
+
       # Acquire a machine, generally by provisioning it.  Returns a Machine
       # object pointing at the machine, allowing useful actions like setup,
       # converge, execute, file and directory.  The Machine object will have a

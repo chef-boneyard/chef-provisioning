@@ -48,7 +48,17 @@ module ChefMetal
   def self.enclosing_provisioner_options
     @@enclosing_provisioner_options
   end
+
   def self.enclosing_provisioner_options=(provisioner_options)
     @@enclosing_provisioner_options = provisioner_options
+  end
+
+  @@registered_provisioners = {}
+  def self.add_registered_provisioner(name, provisioner)
+    @@registered_provisioners[name] = provisioner
+  end
+
+  def self.registered_provisioners(name)
+    @@registered_provisioners[name]
   end
 end
