@@ -1,12 +1,10 @@
 require 'chef/provider/lwrp_base'
 require 'chef/mixin/shell_out'
-require 'chef_metal/action_handler'
 
 class Chef::Provider::VagrantBox < Chef::Provider::LWRPBase
 
   use_inline_resources
 
-  include ProviderActionHandler
   include Chef::Mixin::ShellOut
 
   def whyrun_supported?
