@@ -58,7 +58,11 @@ module ChefMetal
     @@registered_provisioners[name] = provisioner
   end
 
-  def self.registered_provisioners(name)
-    @@registered_provisioners[name]
+  def self.provisioner_for_node(node)
+    provisioner_url = node['normal']['provisioner_output']['provisioner_url']
+    cluster_type = provisioner_url.gsub(/\:\/\/.*$/,"")
+    require "chef_metal/provisioner_init/#{cluster_type}_init"
+    provisioner_class = @@registered_provisioners[cluster_type]
+    provisioner_class.inflate(node)
   end
 end
