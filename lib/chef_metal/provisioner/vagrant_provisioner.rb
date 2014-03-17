@@ -221,11 +221,15 @@ module ChefMetal
 
       def convergence_strategy_for(node)
         if vagrant_option(node, 'vm.guest').to_s == 'windows'
-          require 'chef_metal/convergence_strategy/install_msi'
-          ChefMetal::ConvergenceStrategy::InstallMsi.new
+          @windows_convergence_strategy ||= begin
+            require 'chef_metal/convergence_strategy/install_msi'
+            ChefMetal::ConvergenceStrategy::InstallMsi.new
+          end
         else
-          require 'chef_metal/convergence_strategy/install_cached'
-          ChefMetal::ConvergenceStrategy::InstallCached.new
+          @unix_convergence_strategy ||= begin
+            require 'chef_metal/convergence_strategy/install_cached'
+            ChefMetal::ConvergenceStrategy::InstallCached.new
+          end
         end
       end
 
