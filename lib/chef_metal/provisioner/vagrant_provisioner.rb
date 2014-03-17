@@ -224,8 +224,8 @@ module ChefMetal
           require 'chef_metal/convergence_strategy/install_msi'
           ChefMetal::ConvergenceStrategy::InstallMsi.new
         else
-          require 'chef_metal/convergence_strategy/install_sh'
-          ChefMetal::ConvergenceStrategy::InstallSh.new
+          require 'chef_metal/convergence_strategy/install_cached'
+          ChefMetal::ConvergenceStrategy::InstallCached.new
         end
       end
 

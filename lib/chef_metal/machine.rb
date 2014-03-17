@@ -75,5 +75,15 @@ module ChefMetal
     def disconnect
       raise "disconnect not overridden on #{self.class}"
     end
+
+    # TODO get rid of the provider attribute, that is ridiculous
+    # Detect the OS on the machine (assumes the machine is up)
+    # Returns a triplet:
+    #   platform, platform_version, machine_architecture = machine.detect_os(provider)
+    # This triplet is suitable for passing to the Chef metadata API:
+    # https://www.opscode.com/chef/metadata?p=#{platform}&pv=#{platform_version}&m=#{machine_architecture}
+    def detect_os(provider)
+      raise "detect_os not overridden on #{self.class}"
+    end
   end
 end
