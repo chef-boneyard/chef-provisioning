@@ -274,7 +274,7 @@ module ChefMetal
       end
 
       def symbolize_keys(options)
-        options.inject({}) { |result,key,value| result[key.to_sym] = value; result }
+        options.inject({}) { |result,(key,value)| result[key.to_sym] = value; result }
       end
 
       def server_for(node)
