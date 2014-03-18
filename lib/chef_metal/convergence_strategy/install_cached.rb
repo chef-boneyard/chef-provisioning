@@ -2,6 +2,7 @@ require 'chef_metal/convergence_strategy/precreate_chef_objects'
 require 'pathname'
 require 'fileutils'
 require 'digest/md5'
+require 'thread'
 
 module ChefMetal
   class ConvergenceStrategy
@@ -15,6 +16,7 @@ module ChefMetal
         @package_cache = {}
         @tmp_dir = '/tmp'
         FileUtils.mkdir_p(@package_cache_path)
+        @download_lock = Mutex.new
       end
 
       def setup_convergence(provider, machine, machine_resource)
@@ -41,21 +43,27 @@ module ChefMetal
         @package_cache[platform] ||= {}
         @package_cache[platform][platform_version] ||= {}
         @package_cache[platform][platform_version][machine_architecture] ||= begin
-          #
-          # Grab metadata
-          #
-          metadata = download_metadata_for_platform(machine, platform, platform_version, machine_architecture)
+          @download_lock.synchronize do
+            if @package_cache[platform][platform_version][machine_architecture]
+              @package_cache[platform][platform_version][machine_architecture]
+            else
+              #
+              # Grab metadata
+              #
+              metadata = download_metadata_for_platform(machine, platform, platform_version, machine_architecture)
 
-          # Download actual package desired by metadata
-          package_file = "#{@package_cache_path}/#{URI(metadata['url']).path.split('/')[-1]}"
+              # Download actual package desired by metadata
+              package_file = "#{@package_cache_path}/#{URI(metadata['url']).path.split('/')[-1]}"
 
-          ChefMetal.inline_resource(provider) do
-            remote_file package_file do
-              source metadata['url']
-              checksum metadata['sha256']
+              ChefMetal.inline_resource(provider) do
+                remote_file package_file do
+                  source metadata['url']
+                  checksum metadata['sha256']
+                end
+              end
+              package_file
             end
           end
-          package_file
         end
       end
 
