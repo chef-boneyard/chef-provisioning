@@ -213,7 +213,7 @@ module ChefMetal
       def delete_machine(provider, node)
         if node['normal']['provisioner_output'] && node['normal']['provisioner_output']['server_id']
           server = compute.servers.get(node['normal']['provisioner_output']['server_id'])
-          provider.converge_by "destroy machine #{node['name']} (#{server.id} at #{provisioner_url}" do
+          provider.converge_by "destroy machine #{node['name']} (#{node['normal']['provisioner_output']['server_id']} at #{provisioner_url})" do
             server.destroy
           end
           convergence_strategy_for(node).delete_chef_objects(provider, node)
@@ -345,11 +345,15 @@ module ChefMetal
 
       def convergence_strategy_for(node)
         if node['normal']['provisioner_options'] && node['normal']['provisioner_options']['is_windows']
-          require 'chef_metal/convergence_strategy/install_msi'
-          ChefMetal::ConvergenceStrategy::InstallMsi.new
+          @windows_convergence_strategy ||= begin
+            require 'chef_metal/convergence_strategy/install_msi'
+            ChefMetal::ConvergenceStrategy::InstallMsi.new
+          end
         else
-          require 'chef_metal/convergence_strategy/install_cached'
-          ChefMetal::ConvergenceStrategy::InstallCached.new
+          @unix_convergence_strategy ||= begin
+            require 'chef_metal/convergence_strategy/install_cached'
+            ChefMetal::ConvergenceStrategy::InstallCached.new
+          end
         end
       end
 
