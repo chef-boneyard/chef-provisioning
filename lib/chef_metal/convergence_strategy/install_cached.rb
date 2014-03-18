@@ -16,7 +16,7 @@ module ChefMetal
         @package_cache = {}
         @tmp_dir = '/tmp'
         FileUtils.mkdir_p(@package_cache_path)
-        @download_lock = Mutex.new
+        @package_cache_lock = Mutex.new
       end
 
       def setup_convergence(provider, machine, machine_resource)
@@ -78,15 +78,22 @@ module ChefMetal
         metadata_url << "&p=#{platform}"
         metadata_url << "&pv=#{platform_version}"
         metadata_url << "&m=#{machine_architecture}"
+        use_ssl = true
 
         # solaris 9 lacks openssl, solaris 10 lacks recent enough credentials - your base O/S is completely insecure, please upgrade
         if platform == 'solaris2' && (platform_version == '5.9' || platform_version == '5.10')
           metadata_url.sub(/^https/, 'http')
+          use_ssl = false
         end
 
         # Download and parse the metadata
         Chef::Log.debug("Getting metadata for machine #{machine.node['name']}: #{metadata_url}")
-        metadata_str = Net::HTTP.get(URI(metadata_url))
+        uri = URI(metadata_url)
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = use_ssl
+        request = Net::HTTP::Get.new(uri.request_uri)
+        response = http.request(request)
+        metadata_str = response.body
         metadata = {}
         metadata_str.each_line do |line|
           key, value = line.split("\t", 2)
