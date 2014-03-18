@@ -39,32 +39,33 @@ module ChefMetal
       private
 
       def download_package_for_platform(provider, machine, platform, platform_version, machine_architecture)
-        @package_cache ||= {}
-        @package_cache[platform] ||= {}
-        @package_cache[platform][platform_version] ||= {}
-        @package_cache[platform][platform_version][machine_architecture] ||= begin
-          @download_lock.synchronize do
-            if @package_cache[platform][platform_version][machine_architecture]
-              @package_cache[platform][platform_version][machine_architecture]
-            else
-              #
-              # Grab metadata
-              #
-              metadata = download_metadata_for_platform(machine, platform, platform_version, machine_architecture)
+        @package_cache_lock.synchronize do
+          @package_cache ||= {}
+          @package_cache[platform] ||= {}
+          @package_cache[platform][platform_version] ||= {}
+          @package_cache[platform][platform_version][machine_architecture] ||= { :lock => Mutex.new }
+        end
+        @package_cache[platform][platform_version][machine_architecture][:lock].synchronize do
+          if !@package_cache[platform][platform_version][machine_architecture][:file]
+            #
+            # Grab metadata
+            #
+            metadata = download_metadata_for_platform(machine, platform, platform_version, machine_architecture)
 
-              # Download actual package desired by metadata
-              package_file = "#{@package_cache_path}/#{URI(metadata['url']).path.split('/')[-1]}"
+            # Download actual package desired by metadata
+            package_file = "#{@package_cache_path}/#{URI(metadata['url']).path.split('/')[-1]}"
 
-              ChefMetal.inline_resource(provider) do
-                remote_file package_file do
-                  source metadata['url']
-                  checksum metadata['sha256']
-                end
+            ChefMetal.inline_resource(provider) do
+              remote_file package_file do
+                source metadata['url']
+                checksum metadata['sha256']
               end
-              package_file
             end
+
+            @package_cache[platform][platform_version][machine_architecture][:file] = package_file
           end
         end
+        @package_cache[platform][platform_version][machine_architecture][:file]
       end
 
       def download_metadata_for_platform(machine, platform, platform_version, machine_architecture)
