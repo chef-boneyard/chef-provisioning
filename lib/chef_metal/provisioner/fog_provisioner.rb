@@ -393,7 +393,7 @@ module ChefMetal
           options[:prefix] = 'sudo '
         end
         remote_host = nil
-        if compute_options[:private_ip]
+        if compute_options[:use_private_ip_for_ssh]
           remote_host = server.private_ip_address
         else
           remote_host = server.public_ip_address
