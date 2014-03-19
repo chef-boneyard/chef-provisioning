@@ -68,7 +68,7 @@ module ChefMetal
           end
 
         else
-  
+
           # If the server does not already have keys, create them and upload
           Cheffish.inline_resource(provider) do
             private_key 'in_memory' do
@@ -109,13 +109,6 @@ module ChefMetal
       def create_chef_objects(provider, machine, machine_resource, public_key)
         # Save the node and create the client keys and client.
         ChefMetal.inline_resource(provider) do
-          # Create node
-          # TODO strip automatic attributes first so we don't race with "current state"
-          chef_node machine.node['name'] do
-            chef_server machine_resource.chef_server
-            raw_json machine.node
-          end
-
           # Create client
           chef_client machine.node['name'] do
             chef_server machine_resource.chef_server
@@ -125,6 +118,15 @@ module ChefMetal
             admin machine_resource.admin
             validator machine_resource.validator
           end
+
+          # Create node
+          # TODO strip automatic attributes first so we don't race with "current state"
+          chef_node machine.node['name'] do
+            chef_server machine_resource.chef_server
+            raw_json machine.node
+          end
+
+
         end
       end
 

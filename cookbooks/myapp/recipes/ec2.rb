@@ -1,4 +1,4 @@
-include_recipe 'chef-metal'
+require 'chef_metal/fog'
 
 ec2testdir = File.expand_path('~/ec2test')
 

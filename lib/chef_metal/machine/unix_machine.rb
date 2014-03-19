@@ -6,6 +6,8 @@ module ChefMetal
     class UnixMachine < BasicMachine
       def initialize(node, transport, convergence_strategy)
         super
+
+        @tmp_dir = '/tmp'
       end
 
       # Options include:
@@ -103,6 +105,170 @@ module ChefMetal
       def dirname_on_machine(path)
         path.split('/')[0..-2].join('/')
       end
+    end
+
+    def detect_os(provider)
+      #
+      # Use detect.sh to detect the operating system of the remote machine
+      #
+      # TODO do this in terms of commands rather than writing a shell script
+      self.write_file(provider, "#{@tmp_dir}/detect.sh", detect_sh)
+      detected = self.execute_always("sh #{@tmp_dir}/detect.sh")
+      if detected.exitstatus != 0
+        raise "detect.sh exited with nonzero exit status: #{detected.exitstatus}"
+      end
+      platform = nil
+      platform_version = nil
+      machine_architecture = nil
+      detected.stdout.each_line do |line|
+        if line =~ /^PLATFORM: (.+)/
+          platform = $1
+        elsif line =~ /^PLATFORM_VERSION: (.+)/
+          platform_version = $1
+        elsif line =~ /^MACHINE: (.+)/
+          machine_architecture = $1
+        end
+      end
+      [ platform, platform_version, machine_architecture ]
+    end
+
+    private
+
+    def detect_sh
+      result = <<EOM
+prerelease="false"
+
+project="chef"
+
+report_bug() {
+echo "Please file a bug report at http://tickets.opscode.com"
+echo "Project: Chef"
+echo "Component: Packages"
+echo "Label: Omnibus"
+echo "Version: $version"
+echo " "
+echo "Please detail your operating system type, version and any other relevant details"
+}
+
+
+machine=`uname -m`
+os=`uname -s`
+
+# Retrieve Platform and Platform Version
+if test -f "/etc/lsb-release" && grep -q DISTRIB_ID /etc/lsb-release; then
+platform=`grep DISTRIB_ID /etc/lsb-release | cut -d "=" -f 2 | tr '[A-Z]' '[a-z]'`
+platform_version=`grep DISTRIB_RELEASE /etc/lsb-release | cut -d "=" -f 2`
+elif test -f "/etc/debian_version"; then
+platform="debian"
+platform_version=`cat /etc/debian_version`
+elif test -f "/etc/redhat-release"; then
+platform=`sed 's/^\(.\+\) release.*/\1/' /etc/redhat-release | tr '[A-Z]' '[a-z]'`
+platform_version=`sed 's/^.\+ release \([.0-9]\+\).*/\1/' /etc/redhat-release`
+
+# If /etc/redhat-release exists, we act like RHEL by default
+if test "$platform" = "fedora"; then
+# Change platform version for use below.
+platform_version="6.0"
+fi
+platform="el"
+elif test -f "/etc/system-release"; then
+platform=`sed 's/^\(.\+\) release.\+/\1/' /etc/system-release | tr '[A-Z]' '[a-z]'`
+platform_version=`sed 's/^.\+ release \([.0-9]\+\).*/\1/' /etc/system-release | tr '[A-Z]' '[a-z]'`
+# amazon is built off of fedora, so act like RHEL
+if test "$platform" = "amazon linux ami"; then
+platform="el"
+platform_version="6.0"
+fi
+# Apple OS X
+elif test -f "/usr/bin/sw_vers"; then
+platform="mac_os_x"
+# Matching the tab-space with sed is error-prone
+platform_version=`sw_vers | awk '/^ProductVersion:/ { print $2 }'`
+
+major_version=`echo $platform_version | cut -d. -f1,2`
+case $major_version in
+"10.6") platform_version="10.6" ;;
+"10.7"|"10.8"|"10.9") platform_version="10.7" ;;
+*) echo "No builds for platform: $major_version"
+ report_bug
+ exit 1
+ ;;
+esac
+
+# x86_64 Apple hardware often runs 32-bit kernels (see OHAI-63)
+x86_64=`sysctl -n hw.optional.x86_64`
+if test $x86_64 -eq 1; then
+machine="x86_64"
+fi
+elif test -f "/etc/release"; then
+platform="solaris2"
+machine=`/usr/bin/uname -p`
+platform_version=`/usr/bin/uname -r`
+elif test -f "/etc/SuSE-release"; then
+if grep -q 'Enterprise' /etc/SuSE-release;
+then
+platform="sles"
+platform_version=`awk '/^VERSION/ {V = $3}; /^PATCHLEVEL/ {P = $3}; END {print V "." P}' /etc/SuSE-release`
+else
+platform="suse"
+platform_version=`awk '/^VERSION =/ { print $3 }' /etc/SuSE-release`
+fi
+elif test "x$os" = "xFreeBSD"; then
+platform="freebsd"
+platform_version=`uname -r | sed 's/-.*//'`
+elif test "x$os" = "xAIX"; then
+platform="aix"
+platform_version=`uname -v`
+machine="ppc"
+fi
+
+if test "x$platform" = "x"; then
+echo "Unable to determine platform version!"
+report_bug
+exit 1
+fi
+
+# Mangle $platform_version to pull the correct build
+# for various platforms
+major_version=`echo $platform_version | cut -d. -f1`
+case $platform in
+"el")
+platform_version=$major_version
+;;
+"debian")
+case $major_version in
+"5") platform_version="6";;
+"6") platform_version="6";;
+"7") platform_version="6";;
+esac
+;;
+"freebsd")
+platform_version=$major_version
+;;
+"sles")
+platform_version=$major_version
+;;
+"suse")
+platform_version=$major_version
+;;
+esac
+
+if test "x$platform_version" = "x"; then
+echo "Unable to determine platform version!"
+report_bug
+exit 1
+fi
+
+if test "x$platform" = "xsolaris2"; then
+# hack up the path on Solaris to find wget
+PATH=/usr/sfw/bin:$PATH
+export PATH
+fi
+
+echo "PLATFORM: $platform"
+echo "PLATFORM_VERSION: $platform_version"
+echo "MACHINE: $machine"
+EOM
     end
   end
 end
