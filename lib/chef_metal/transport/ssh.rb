@@ -23,6 +23,14 @@ module ChefMetal
         stderr = ''
         exitstatus = nil
         channel = session.open_channel do |channel|
+          channel.request_pty do |chan, success|
+            if success
+              puts "pty obtained."
+            else
+              puts "pty not obtained"
+            end
+          end
+
           channel.exec("#{options[:prefix]}#{command}") do |ch, success|
             raise "could not execute command: #{command.inspect}" unless success
 
