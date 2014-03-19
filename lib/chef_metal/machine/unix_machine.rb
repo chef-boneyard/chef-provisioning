@@ -162,8 +162,8 @@ elif test -f "/etc/debian_version"; then
 platform="debian"
 platform_version=`cat /etc/debian_version`
 elif test -f "/etc/redhat-release"; then
-platform=`sed 's/^\(.\+\) release.*/\1/' /etc/redhat-release | tr '[A-Z]' '[a-z]'`
-platform_version=`sed 's/^.\+ release \([.0-9]\+\).*/\1/' /etc/redhat-release`
+platform=`sed 's/^\\(.\\+\\) release.*/\\1/' /etc/redhat-release | tr '[A-Z]' '[a-z]'`
+platform_version=`sed 's/^.\\+ release \\([.0-9]\\+\\).*/\\1/' /etc/redhat-release`
 
 # If /etc/redhat-release exists, we act like RHEL by default
 if test "$platform" = "fedora"; then
@@ -172,8 +172,8 @@ platform_version="6.0"
 fi
 platform="el"
 elif test -f "/etc/system-release"; then
-platform=`sed 's/^\(.\+\) release.\+/\1/' /etc/system-release | tr '[A-Z]' '[a-z]'`
-platform_version=`sed 's/^.\+ release \([.0-9]\+\).*/\1/' /etc/system-release | tr '[A-Z]' '[a-z]'`
+platform=`sed 's/^\\(.\\+\\) release.\\+/\\1/' /etc/system-release | tr '[A-Z]' '[a-z]'`
+platform_version=`sed 's/^.\\+ release \\([.0-9]\\+\\).*/\\1/' /etc/system-release | tr '[A-Z]' '[a-z]'`
 # amazon is built off of fedora, so act like RHEL
 if test "$platform" = "amazon linux ami"; then
 platform="el"
