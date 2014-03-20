@@ -100,7 +100,6 @@ module ChefMetal
       #
       def acquire_machine(provider, node)
         # Set up the modified node data
-        provisioner_options = node['normal']['provisioner_options'] || {}
         provisioner_output = node['normal']['provisioner_output'] || {
           'provisioner_url' => provisioner_url
         }
