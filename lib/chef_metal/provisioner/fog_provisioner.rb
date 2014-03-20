@@ -1,5 +1,6 @@
 require 'chef_metal/provisioner'
 require 'chef_metal/aws_credentials'
+require 'chef_metal/openstack_credentials'
 
 module ChefMetal
   class Provisioner
@@ -32,7 +33,9 @@ module ChefMetal
       #   - :ssh_timeout - the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
       def initialize(compute_options)
         @base_bootstrap_options = compute_options.delete(:base_bootstrap_options) || {}
-        if compute_options[:provider] == 'AWS'
+        
+        case compute_options[:provider]
+        when 'AWS'
           aws_credentials = compute_options.delete(:aws_credentials)
           if aws_credentials
             @aws_credentials = aws_credentials
@@ -42,6 +45,17 @@ module ChefMetal
           end
           compute_options[:aws_access_key_id] ||= @aws_credentials.default[:access_key_id]
           compute_options[:aws_secret_access_key] ||= @aws_credentials.default[:secret_access_key]
+        when 'OpenStack'
+          openstack_credentials = compute_options.delete(:openstack_credentials)
+          if openstack_credentials
+            @openstack_credentials = ChefMetal::OpenstackCredentials.new
+            @openstack_credentials.load_default
+          end
+
+          compute_options[:openstack_username] ||= @openstack_credentials.default[:openstack_username]
+          compute_options[:openstack_api_key] ||= @openstack_credentials.default[:openstack_api_key]
+          compute_options[:openstack_auth_url] ||= @openstack_credentials.default[:openstack_auth_url]
+          compute_options[:openstack_tenant] ||= @openstack_credentials.default[:openstack_tenant]
         end
         @key_pairs = {}
         @compute_options = compute_options
@@ -50,6 +64,7 @@ module ChefMetal
 
       attr_reader :compute_options
       attr_reader :aws_credentials
+      attr_reader :openstack_credentials
       attr_reader :key_pairs
 
       def current_base_bootstrap_options
@@ -143,6 +158,7 @@ module ChefMetal
         if need_to_create
           # If the server does not exist, create it
           bootstrap_options = bootstrap_options_for(provider.new_resource, node)
+          bootstrap_options.merge(:name => provider.new_resource.name)
 
           start_time = Time.now
           timeout = option_for(node, :create_timeout)
@@ -158,8 +174,22 @@ module ChefMetal
           end
 
           if server
+            @@ip_pool_lock = Mutex.new
             # Re-retrieve the server in a more malleable form and wait for it to be ready
             server = compute.servers.get(server.id)
+            if bootstrap_options[:floating_ip_pool]
+              Chef::Log.info 'Attaching IP from pool'
+              server.wait_for { ready? }
+              provider.converge_by "attach floating IP from #{bootstrap_options[:floating_ip_pool]} pool" do
+                attach_ip_from_pool(server, bootstrap_options[:floating_ip_pool])
+              end
+            elsif bootstrap_options[:floating_ip]
+              Chef::Log.info 'Attaching given IP'
+              server.wait_for { ready? }
+              provider.converge_by "attach floating IP #{bootstrap_options[:floating_ip]}" do
+                attach_ip(server, bootstrap_options[:floating_ip])
+              end
+            end
             provider.converge_by "machine #{node['name']} created as #{server.id} on #{provisioner_url}" do
             end
             # Wait for the machine to come up and for ssh to start listening
@@ -203,6 +233,31 @@ module ChefMetal
 
         # Create machine object for callers to use
         machine_for(node, server)
+      end
+
+      # Attach IP to machine from IP pool
+      # Code taken from kitchen-openstack driver
+      #    https://github.com/test-kitchen/kitchen-openstack/blob/master/lib/kitchen/driver/openstack.rb#L196-L207
+      def attach_ip_from_pool(server, pool)
+        @@ip_pool_lock.synchronize do
+          Chef::Log.info "Attaching floating IP from <#{pool}> pool"
+          free_addrs = compute.addresses.collect do |i|
+            i.ip if i.fixed_ip.nil? and i.instance_id.nil? and i.pool == pool
+          end.compact
+          if free_addrs.empty?
+            raise ActionFailed, "No available IPs in pool <#{pool}>"
+          end
+          attach_ip(server, free_addrs[0]) 
+        end
+      end
+
+      # Attach given IP to machine
+      # Code taken from kitchen-openstack driver
+      #    https://github.com/test-kitchen/kitchen-openstack/blob/master/lib/kitchen/driver/openstack.rb#L209-L213
+      def attach_ip(server, ip)
+        Chef::Log.info "Attaching floating IP <#{ip}>"
+        server.associate_address ip
+        (server.addresses['public'] ||= []) << { 'version' => 4, 'addr' => ip }
       end
 
       # Connect to machine without acquiring it
@@ -249,6 +304,8 @@ module ChefMetal
             compute_options[:aws_access_key_id]
           when 'DigitalOcean'
             compute_options[:digitalocean_client_id]
+          when 'OpenStack'
+            compute_options[:openstack_auth_url]
           else
             '???'
         end
@@ -392,7 +449,8 @@ module ChefMetal
         if compute_options[:sudo] || (!compute_options.has_key?(:sudo) && username != 'root')
           options[:prefix] = 'sudo '
         end
-        ChefMetal::Transport::SSH.new(server.public_ip_address, username, ssh_options, options)
+        host = server.public_ip_address ? server.public_ip_address : server.private_ip_address
+        ChefMetal::Transport::SSH.new(host, username, ssh_options, options)
       end
 
       def wait_until_ready(server, timeout)
