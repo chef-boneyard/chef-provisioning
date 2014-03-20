@@ -23,8 +23,10 @@ module ChefMetal
         stderr = ''
         exitstatus = nil
         channel = session.open_channel do |channel|
-          channel.request_pty do |chan, success|
-            raise "Could not obtain pty" unless success
+          if options[:ssh_pty_enable]
+            channel.request_pty do |chan, success|
+              raise "Could not obtain pty" unless success
+            end
           end
 
           channel.exec("#{options[:prefix]}#{command}") do |ch, success|
