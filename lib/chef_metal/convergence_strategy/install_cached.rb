@@ -88,7 +88,7 @@ module ChefMetal
 
         # Download and parse the metadata
         Chef::Log.debug("Getting metadata for machine #{machine.node['name']}: #{metadata_url}")
-        uri = URI(metadata_url)
+        uri = URI(URI.escape(metadata_url))
         http = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl = use_ssl
         request = Net::HTTP::Get.new(uri.request_uri)

@@ -392,6 +392,9 @@ module ChefMetal
         if compute_options[:sudo] || (!compute_options.has_key?(:sudo) && username != 'root')
           options[:prefix] = 'sudo '
         end
+        if compute_options[:ssh_pty_enable]
+          options[:ssh_pty_enable]
+        end
         ChefMetal::Transport::SSH.new(server.public_ip_address, username, ssh_options, options)
       end
 
