@@ -150,6 +150,18 @@ To pass options like ami, you can say something like this:
 with_provisioner_options :image_id => 'ami-5ee70037'
 ```
 
+If you need to pass bootstrapping options on a per-machine basis, you can do that as well by doing something like the following:
+
+```ruby
+machine "Ubuntu_64bit" do
+  action :create
+  provisioner_options 'bootstrap_options' => {
+    'image_id' => 'ami-59a4a230',
+    'flavor_id' => 't1.micro'
+  }
+end
+```
+
 You will notice that we are still using `myapp::small` here.  Machine definitions are generally provisioner-independent.  This is an important feature that allows you to spin up your clusters in different places to create staging, test or miniature dev environments.
 
 Bugs and The Plan
