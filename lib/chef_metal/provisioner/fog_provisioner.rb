@@ -89,7 +89,7 @@ module ChefMetal
       #        Example bootstrap_options for ec2:
       #           :image_id =>'ami-311f2b45',
       #           :flavor_id =>'t1.micro',
-      #           :key_name => 'pey-pair-name'
+      #           :key_name => 'key-pair-name'
       #
       #        node['normal']['provisioner_output'] will be populated with information
       #        about the created machine.  For vagrant, it is a hash with this
