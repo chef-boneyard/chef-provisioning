@@ -185,7 +185,7 @@ module ChefMetal
 
             # If there is some other error, we just wait patiently for SSH
             begin
-              server.wait_for(option_for(node, :ssh_timeout)) { transport.available? }
+              server.wait_for(option_for(node, :start_timeout)) { transport.available? }
             rescue Fog::Errors::TimeoutError
               # Sometimes (on EC2) the machine comes up but gets stuck or has
               # some other problem.  If this is the case, we restart the server
