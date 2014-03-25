@@ -12,7 +12,8 @@ module ChefMetal
       DEFAULT_OPTIONS = {
         :create_timeout => 600,
         :start_timeout => 600,
-        :ssh_timeout => 20
+        :ssh_timeout => 20,
+        :private_ip_fallback => false
       }
 
       # Create a new vagrant provisioner.
@@ -30,6 +31,7 @@ module ChefMetal
       #   - :create_timeout - the time to wait for the instance to boot to ssh (defaults to 600)
       #   - :start_timeout - the time to wait for the instance to start (defaults to 600)
       #   - :ssh_timeout - the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
+      #   - :private_ip_fallback - use private IP address when no public one exists (defaults to false)
       def initialize(compute_options)
         @base_bootstrap_options = compute_options.delete(:base_bootstrap_options) || {}
         if compute_options[:provider] == 'AWS'
@@ -392,7 +394,12 @@ module ChefMetal
         if compute_options[:sudo] || (!compute_options.has_key?(:sudo) && username != 'root')
           options[:prefix] = 'sudo '
         end
-        ChefMetal::Transport::SSH.new(server.public_ip_address, username, ssh_options, options)
+
+        ip_address = server.public_ip_address
+        ip_address ||= server.private_ip_address if compute_options[:private_ip_fallback]
+
+        raise "No IP address for server" unless ip_address
+        ChefMetal::Transport::SSH.new(ip_address, username, ssh_options, options)
       end
 
       def wait_until_ready(server, timeout)
