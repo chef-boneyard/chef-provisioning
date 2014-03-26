@@ -392,7 +392,14 @@ module ChefMetal
         if compute_options[:sudo] || (!compute_options.has_key?(:sudo) && username != 'root')
           options[:prefix] = 'sudo '
         end
-        ChefMetal::Transport::SSH.new(server.public_ip_address, username, ssh_options, options)
+        remote_host = nil
+        if compute_options[:use_private_ip_for_ssh]
+          remote_host = server.private_ip_address
+        else
+          remote_host = server.public_ip_address
+        end
+
+        ChefMetal::Transport::SSH.new(remote_host, username, ssh_options, options)
       end
 
       def wait_until_ready(server, timeout)
