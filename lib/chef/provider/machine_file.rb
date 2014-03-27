@@ -1,10 +1,7 @@
 require 'chef/provider/lwrp_base'
 require 'cheffish/cheffish_server_api'
-require 'chef_metal/action_handler'
 
 class Chef::Provider::MachineFile < Chef::Provider::LWRPBase
-
-  include ProviderActionHandler
 
   use_inline_resources
 
