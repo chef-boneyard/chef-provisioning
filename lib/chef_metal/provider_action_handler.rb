@@ -16,34 +16,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This is the generic action handler
+# This is included in the metal provisioners to proxy from generic requests needed
+# to specific provider actions
 module ChefMetal
-  class ActionHandler
+  module ProviderActionHandler
+    # Implementation of ActionHandler interface
 
-    # This should be the run context
     def recipe_context
-      raise ActionFailed, "ActionHandler behavior requires a recipe_context"
+      self.run_context
     end
 
-    # This should be repaced with whatever records the update; by default it
-    # essentially does nothing here.
     def updated!
-      @updated = true
+      self.new_resource.updated_by_last_action(true)
     end
 
-    # This should perform the actual action (e.g., converge) if there is an
-    # action that needs to be done.
-    #
-    # By default, it will simply execute the block as so:
     def perform_action(description, &block)
-      puts description
-      block.call
+      self.converge_by(description, &block)
     end
 
-    # This is the name that will show up in the output, so should be something
-    # like a cookbook or driver name
     def debug_name
-      raise ActionFailed, "ActionHandler behavior requires a debug_name"
+      self.cookbook_name
     end
   end
 end

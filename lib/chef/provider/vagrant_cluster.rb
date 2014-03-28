@@ -1,9 +1,9 @@
 require 'chef/provider/lwrp_base'
-require 'chef_metal/action_handler'
+require 'chef_metal/provider_action_handler'
 
 class Chef::Provider::VagrantCluster < Chef::Provider::LWRPBase
 
-  include ProviderActionHandler
+  include ChefMetal::ProviderActionHandler
 
   use_inline_resources
 

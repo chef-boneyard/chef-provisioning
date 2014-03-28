@@ -1,13 +1,13 @@
 module ChefMetal
   class InlineResource
-    def initialize(provider)
-      @provider = provider
+    def initialize(action_handler)
+      @action_handler = action_handler
     end
 
-    attr_reader :provider
+    attr_reader :action_handler
 
     def recipe_context
-      provider.recipe_context
+      action_handler.recipe_context
     end
 
     def method_missing(method_symbol, *args, &block)
@@ -17,7 +17,7 @@ module ChefMetal
       # then fall back to the older approach (Chef::Resource.const_get) for
       # backward compatibility
       resource_class = Chef::Resource.resource_for_node(method_symbol,
-        provider.recipe_context.node)
+        action_handler.recipe_context.node)
 
       super unless resource_class
       raise ArgumentError, "You must supply a name when declaring a #{method_symbol} resource" unless args.size > 0
@@ -27,12 +27,13 @@ module ChefMetal
       resource = resource_class.new(*args)
       resource.source_line = caller[0]
       resource.load_prior_resource
-      resource.cookbook_name = provider.debug_name
+      resource.cookbook_name = action_handler.debug_name
       resource.recipe_name = @recipe_name
       resource.params = @params
       # Determine whether this resource is being created in the context of an
       # enclosing Provider
-      resource.enclosing_provider = provider.is_a?(Chef::Provider) ? provider : nil
+      resource.enclosing_provider =
+        action_handler.is_a?(Chef::Provider) ? action_handler : nil
       # Evaluate resource attribute DSL
       resource.instance_eval(&block) if block
 
@@ -46,7 +47,7 @@ module ChefMetal
       Array(resource.action).each do |action|
         resource.updated_by_last_action(false)
         run_provider_action(resource.provider_for_action(action))
-        provider.update! if resource.updated_by_last_action?
+        action_handler.updated! if resource.updated_by_last_action?
       end
       resource
     end
