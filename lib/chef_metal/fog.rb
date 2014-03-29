@@ -12,5 +12,9 @@ class Chef
     def with_fog_ec2_provisioner(options = {}, &block)
       with_fog_provisioner({ :provider => 'AWS' }.merge(options), &block)
     end
+
+    def with_fog_openstack_provisioner(options = {}, &block)
+      with_fog_provisioner({ :provider => 'OpenStack' }.merge(options), &block)
+    end
   end
 end
