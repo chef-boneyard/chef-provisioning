@@ -463,6 +463,9 @@ module ChefMetal
           raise "Server #{server.id} has no private or public IP address!"
         end
 
+        #Enable pty by default
+        options[:ssh_pty_enable] = true
+
         ChefMetal::Transport::SSH.new(remote_host, username, ssh_options, options)
       end
 
