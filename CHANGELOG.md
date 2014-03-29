@@ -1,6 +1,6 @@
 # Chef Metal Changelog
 
-## 0.4 (3/29/2004)
+## 0.4 (3/29/2014)
 
 * EC2: Make it possible for multiple IAM users to converge chef-metal on the same account
 * Openstack: Openstack support via the Fog driver! (@cstewart87)
