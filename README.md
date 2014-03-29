@@ -92,7 +92,16 @@ end
 
 `vagrant_box` makes sure a particular vagrant box exists, and lets you specify `provisioner_options` for things like port forwarding, OS definitions, and any other vagrant-isms.  A more complicated vagrant box, with provisioner options, can be found in [myapp::windows](https://github.com/opscode/chef-metal/blob/master/cookbooks/myapp/recipes/windows.rb).
 
-`with_chef_local_server` is a generic directive that creates a chef-zero server pointed at the given repository.  nodes, clients, data bags, and all data will be stored here on your provisioner machine if you do this.  You can use `with_chef_server` instead if you want to point at OSS, Hosted or Enterprise Chef, and if you don't specify a Chef server at all, it will use the one you are running chef-client against.
+`with_chef_local_server` is a generic directive that creates a chef-zero server pointed at the given repository.  nodes, clients, data bags, and all data will be stored here on your provisioner machine if you do this.  You can use `with_chef_server` instead if you want to point at OSS, Hosted or Enterprise Chef, and if you don't specify a Chef server at all, it will use the one you are running chef-client against. Keep in mind when using `with_chef_server` and running `chef-client -z` on your workstation that you will also need to set the client name and signing key for the chef server. If you've already got knife.rb set up, then something like this will correctly create a client for the chef server on instance using your knife.rb configuration:
+
+```ruby
+require 'chef/config'
+
+with_chef_server "https://chef-server.example.org", {
+  :client_name => Chef::Config[:node_name],
+  :signing_key_filename => Chef::Config[:client_key]
+}
+```
 
 Typically, you declare these in separate files from your machine resources.  Chef Metal picks up the provisioners you have declared, and uses them to instantiate the machines you request.  The actual machine definitions, in this case, are in `myapp::small`, and are generic--you could use them against EC2 as well:
 
