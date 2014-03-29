@@ -1,6 +1,7 @@
 require 'chef_metal/provisioner'
 require 'chef_metal/aws_credentials'
 require 'chef_metal/openstack_credentials'
+require 'chef_metal/version'
 
 module ChefMetal
   class Provisioner
@@ -118,11 +119,20 @@ module ChefMetal
       def acquire_machine(provider, node)
         # Set up the modified node data
         provisioner_output = node['normal']['provisioner_output'] || {
-          'provisioner_url' => provisioner_url
+          'provisioner_url' => provisioner_url,
+          'provisioner_version' => ChefMetal::VERSION,
+          'creator' => aws_login_info[1]
         }
 
         if provisioner_output['provisioner_url'] != provisioner_url
-          raise "Switching providers for a machine is not currently supported!  Use machine :destroy and then re-create the machine on the new provider."
+          if (provisioner_output['provisioner_version'].to_f <= 0.3) && provisioner_output['provisioner_url'].start_with?('fog:AWS:') && compute_options[:provider] == 'AWS'
+            Chef::Log.warn "The upgrade from chef-metal 0.3 to 0.4 changed the provisioner URL format!  Metal will assume you are in fact using the same AWS account, and modify the provisioner URL to match."
+            provisioner_output['provisioner_url'] = provisioner_url
+            provisioner_output['provisioner_version'] ||= ChefMetal::VERSION
+            provisioner_output['creator'] ||= aws_login_info[1]
+          else
+            raise "Switching providers for a machine is not currently supported!  Use machine :destroy and then re-create the machine on the new provider."
+          end
         end
 
         node['normal']['provisioner_output'] = provisioner_output
@@ -280,7 +290,7 @@ module ChefMetal
         # If the machine doesn't exist, we silently do nothing
         if node['normal']['provisioner_output'] && node['normal']['provisioner_output']['server_id']
           server = compute.servers.get(node['normal']['provisioner_output']['server_id'])
-          provider.converge_by "stop machine #{node['name']} (#{server.id} at #{provisioner_url}" do
+          provider.converge_by "stop machine #{node['name']} (#{server.id} at #{provisioner_url})" do
             server.stop
           end
         end
@@ -302,7 +312,7 @@ module ChefMetal
       def provisioner_url
         provider_identifier = case compute_options[:provider]
           when 'AWS'
-            compute_options[:aws_access_key_id]
+            aws_login_info[0]
           when 'DigitalOcean'
             compute_options[:digitalocean_client_id]
           when 'OpenStack'
@@ -328,6 +338,32 @@ module ChefMetal
           compute_options[key]
         else
           DEFAULT_OPTIONS[key]
+        end
+      end
+
+      # Returns [ Account ID, User ]
+      # Account ID is the 12 digit identifier on your Manage Account page in AWS Console.  It is used as part of all ARNs identifying resources.
+      # User is an identifier like "root" or "user/username" or "federated-user/username"
+      def aws_login_info
+        @aws_login_info ||= begin
+          iam = Fog::AWS::IAM.new(:aws_access_key_id => compute_options[:aws_access_key_id], :aws_secret_access_key => compute_options[:aws_secret_access_key])
+          arn = begin
+            # TODO it would be nice if Fog let you do this normally ...
+            iam.send(:request, {
+              'Action'    => 'GetUser',
+              :parser     => Fog::Parsers::AWS::IAM::GetUser.new
+            }).body['User']['Arn']
+          rescue Fog::AWS::IAM::Error
+            # TODO Someone tell me there is a better way to find out your current
+            # user ID than this!  This is what happens when you use an IAM user
+            # with default privileges.
+            if $!.message =~ /AccessDenied.+(arn:aws:iam::\d+:\S+)/
+              arn = $1
+            else
+              raise
+            end
+          end
+          arn.split(':')[4..5]
         end
       end
 
