@@ -21,11 +21,14 @@ module ChefMetal
       require 'inifile'
       inifile = IniFile.load(File.expand_path(credentials_ini_file))
       inifile.each_section do |section|
-        @credentials[section] = {
-          :access_key_id => inifile[section]['aws_access_key_id'],
-          :secret_access_key => inifile[section]['aws_secret_access_key'],
-          :region => inifile[section]['region']
-        }
+        if section =~ /^\s*profile\s+(.+)$/ || section =~ /^\s*(default)\s*/
+          profile = $1.strip
+          @credentials[profile] = {
+            :access_key_id => inifile[section]['aws_access_key_id'],
+            :secret_access_key => inifile[section]['aws_secret_access_key'],
+            :region => inifile[section]['region']
+          }
+        end
       end
     end
 
