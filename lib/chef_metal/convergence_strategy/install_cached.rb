@@ -75,9 +75,9 @@ module ChefMetal
         metadata_url="https://www.opscode.com/chef/metadata"
         metadata_url << "?v=#{@chef_version}"
         metadata_url << "&prerelease=#{@prerelease ? 'true' : 'false'}"
-        metadata_url << "&p=#{platform}"
-        metadata_url << "&pv=#{platform_version}"
-        metadata_url << "&m=#{machine_architecture}"
+        metadata_url << "&p=#{platform.strip}"
+        metadata_url << "&pv=#{platform_version.strip}"
+        metadata_url << "&m=#{machine_architecture.strip}"
         use_ssl = true
 
         # solaris 9 lacks openssl, solaris 10 lacks recent enough credentials - your base O/S is completely insecure, please upgrade
