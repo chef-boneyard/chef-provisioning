@@ -71,7 +71,7 @@ module ChefMetal
       # ## Parameters
       # node - node to inflate the provisioner for
       #
-      # returns a VagrantProvisioner
+      # returns a FogProvisioner
       def self.inflate(node)
         # TODO, get the options from the node
         options = {}
@@ -85,7 +85,10 @@ module ChefMetal
       # different from the original node object).
       #
       # ## Parameters
-      # provider - the provider object that is calling this method.
+      # action_handler - the action_handler object that is calling this method; this
+      #        is generally a provider, but could be anything that can support the
+      #        interface (i.e., in the case of the test kitchen metal driver for
+      #        acquiring and destroying VMs).
       # node - node object (deserialized json) representing this machine.  If
       #        the node has a provisioner_options hash in it, these will be used
       #        instead of options provided by the provisioner.  TODO compare and
@@ -112,7 +115,7 @@ module ChefMetal
       #           -- provisioner_url: fog:<relevant_fog_options>
       #           -- server_id: the ID of the server so it can be found again
       #
-      def acquire_machine(provider, node)
+      def acquire_machine(action_handler, node)
         # Set up the modified node data
         provisioner_options = node['normal']['provisioner_options'] || {}
         provisioner_output = node['normal']['provisioner_output'] || {
@@ -140,10 +143,10 @@ module ChefMetal
           else
             need_to_create = false
             if !server.ready?
-              provider.perform_action "start machine #{node['name']} (#{server.id} on #{provisioner_url})" do
+              action_handler.perform_action "start machine #{node['name']} (#{server.id} on #{provisioner_url})" do
                 server.start
               end
-              provider.perform_action "wait for machine #{node['name']} (#{server.id} on #{provisioner_url}) to be ready" do
+              action_handler.perform_action "wait for machine #{node['name']} (#{server.id} on #{provisioner_url}) to be ready" do
                 wait_until_ready(server, option_for(node, :start_timeout))
               end
             else
@@ -156,7 +159,7 @@ module ChefMetal
 
         if need_to_create
           # If the server does not exist, create it
-          bootstrap_options = bootstrap_options_for(provider.new_resource, node)
+          bootstrap_options = bootstrap_options_for(action_handler.new_resource, node)
 
           start_time = Time.now
           timeout = option_for(node, :create_timeout)
@@ -164,22 +167,22 @@ module ChefMetal
           description = [ "create machine #{node['name']} on #{provisioner_url}" ]
           bootstrap_options.each_pair { |key,value| description << "    #{key}: #{value.inspect}" }
           server = nil
-          provider.perform_action description do
+          action_handler.perform_action description do
             server = compute.servers.create(bootstrap_options)
             provisioner_output['server_id'] = server.id
             # Save quickly in case something goes wrong
-            save_node(provider, node, provider.new_resource.chef_server)
+            save_node(action_handler, node, action_handler.new_resource.chef_server)
           end
 
           if server
             # Re-retrieve the server in a more malleable form and wait for it to be ready
             server = compute.servers.get(server.id)
-            provider.perform_action "machine #{node['name']} created as #{server.id} on #{provisioner_url}" do
+            action_handler.perform_action "machine #{node['name']} created as #{server.id} on #{provisioner_url}" do
             end
             # Wait for the machine to come up and for ssh to start listening
             transport = nil
             _self = self
-            provider.perform_action "wait for machine #{node['name']} to boot" do
+            action_handler.perform_action "wait for machine #{node['name']} to boot" do
               server.wait_for(timeout - (Time.now - start_time)) do
                 if ready?
                   transport ||= _self.transport_for(server)
@@ -205,10 +208,10 @@ module ChefMetal
               # some other problem.  If this is the case, we restart the server
               # to unstick it.  Reboot covers a multitude of sins.
               Chef::Log.warn "Machine #{node['name']} (#{server.id} on #{provisioner_url}) was started but SSH did not come up.  Rebooting machine in an attempt to unstick it ..."
-              provider.perform_action "reboot machine #{node['name']} to try to unstick it" do
+              action_handler.perform_action "reboot machine #{node['name']} to try to unstick it" do
                 server.reboot
               end
-              provider.perform_action "wait for machine #{node['name']} to be ready after reboot" do
+              action_handler.perform_action "wait for machine #{node['name']} to be ready after reboot" do
                 wait_until_ready(server, option_for(node, :start_timeout))
               end
             end
@@ -224,21 +227,21 @@ module ChefMetal
         machine_for(node)
       end
 
-      def delete_machine(provider, node)
+      def delete_machine(action_handler, node)
         if node['normal']['provisioner_output'] && node['normal']['provisioner_output']['server_id']
           server = compute.servers.get(node['normal']['provisioner_output']['server_id'])
-          provider.perform_action "destroy machine #{node['name']} (#{server.id} at #{provisioner_url}" do
+          action_handler.perform_action "destroy machine #{node['name']} (#{server.id} at #{provisioner_url}" do
             server.destroy
           end
-          convergence_strategy_for(node).delete_chef_objects(provider, node)
+          convergence_strategy_for(node).delete_chef_objects(action_handler, node)
         end
       end
 
-      def stop_machine(provider, node)
+      def stop_machine(action_handler, node)
         # If the machine doesn't exist, we silently do nothing
         if node['normal']['provisioner_output'] && node['normal']['provisioner_output']['server_id']
           server = compute.servers.get(node['normal']['provisioner_output']['server_id'])
-          provider.perform_action "stop machine #{node['name']} (#{server.id} at #{provisioner_url}" do
+          action_handler.perform_action "stop machine #{node['name']} (#{server.id} at #{provisioner_url}" do
             server.stop
           end
         end
