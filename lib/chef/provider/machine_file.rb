@@ -27,6 +27,13 @@ class Chef::Provider::MachineFile < Chef::Provider::LWRPBase
     else
       machine.upload_file(self, new_resource.local_path, new_resource.path)
     end
+
+    attributes = {}
+    %w(owner group mode).each do |attribute|
+      attributes[attribute.to_sym] = new_resource.send(attribute.to_sym) if new_resource.send(attribute.to_sym)
+    end
+
+    machine.set_attributes(provider, new_resource.path, attributes)
   end
 
   action :download do
