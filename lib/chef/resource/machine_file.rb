@@ -22,7 +22,7 @@ class Chef::Resource::MachineFile < Chef::Resource::LWRPBase
 
   attribute :owner, :kind_of => String
   attribute :group, :kind_of => String
-  attribute :mode, :kind_of => [String, Fixnum]
+  attribute :mode, :kind_of => String
 
   attribute :chef_server, :kind_of => Hash
   attribute :provisioner, :kind_of => ChefMetal::Provisioner

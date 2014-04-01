@@ -65,9 +65,9 @@ module ChefMetal
       def set_attributes(provider, path, attributes)
         if attributes[:mode] || attributes[:owner] || attributes[:group]
           current_attributes = get_attributes(path)
-          if attributes[:mode] && current_attributes[:mode] != attributes[:mode]
-            provider.converge_by "change mode of #{path} on #{node['name']} from #{current_attributes[:mode].to_i(8)} to #{attributes[:mode].to_i(8)}" do
-              transport.execute("chmod #{attributes[:mode].to_i(8)} #{path}").error!
+          if attributes[:mode] && current_attributes[:mode].to_i != attributes[:mode].to_i
+            provider.converge_by "change mode of #{path} on #{node['name']} from #{current_attributes[:mode].to_i} to #{attributes[:mode].to_i}" do
+              transport.execute("chmod #{attributes[:mode].to_i} #{path}").error!
             end
           end
           if attributes[:owner] && current_attributes[:owner] != attributes[:owner]
@@ -85,21 +85,15 @@ module ChefMetal
 
       # Get file attributes { :mode, :owner, :group }
       def get_attributes(path)
-        file_info = transport.execute("ls -ld #{path}").stdout.split(/\s+/)
+        file_info = transport.execute("stat -c '%a %U %G %n' #{path}").stdout.split(/\s+/)
         if file_info.size <= 1
           raise "#{path} does not exist in set_attributes()"
         end
         result = {
-          :mode => 0,
-          :owner => file_info[2],
-          :group => file_info[3]
+          :mode => file_info[0],
+          :owner => file_info[1],
+          :group => file_info[2]
         }
-        attribute_string = file_info[0]
-        0.upto(attribute_string.length-1).each do |i|
-          result[:mode] <<= 1
-          result[:mode] += (attribute_string[i] == '-' ? 0 : 1)
-        end
-        result
       end
 
       def dirname_on_machine(path)
