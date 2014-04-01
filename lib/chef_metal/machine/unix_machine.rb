@@ -64,7 +64,7 @@ module ChefMetal
       # Set file attributes { mode, :owner, :group }
       def set_attributes(provider, path, attributes)
         if attributes[:mode] || attributes[:owner] || attributes[:group]
-          current_attributes = get_file_attributes(path)
+          current_attributes = get_attributes(path)
           if attributes[:mode] && current_attributes[:mode] != attributes[:mode]
             provider.converge_by "change mode of #{path} on #{node['name']} from #{current_attributes[:mode].to_i(8)} to #{attributes[:mode].to_i(8)}" do
               transport.execute("chmod #{attributes[:mode].to_i(8)} #{path}").error!
