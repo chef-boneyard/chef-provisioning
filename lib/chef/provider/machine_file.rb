@@ -37,7 +37,7 @@ class Chef::Provider::MachineFile < Chef::Provider::LWRPBase
   end
 
   action :download do
-    machine.download_file(provider, new_resource.path, new_resource.local_path)
+    machine.download_file(self, new_resource.path, new_resource.local_path)
   end
 
   action :delete do
