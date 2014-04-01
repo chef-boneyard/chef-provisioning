@@ -20,6 +20,10 @@ class Chef::Resource::MachineFile < Chef::Resource::LWRPBase
   attribute :local_path, :kind_of => String
   attribute :content
 
+  attribute :owner, :kind_of => String
+  attribute :group, :kind_of => String
+  attribute :mode, :kind_of => String
+
   attribute :chef_server, :kind_of => Hash
   attribute :provisioner, :kind_of => ChefMetal::Provisioner
 end

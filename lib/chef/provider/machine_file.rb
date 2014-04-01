@@ -27,6 +27,13 @@ class Chef::Provider::MachineFile < Chef::Provider::LWRPBase
     else
       machine.upload_file(self, new_resource.local_path, new_resource.path)
     end
+
+    attributes = {}
+    attributes[:group] = new_resource.group if new_resource.group
+    attributes[:owner] = new_resource.owner if new_resource.owner
+    attributes[:mode] = new_resource.mode if new_resource.mode
+
+    machine.set_attributes(self, new_resource.path, attributes)
   end
 
   action :download do
