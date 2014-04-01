@@ -33,7 +33,7 @@ class Chef::Provider::MachineFile < Chef::Provider::LWRPBase
       attributes[attribute.to_sym] = new_resource.send(attribute.to_sym) if new_resource.send(attribute.to_sym)
     end
 
-    machine.set_attributes(provider, new_resource.path, attributes)
+    machine.set_attributes(self, new_resource.path, attributes)
   end
 
   action :download do
