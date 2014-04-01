@@ -29,9 +29,9 @@ class Chef::Provider::MachineFile < Chef::Provider::LWRPBase
     end
 
     attributes = {}
-    %w(owner group mode).each do |attribute|
-      attributes[attribute.to_sym] = new_resource.send(attribute.to_sym) if new_resource.send(attribute.to_sym)
-    end
+    attributes[:group] = new_resource.group if new_resource.group
+    attributes[:owner] = new_resource.owner if new_resource.owner
+    attributes[:mode] = new_resource.mode if new_resource.mode
 
     machine.set_attributes(self, new_resource.path, attributes)
   end
