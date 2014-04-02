@@ -72,11 +72,8 @@ module ChefMetal
       # node - node to inflate the provisioner for
       #
       # returns a FogProvisioner
-      def self.inflate(node)
-        # TODO, get the options from the node
-        options = {}
-        self.new(options)
-      end
+      # TODO: def self.inflate(node)
+      # right now, not implemented, will raise error from base class until overridden
 
       # Acquire a machine, generally by provisioning it.  Returns a Machine
       # object pointing at the machine, allowing useful actions like setup,
@@ -87,8 +84,9 @@ module ChefMetal
       # ## Parameters
       # action_handler - the action_handler object that is calling this method; this
       #        is generally a provider, but could be anything that can support the
-      #        interface (i.e., in the case of the test kitchen metal driver for
-      #        acquiring and destroying VMs).
+      #        ChefMetal::ActionHandler interface (i.e., in the case of the test
+      #        kitchen metal driver for acquiring and destroying VMs; see the base
+      #        class for what needs providing).
       # node - node object (deserialized json) representing this machine.  If
       #        the node has a provisioner_options hash in it, these will be used
       #        instead of options provided by the provisioner.  TODO compare and
