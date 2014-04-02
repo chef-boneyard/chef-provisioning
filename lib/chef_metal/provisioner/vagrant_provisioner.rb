@@ -29,7 +29,7 @@ module ChefMetal
       # returns a VagrantProvisioner
       def self.inflate(node)
         node_url = node['normal']['provisioner_output']['provisioner_url']
-        cluster_path = node_url.split(':', 2)[1].sub(/^\/*/, "")
+        cluster_path = node_url.split(':', 2)[1].sub(/^\/\//, "")
         self.new(cluster_path)
       end
 
