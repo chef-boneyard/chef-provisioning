@@ -16,20 +16,20 @@ module ChefMetal
       attr_reader :install_sh_url
       attr_reader :install_sh_path
 
-      def setup_convergence(provider, machine, machine_resource)
+      def setup_convergence(action_handler, machine, machine_resource)
         super
 
         # Install chef-client.  TODO check and update version if not latest / not desired
         if machine.execute_always('chef-client -v').exitstatus != 0
           # TODO ssh verification of install.sh before running arbtrary code would be nice?
           @@install_sh_cache[install_sh_url] ||= Net::HTTP.get(URI(install_sh_url))
-          machine.write_file(provider, install_sh_path, @@install_sh_cache[install_sh_url], :ensure_dir => true)
-          machine.execute(provider, "bash #{install_sh_path}")
+          machine.write_file(action_handler, install_sh_path, @@install_sh_cache[install_sh_url], :ensure_dir => true)
+          machine.execute(action_handler, "bash #{install_sh_path}")
         end
       end
 
-      def converge(provider, machine)
-        machine.execute(provider, 'chef-client')
+      def converge(action_handler, machine)
+        machine.execute(action_handler, 'chef-client')
       end
     end
   end

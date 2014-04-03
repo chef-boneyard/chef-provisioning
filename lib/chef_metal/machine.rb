@@ -9,16 +9,16 @@ module ChefMetal
     # Sets up everything necessary for convergence to happen on the machine.
     # The node MUST be saved as part of this procedure.  Other than that,
     # nothing is guaranteed except that converge() will work when this is done.
-    def setup_convergence(provider)
+    def setup_convergence(action_handler)
       raise "setup_convergence not overridden on #{self.class}"
     end
 
-    def converge(provider)
+    def converge(action_handler)
       raise "converge not overridden on #{self.class}"
     end
 
 
-    def execute(provider, command)
+    def execute(action_handler, command)
       raise "execute not overridden on #{self.class}"
     end
 
@@ -26,24 +26,24 @@ module ChefMetal
       raise "read_file not overridden on #{self.class}"
     end
 
-    def download_file(provider, path, local_path)
+    def download_file(action_handler, path, local_path)
       raise "read_file not overridden on #{self.class}"
     end
 
-    def write_file(provider, path, content)
+    def write_file(action_handler, path, content)
       raise "write_file not overridden on #{self.class}"
     end
 
-    def upload_file(provider, local_path, path)
+    def upload_file(action_handler, local_path, path)
       raise "write_file not overridden on #{self.class}"
     end
 
-    def create_dir(provider, path)
+    def create_dir(action_handler, path)
       raise "create_dir not overridden on #{self.class}"
     end
 
     # Delete file
-    def delete_file(provider, path)
+    def delete_file(action_handler, path)
       raise "delete_file not overridden on #{self.class}"
     end
 
@@ -58,7 +58,7 @@ module ChefMetal
     end
 
     # Set file attributes { mode, :owner, :group }
-    def set_attributes(provider, path, attributes)
+    def set_attributes(action_handler, path, attributes)
       raise "set_attributes not overridden on #{self.class}"
     end
 
@@ -76,13 +76,13 @@ module ChefMetal
       raise "disconnect not overridden on #{self.class}"
     end
 
-    # TODO get rid of the provider attribute, that is ridiculous
+    # TODO get rid of the action_handler attribute, that is ridiculous
     # Detect the OS on the machine (assumes the machine is up)
     # Returns a triplet:
-    #   platform, platform_version, machine_architecture = machine.detect_os(provider)
+    #   platform, platform_version, machine_architecture = machine.detect_os(action_handler)
     # This triplet is suitable for passing to the Chef metadata API:
     # https://www.opscode.com/chef/metadata?p=#{platform}&pv=#{platform_version}&m=#{machine_architecture}
-    def detect_os(provider)
+    def detect_os(action_handler)
       raise "detect_os not overridden on #{self.class}"
     end
   end

@@ -14,7 +14,7 @@ module ChefMetal
       attr_reader :install_msi_url
       attr_reader :install_msi_path
 
-      def setup_convergence(provider, machine, machine_resource)
+      def setup_convergence(action_handler, machine, machine_resource)
         system_drive = machine.execute_always('$env:SystemDrive').stdout.strip
         @client_rb_path ||= "#{system_drive}\\chef\\client.rb"
         @client_pem_path ||= "#{system_drive}\\chef\\client.pem"
@@ -27,12 +27,12 @@ module ChefMetal
           # TODO find a way to cache this on the host like with the Unix stuff.
           # Limiter is we don't know how to efficiently upload large files to
           # the remote machine with WMI.
-          machine.execute(provider, "(New-Object System.Net.WebClient).DownloadFile(#{machine.escape(install_msi_url)}, #{machine.escape(install_msi_path)})")
-          machine.execute(provider, "msiexec /qn /i #{machine.escape(install_msi_path)}")
+          machine.execute(action_handler, "(New-Object System.Net.WebClient).DownloadFile(#{machine.escape(install_msi_url)}, #{machine.escape(install_msi_path)})")
+          machine.execute(action_handler, "msiexec /qn /i #{machine.escape(install_msi_path)}")
         end
       end
 
-      def converge(provider, machine)
+      def converge(action_handler, machine)
         # TODO For some reason I get a 500 back if I don't do -l debug
         machine.transport.execute("chef-client -l debug")
       end

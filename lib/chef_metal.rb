@@ -32,8 +32,8 @@ module ChefMetal
     end
   end
 
-  def self.inline_resource(provider, &block)
-    InlineResource.new(provider).instance_eval(&block)
+  def self.inline_resource(action_handler, &block)
+    InlineResource.new(action_handler).instance_eval(&block)
   end
 
   @@enclosing_provisioner = nil

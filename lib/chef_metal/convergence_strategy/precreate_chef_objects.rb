@@ -1,5 +1,6 @@
 require 'chef_metal/convergence_strategy'
 require 'pathname'
+require 'cheffish'
 
 module ChefMetal
   class ConvergenceStrategy
@@ -13,11 +14,11 @@ module ChefMetal
       attr_reader :client_rb_path
       attr_reader :client_pem_path
 
-      def setup_convergence(provider, machine, machine_resource)
+      def setup_convergence(action_handler, machine, machine_resource)
         # Create keys on machine
-        public_key = create_keys(provider, machine, machine_resource)
+        public_key = create_keys(action_handler, machine, machine_resource)
         # Create node and client on chef server
-        create_chef_objects(provider, machine, machine_resource, public_key)
+        create_chef_objects(action_handler, machine, machine_resource, public_key)
 
         # If the chef server lives on localhost, tunnel the port through to the guest
         chef_server_url = machine_resource.chef_server[:chef_server_url]
@@ -29,11 +30,11 @@ module ChefMetal
 
         # Create client.rb and client.pem on machine
         content = client_rb_content(chef_server_url, machine.node['name'])
-        machine.write_file(provider, client_rb_path, content, :ensure_dir => true)
+        machine.write_file(action_handler, client_rb_path, content, :ensure_dir => true)
       end
 
-      def delete_chef_objects(provider, node)
-        ChefMetal.inline_resource(provider) do
+      def delete_chef_objects(action_handler, node)
+        ChefMetal.inline_resource(action_handler) do
           chef_node node['name'] do
             action :delete
           end
@@ -45,7 +46,7 @@ module ChefMetal
 
       protected
 
-      def create_keys(provider, machine, machine_resource)
+      def create_keys(action_handler, machine, machine_resource)
         server_private_key = machine.read_file(client_pem_path)
         if server_private_key
           begin
@@ -61,7 +62,7 @@ module ChefMetal
             # If the server private key does not match our source key, overwrite it
             server_private_key = source_key
             if machine_resource.allow_overwrite_keys
-              machine.write_file(provider, client_pem_path, server_private_key.to_pem, :ensure_dir => true)
+              machine.write_file(action_handler, client_pem_path, server_private_key.to_pem, :ensure_dir => true)
             else
               raise "Private key on machine #{machine_resource.name} does not match desired input key."
             end
@@ -70,7 +71,7 @@ module ChefMetal
         else
 
           # If the server does not already have keys, create them and upload
-          Cheffish.inline_resource(provider) do
+          Cheffish.inline_resource(action_handler) do
             private_key 'in_memory' do
               path :none
               if machine_resource.private_key_options
@@ -82,7 +83,7 @@ module ChefMetal
             end
           end
 
-          machine.write_file(provider, client_pem_path, server_private_key.to_pem, :ensure_dir => true)
+          machine.write_file(action_handler, client_pem_path, server_private_key.to_pem, :ensure_dir => true)
         end
 
         server_private_key.public_key
@@ -106,9 +107,9 @@ module ChefMetal
         end
       end
 
-      def create_chef_objects(provider, machine, machine_resource, public_key)
+      def create_chef_objects(action_handler, machine, machine_resource, public_key)
         # Save the node and create the client keys and client.
-        ChefMetal.inline_resource(provider) do
+        ChefMetal.inline_resource(action_handler) do
           # Create client
           chef_client machine.node['name'] do
             chef_server machine_resource.chef_server

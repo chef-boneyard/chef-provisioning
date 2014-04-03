@@ -15,16 +15,16 @@ module ChefMetal
       # Sets up everything necessary for convergence to happen on the machine.
       # The node MUST be saved as part of this procedure.  Other than that,
       # nothing is guaranteed except that converge() will work when this is done.
-      def setup_convergence(provider, machine_resource)
-        convergence_strategy.setup_convergence(provider, self, machine_resource)
+      def setup_convergence(action_handler, machine_resource)
+        convergence_strategy.setup_convergence(action_handler, self, machine_resource)
       end
 
-      def converge(provider)
-        convergence_strategy.converge(provider, self)
+      def converge(action_handler)
+        convergence_strategy.converge(action_handler, self)
       end
 
-      def execute(provider, command)
-        provider.converge_by "run '#{command}' on #{node['name']}" do
+      def execute(action_handler, command)
+        action_handler.converge_by "run '#{command}' on #{node['name']}" do
           transport.execute(command).error!
         end
       end
@@ -37,31 +37,31 @@ module ChefMetal
         transport.read_file(path)
       end
 
-      def download_file(provider, path, local_path)
+      def download_file(action_handler, path, local_path)
         if files_different?(path, local_path)
-          provider.converge_by "download file #{path} on #{node['name']} to #{local_path}" do
+          action_handler.converge_by "download file #{path} on #{node['name']} to #{local_path}" do
             transport.download_file(path, local_path)
           end
         end
       end
 
-      def write_file(provider, path, content, options = {})
+      def write_file(action_handler, path, content, options = {})
         if files_different?(path, nil, content)
           if options[:ensure_dir]
-            create_dir(provider, dirname_on_machine(path))
+            create_dir(action_handler, dirname_on_machine(path))
           end
-          provider.converge_by "write file #{path} on #{node['name']}" do
+          action_handler.converge_by "write file #{path} on #{node['name']}" do
             transport.write_file(path, content)
           end
         end
       end
 
-      def upload_file(provider, local_path, path, options = {})
+      def upload_file(action_handler, local_path, path, options = {})
         if files_different?(path, local_path)
           if options[:ensure_dir]
-            create_dir(provider, dirname_on_machine(path))
+            create_dir(action_handler, dirname_on_machine(path))
           end
-          provider.converge_by "upload file #{local_path} to #{path} on #{node['name']}" do
+          action_handler.converge_by "upload file #{local_path} to #{path} on #{node['name']}" do
             transport.upload_file(local_path, path)
           end
         end

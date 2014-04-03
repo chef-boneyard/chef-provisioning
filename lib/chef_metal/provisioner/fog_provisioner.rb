@@ -101,7 +101,7 @@ module ChefMetal
       #
       # ## Parameters
       # action_handler - the action_handler object that is calling this method; this
-      #        is generally a provider, but could be anything that can support the
+      #        is generally a action_handler, but could be anything that can support the
       #        ChefMetal::ActionHandler interface (i.e., in the case of the test
       #        kitchen metal driver for acquiring and destroying VMs; see the base
       #        class for what needs providing).
@@ -146,7 +146,7 @@ module ChefMetal
             provisioner_output['provisioner_version'] ||= ChefMetal::VERSION
             provisioner_output['creator'] ||= aws_login_info[1]
           else
-            raise "Switching providers for a machine is not currently supported!  Use machine :destroy and then re-create the machine on the new provider."
+            raise "Switching providers for a machine is not currently supported!  Use machine :destroy and then re-create the machine on the new action_handler."
           end
         end
 

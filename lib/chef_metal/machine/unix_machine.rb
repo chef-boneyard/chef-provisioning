@@ -16,9 +16,9 @@ module ChefMetal
       attr_reader :options
 
       # Delete file
-      def delete_file(provider, path)
+      def delete_file(action_handler, path)
         if file_exists?(path)
-          provider.converge_by "delete file #{path} on #{node['name']}" do
+          action_handler.converge_by "delete file #{path} on #{node['name']}" do
             transport.execute("rm -f #{path}").error!
           end
         end
@@ -53,30 +53,30 @@ module ChefMetal
         remote_sum != digest.hexdigest
       end
 
-      def create_dir(provider, path)
+      def create_dir(action_handler, path)
         if !file_exists?(path)
-          provider.converge_by "create directory #{path} on #{node['name']}" do
+          action_handler.converge_by "create directory #{path} on #{node['name']}" do
             transport.execute("mkdir #{path}").error!
           end
         end
       end
 
       # Set file attributes { mode, :owner, :group }
-      def set_attributes(provider, path, attributes)
+      def set_attributes(action_handler, path, attributes)
         if attributes[:mode] || attributes[:owner] || attributes[:group]
           current_attributes = get_attributes(path)
           if attributes[:mode] && current_attributes[:mode].to_i != attributes[:mode].to_i
-            provider.converge_by "change mode of #{path} on #{node['name']} from #{current_attributes[:mode].to_i} to #{attributes[:mode].to_i}" do
+            action_handler.converge_by "change mode of #{path} on #{node['name']} from #{current_attributes[:mode].to_i} to #{attributes[:mode].to_i}" do
               transport.execute("chmod #{attributes[:mode].to_i} #{path}").error!
             end
           end
           if attributes[:owner] && current_attributes[:owner] != attributes[:owner]
-            provider.converge_by "change group of #{path} on #{node['name']} from #{current_attributes[:owner]} to #{attributes[:owner]}" do
+            action_handler.converge_by "change group of #{path} on #{node['name']} from #{current_attributes[:owner]} to #{attributes[:owner]}" do
               transport.execute("chown #{attributes[:owner]} #{path}").error!
             end
           end
           if attributes[:group] && current_attributes[:group] != attributes[:group]
-            provider.converge_by "change group of #{path} on #{node['name']} from #{current_attributes[:group]} to #{attributes[:group]}" do
+            action_handler.converge_by "change group of #{path} on #{node['name']} from #{current_attributes[:group]} to #{attributes[:group]}" do
               transport.execute("chgrp #{attributes[:group]} #{path}").error!
             end
           end
@@ -101,12 +101,12 @@ module ChefMetal
       end
     end
 
-    def detect_os(provider)
+    def detect_os(action_handler)
       #
       # Use detect.sh to detect the operating system of the remote machine
       #
       # TODO do this in terms of commands rather than writing a shell script
-      self.write_file(provider, "#{@tmp_dir}/detect.sh", detect_sh)
+      self.write_file(action_handler, "#{@tmp_dir}/detect.sh", detect_sh)
       detected = self.execute_always("sh #{@tmp_dir}/detect.sh")
       if detected.exitstatus != 0
         raise "detect.sh exited with nonzero exit status: #{detected.exitstatus}"
