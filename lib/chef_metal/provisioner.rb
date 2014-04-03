@@ -1,5 +1,17 @@
 module ChefMetal
   class Provisioner
+    # Inflate a provisioner from node information; we don't want to force the
+    # driver to figure out what the provisioner really needs, since it varies
+    # from provisioner to provisioner.
+    #
+    # ## Parameters
+    # node - node to inflate the provisioner for
+    #
+    # returns a should return a Privisoner from the information provided
+    def self.inflate(node)
+      raise "#{self.class} does not override self.inflate"
+    end
+
     # Acquire a machine, generally by provisioning it.  Returns a Machine
     # object pointing at the machine, allowing useful actions like setup,
     # converge, execute, file and directory.  The Machine object will have a
@@ -7,7 +19,10 @@ module ChefMetal
     # different from the original node object).
     #
     # ## Parameters
-    # provider - the provider object that is calling this method.
+    # action_handler - the action_handler object that is calling this method; this
+    #        is generally a provider, but could be anything that can support the
+    #        interface (i.e., in the case of the test kitchen metal driver for
+    #        acquiring and destroying VMs).
     # node - node object (deserialized json) representing this machine.  If
     #        the node has a provisioner_options hash in it, these will be used
     #        instead of options provided by the provisioner.  TODO compare and
@@ -23,7 +38,7 @@ module ChefMetal
     #
     #           -- provisioner_url: <provisioner url>
     #
-    def acquire_machine(provider, node)
+    def acquire_machine(action_handler, node)
       raise "#{self.class} does not override acquire_machine"
     end
 
@@ -42,12 +57,12 @@ module ChefMetal
 
     # Delete the given machine (idempotent).  Should destroy the machine,
     # returning things to the state before acquire_machine was called.
-    def delete_machine(provider, node)
+    def delete_machine(action_handler, node)
       raise "#{self.class} does not override delete_machine"
     end
 
     # Stop the given machine.
-    def stop_machine(provider, node)
+    def stop_machine(action_handler, node)
       raise "#{self.class} does not override stop_machine"
     end
 
