@@ -2,6 +2,8 @@ require 'chef_metal/provisioner'
 require 'chef_metal/aws_credentials'
 require 'chef_metal/openstack_credentials'
 require 'chef_metal/version'
+require 'fog/compute'
+require 'fog'
 
 module ChefMetal
   class Provisioner
@@ -17,7 +19,13 @@ module ChefMetal
         :ssh_timeout => 20
       }
 
-      # Create a new vagrant provisioner.
+      def self.inflate(node)
+        url = node['normal']['provisioner_output']['provisioner_url']
+        scheme, provider, id = url.split(':', 3)
+        FogProvisioner.new({ :provider => provider }, id)
+      end
+
+      # Create a new fog provisioner.
       #
       # ## Parameters
       # compute_options - hash of options to be passed to Fog::Compute.new
@@ -32,7 +40,9 @@ module ChefMetal
       #   - :create_timeout - the time to wait for the instance to boot to ssh (defaults to 600)
       #   - :start_timeout - the time to wait for the instance to start (defaults to 600)
       #   - :ssh_timeout - the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
-      def initialize(compute_options)
+      # id - the ID in the provisioner_url (fog:PROVIDER:ID)
+      def initialize(compute_options, id=nil)
+        @compute_options = compute_options
         @base_bootstrap_options = compute_options.delete(:base_bootstrap_options) || {}
 
         case compute_options[:provider]
@@ -46,6 +56,11 @@ module ChefMetal
           end
           compute_options[:aws_access_key_id] ||= @aws_credentials.default[:access_key_id]
           compute_options[:aws_secret_access_key] ||= @aws_credentials.default[:secret_access_key]
+          # TODO actually find a key with the proper id
+          # TODO let the user specify credentials and provider profiles that we can use
+          if id && aws_login_info[0] != id
+            raise "Default AWS credentials point at AWS account #{aws_login_info[0]}, but inflating from URL #{id}"
+          end
         when 'OpenStack'
           openstack_credentials = compute_options.delete(:openstack_credentials)
           if openstack_credentials
@@ -61,7 +76,6 @@ module ChefMetal
           compute_options[:openstack_tenant] ||= @openstack_credentials.default[:openstack_tenant]
         end
         @key_pairs = {}
-        @compute_options = compute_options
         @base_bootstrap_options_for = {}
       end
 
@@ -317,11 +331,7 @@ module ChefMetal
 
 
       def compute
-        @compute ||= begin
-          require 'fog/compute'
-          require 'fog'
-          Fog::Compute.new(compute_options)
-        end
+        @compute ||= Fog::Compute.new(compute_options)
       end
 
       def provisioner_url
