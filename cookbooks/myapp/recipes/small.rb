@@ -1,6 +1,7 @@
 machine 'mario' do
   #recipe 'mydb'
   tag 'mydb_master'
+  action [:delete, :create]
 end
 
 machine_file '/etc/blah.conf' do

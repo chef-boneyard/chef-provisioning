@@ -1,5 +1,10 @@
 # Chef Metal Changelog
 
+## 0.6 (4/4/2014)
+
+- Vagrant and Fog provisioners moved to their own gems (chef-metal-vagrant and chef-metal-fog)
+- Support for Hosted and Enterprise Chef (https://github.com/dafyddcrosby)
+
 ## 0.5 (4/3/2014)
 
 * Provisioner interface changes designed to allow provisioners to be used outside of Chef (doubt@getchef.com)

@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.name = 'chef-metal'
   s.version = ChefMetal::VERSION
   s.platform = Gem::Platform::RUBY
-  s.extra_rdoc_files = ['README.md', 'LICENSE' ]
+  s.extra_rdoc_files = ['README.md', 'CHANGELOG.md', 'LICENSE' ]
   s.summary = 'A library for creating machines and infrastructures idempotently in Chef.'
   s.description = s.summary
   s.author = 'John Keiser'
@@ -28,5 +28,5 @@ Gem::Specification.new do |s|
   s.executables  = %w( )
 
   s.require_path = 'lib'
-  s.files = %w(Rakefile LICENSE README.md) + Dir.glob("{distro,lib,tasks,spec}/**/*", File::FNM_DOTMATCH).reject {|f| File.directory?(f) }
+  s.files = %w(Rakefile LICENSE README.md CHANGELOG.md) + Dir.glob("{distro,lib,tasks,spec}/**/*", File::FNM_DOTMATCH).reject {|f| File.directory?(f) }
 end
