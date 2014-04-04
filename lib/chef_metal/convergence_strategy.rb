@@ -8,8 +8,8 @@ module ChefMetal
       raise "converge not overridden on #{self.class}"
     end
 
-    def delete_chef_objects(action_handler, node)
-      raise "delete_chef_objects not overridden on #{self.class}"
+    def cleanup_convergence(action_handler, node)
+      raise "cleanup_convergence not overridden on #{self.class}"
     end
   end
 end

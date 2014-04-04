@@ -311,7 +311,7 @@ module ChefMetal
           action_handler.perform_action "destroy machine #{node['name']} (#{node['normal']['provisioner_output']['server_id']} at #{provisioner_url})" do
             server.destroy
           end
-          convergence_strategy_for(node).delete_chef_objects(action_handler, node)
+          convergence_strategy_for(node).cleanup_convergence(action_handler, node)
         end
       end
 

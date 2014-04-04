@@ -33,7 +33,7 @@ module ChefMetal
         machine.write_file(action_handler, client_rb_path, content, :ensure_dir => true)
       end
 
-      def delete_chef_objects(action_handler, node)
+      def cleanup_convergence(action_handler, node)
         ChefMetal.inline_resource(action_handler) do
           chef_node node['name'] do
             action :delete

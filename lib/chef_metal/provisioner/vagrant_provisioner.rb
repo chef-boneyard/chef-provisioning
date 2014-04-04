@@ -41,7 +41,7 @@ module ChefMetal
       #
       # ## Parameters
       # action_handler - the action_handler object that is calling this method; this
-      #        is generally a provider, but could be anything that can support the
+      #        is generally a action_handler, but could be anything that can support the
       #        ChefMetal::ActionHandler interface (i.e., in the case of the test
       #        kitchen metal driver for acquiring and destroying VMs; see the base
       #        class for what needs providing).
@@ -163,7 +163,7 @@ module ChefMetal
           end
         end
 
-        convergence_strategy_for(node).delete_chef_objects(action_handler, node)
+        convergence_strategy_for(node).cleanup_convergence(action_handler, node)
 
         vm_file_path = provisioner_output['vm_file_path'] || File.join(cluster_path, "#{vm_name}.vm")
         ChefMetal.inline_resource(action_handler) do

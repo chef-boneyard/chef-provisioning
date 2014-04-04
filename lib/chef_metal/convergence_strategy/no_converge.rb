@@ -19,7 +19,10 @@ module ChefMetal
         end
       end
 
-      def delete_chef_objects(action_handler, node)
+      def converge(action_handler, machine)
+      end
+
+      def cleanup_convergence(action_handler, node)
         ChefMetal.inline_resource(action_handler) do
           chef_node node['name'] do
             action :delete
