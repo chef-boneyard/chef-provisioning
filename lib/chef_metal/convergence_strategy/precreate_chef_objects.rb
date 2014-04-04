@@ -126,7 +126,11 @@ module ChefMetal
             raw_json machine.node
           end
         end
-        grant_client_node_permissions(machine_resource.chef_server, machine.node['name'], ["read", "update"])
+
+        # If using enterprise/hosted chef, fix acls
+        if machine_resource.chef_server[:chef_server_url] =~ /\/+organizations\/.+/
+          grant_client_node_permissions(machine_resource.chef_server, machine.node['name'], ["read", "update"])
+        end
       end
 
       # Grant the client permissions to the node
