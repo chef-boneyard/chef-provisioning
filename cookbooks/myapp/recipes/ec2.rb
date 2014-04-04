@@ -1,4 +1,4 @@
-require 'chef_metal/fog'
+require 'chef_metal_fog'
 
 ec2testdir = File.expand_path('~/ec2test')
 
