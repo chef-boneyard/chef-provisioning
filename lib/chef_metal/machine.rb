@@ -17,7 +17,6 @@ module ChefMetal
       raise "converge not overridden on #{self.class}"
     end
 
-
     def execute(action_handler, command)
       raise "execute not overridden on #{self.class}"
     end
@@ -67,9 +66,10 @@ module ChefMetal
       raise "get_attributes not overridden on #{self.class}"
     end
 
-    # Forward a remote port to local for the duration of the current connection
-    def forward_remote_port_to_local(remote_port, local_port)
-      raise "forward_remote_port_to_local not overridden on #{self.class}"
+    # Ensure the given URL can be reached by the remote side (possibly by port forwarding)
+    # Must return the URL that the remote side can use to reach the local_url
+    def make_url_available_to_remote(local_url)
+      raise "make_url_available_to_remote not overridden on #{self.class}"
     end
 
     def disconnect

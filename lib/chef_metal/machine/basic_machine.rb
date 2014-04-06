@@ -67,8 +67,8 @@ module ChefMetal
         end
       end
 
-      def forward_remote_port_to_local(remote_port, local_port)
-        transport.forward_remote_port_to_local(remote_port, local_port)
+      def make_url_available_to_remote(local_url)
+        transport.make_url_available_to_remote(local_url)
       end
 
       def disconnect

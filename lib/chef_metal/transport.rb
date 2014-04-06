@@ -20,9 +20,8 @@ module ChefMetal
       write_file(path, IO.read(local_path))
     end
 
-    # Forward requests to a port on the guest to a server on the host
-    def forward_remote_port_to_local(remote_port, local_port)
-      raise "forward_remote_port_to_local not overridden on #{self.class}"
+    def make_url_available_to_remote(local_url)
+      raise "make_url_available_to_remote not overridden on #{self.class}"
     end
 
     def disconnect

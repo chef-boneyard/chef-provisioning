@@ -22,11 +22,7 @@ module ChefMetal
 
         # If the chef server lives on localhost, tunnel the port through to the guest
         chef_server_url = machine_resource.chef_server[:chef_server_url]
-        url = URI(chef_server_url)
-        # TODO IPv6
-        if is_localhost(url.host)
-          machine.forward_remote_port_to_local(url.port, url.port)
-        end
+        chef_server_url = machine.make_url_available_to_remote(chef_server_url)
 
         # Create client.rb and client.pem on machine
         content = client_rb_content(chef_server_url, machine.node['name'])

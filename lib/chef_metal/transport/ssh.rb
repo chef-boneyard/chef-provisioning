@@ -1,4 +1,6 @@
 require 'chef_metal/transport'
+require 'uri'
+require 'socket'
 
 module ChefMetal
   class Transport
@@ -94,10 +96,15 @@ module ChefMetal
         end
       end
 
-      def forward_remote_port_to_local(remote_port, local_port)
-        # TODO IPv6
-        Chef::Log.debug("Forwarding local server 127.0.0.1:#{local_port} to port #{remote_port} on #{username}@#{host}")
-        session.forward.remote(local_port, "127.0.0.1", remote_port)
+      def make_url_available_to_remote(local_url)
+        uri = URI(local_url)
+        host = Socket.getaddrinfo(uri.host, uri.scheme, nil, :STREAM)[0][3]
+        if host == '127.0.0.1' || host == '[::1]'
+          # TODO IPv6
+          Chef::Log.debug("Forwarding local server 127.0.0.1:#{uri.port} to port #{uri.port} on #{username}@#{host}")
+          session.forward.remote(uri.port, "127.0.0.1", uri.port)
+        end
+        local_url
       end
 
       def disconnect
