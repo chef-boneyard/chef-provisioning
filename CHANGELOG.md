@@ -1,5 +1,9 @@
 # Chef Metal Changelog
 
+## 0.7 (4/5/2014)
+
+- Change transport interface: add ability to rewrite URL instead of forwarding ports
+
 ## 0.6 (4/4/2014)
 
 - Vagrant and Fog provisioners moved to their own gems (chef-metal-vagrant and chef-metal-fog)
