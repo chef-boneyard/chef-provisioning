@@ -56,7 +56,7 @@ module ChefMetal
       def create_dir(action_handler, path)
         if !file_exists?(path)
           action_handler.converge_by "create directory #{path} on #{node['name']}" do
-            transport.execute("mkdir #{path}").error!
+            transport.execute("mkdir -p #{path}").error!
           end
         end
       end
