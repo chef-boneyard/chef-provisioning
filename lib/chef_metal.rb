@@ -4,6 +4,8 @@ require 'chef/resource/machine'
 require 'chef/provider/machine'
 require 'chef/resource/machine_file'
 require 'chef/provider/machine_file'
+require 'chef/resource/machine_execute'
+require 'chef/provider/machine_execute'
 
 require 'chef_metal/inline_resource'
 
