@@ -25,7 +25,7 @@ module ChefMetal
         chef_server_url = machine.make_url_available_to_remote(chef_server_url)
 
         #Support for multiple ohai hints, required on some platforms
-        create_ohai_files(provider, machine, machine_resource)
+        create_ohai_files(action_handler, machine, machine_resource)
 
         # Create client.rb and client.pem on machine
         content = client_rb_content(chef_server_url, machine.node['name'])
@@ -107,12 +107,12 @@ module ChefMetal
       end
 
       # Create the ohai file(s)
-      def create_ohai_files(provider, machine, machine_resource)
+      def create_ohai_files(action_handler, machine, machine_resource)
         if machine_resource.ohai_hint
           machine_resource.ohai_hint.each_pair do |hint, data|
             # The location of the ohai hint
             ohai_hint = "/etc/chef/ohai/hints/#{hint}.json"
-            machine.write_file(provider, ohai_hint, data.to_json, :ensure_dir => true)
+            machine.write_file(action_handler, ohai_hint, data.to_json, :ensure_dir => true)
           end
         end
       end
