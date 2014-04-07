@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rake'
 
   s.bindir       = "bin"
-  s.executables  = %w( )
+  s.executables  = %w( metal )
 
   s.require_path = 'lib'
   s.files = %w(Rakefile LICENSE README.md CHANGELOG.md) + Dir.glob("{distro,lib,tasks,spec}/**/*", File::FNM_DOTMATCH).reject {|f| File.directory?(f) }

@@ -1,0 +1,142 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+$:.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
+require 'chef'
+require 'chef_metal'
+require 'chef/rest'
+require 'chef/application'
+require 'chef/knife'
+require 'chef/server_api'
+
+class ChefMetal::Application < Chef::Application
+
+  # Mimic self_pipe sleep from Unicorn to capture signals safely
+  SELF_PIPE = []
+
+  option :config_file,
+    :short => "-c CONFIG",
+    :long  => "--config CONFIG",
+    :description => "The configuration file to use"
+
+  option :log_level,
+    :short        => "-l LEVEL",
+    :long         => "--log_level LEVEL",
+    :description  => "Set the log level (debug, info, warn, error, fatal)",
+    :proc         => lambda { |l| l.to_sym }
+
+  option :log_location,
+    :short        => "-L LOGLOCATION",
+    :long         => "--logfile LOGLOCATION",
+    :description  => "Set the log file location, defaults to STDOUT - recommended for daemonizing",
+    :proc         => nil
+
+  option :node_name,
+    :short => "-N NODE_NAME",
+    :long => "--node-name NODE_NAME",
+    :description => "The node name for this client",
+    :proc => nil
+
+  option :chef_server_url,
+    :short => "-S CHEFSERVERURL",
+    :long => "--server CHEFSERVERURL",
+    :description => "The chef server URL",
+    :proc => nil
+
+  option :client_key,
+    :short        => "-k KEY_FILE",
+    :long         => "--client_key KEY_FILE",
+    :description  => "Set the client key file location",
+    :proc         => nil
+
+  option :local_mode,
+    :short        => "-z",
+    :long         => "--local-mode",
+    :description  => "Point chef-client at local repository",
+    :boolean      => true
+
+  option :chef_zero_port,
+    :long         => "--chef-zero-port PORT",
+    :description  => "Port to start chef-zero on"
+
+  def reconfigure
+    super
+
+    Chef::Config[:chef_server_url] = config[:chef_server_url] if config.has_key? :chef_server_url
+
+    Chef::Config.local_mode = config[:local_mode] if config.has_key?(:local_mode)
+    if Chef::Config.local_mode && !Chef::Config.has_key?(:cookbook_path) && !Chef::Config.has_key?(:chef_repo_path)
+      Chef::Config.chef_repo_path = Chef::Config.find_chef_repo_path(Dir.pwd)
+    end
+    Chef::Config.chef_zero.port = config[:chef_zero_port] if config[:chef_zero_port]
+
+    if Chef::Config[:daemonize]
+      Chef::Config[:interval] ||= 1800
+    end
+
+    if Chef::Config[:once]
+      Chef::Config[:interval] = nil
+      Chef::Config[:splay] = nil
+    end
+
+    if Chef::Config[:json_attribs]
+      config_fetcher = Chef::ConfigFetcher.new(Chef::Config[:json_attribs])
+      @chef_client_json = config_fetcher.fetch_json
+    end
+  end
+
+  def setup_application
+  end
+
+  def load_config_file
+    if !config.has_key?(:config_file)
+      require 'chef/knife'
+      config[:config_file] = Chef::Knife.locate_config_file
+    end
+    super
+  end
+
+  def run_application
+    Chef::Application.setup_server_connectivity
+
+    command = cli_arguments.shift
+    case command
+    when 'execute'
+      exit_code = 0
+      each_machine(cli_arguments.shift) do |machine|
+        puts "#{machine.node['name']}: running '#{cli_arguments.join(' ')}'"
+        result = machine.execute_always(cli_arguments.join(' '))
+        puts result.stdout if result.stdout != ''
+        STDERR.puts result.stderr if result.stderr != ''
+        exit_code = result.exitstatus if result.exitstatus != 0
+      end
+      exit(exit_code) if exit_code != 0
+    else
+      Chef::Log.error("Command '#{command}' unrecognized")
+    end
+
+    Chef::Application.destroy_server_connectivity
+  end
+
+  def rest
+    @rest ||= Chef::ServerAPI.new()
+  end
+
+  def each_machine(spec)
+    spec.split(',').each do |name|
+      node = rest.get("/nodes/#{name}")
+      provisioner_output = node['normal']['provisioner_output']
+      if !provisioner_output
+        Chef::Log.error("Node #{name} was not provisioned with Metal.")
+        next
+      end
+
+      provisioner = ChefMetal.provisioner_for_node(node)
+      machine = provisioner.connect_to_machine(node)
+
+      yield machine
+    end
+  end
+end
+
+ChefMetal::Application.new.run
