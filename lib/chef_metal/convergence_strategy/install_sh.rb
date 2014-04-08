@@ -29,7 +29,7 @@ module ChefMetal
       end
 
       def converge(action_handler, machine)
-        machine.execute(action_handler, 'chef-client')
+        machine.execute(action_handler, "chef-client -l #{Chef::Config.log_level.to_s}", :stream => true)
       end
     end
   end
