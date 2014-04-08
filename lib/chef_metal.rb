@@ -67,4 +67,11 @@ module ChefMetal
     provisioner_class = @@registered_provisioner_classes[cluster_type]
     provisioner_class.inflate(node)
   end
+
+  def self.connect_to_node(name)
+    rest = Chef::ServerAPI.new()
+    node = rest.get("/nodes/#{name}")
+    provisioner = provisioner_for_node(node)
+    provisioner.connect_to_node(node)
+  end
 end
