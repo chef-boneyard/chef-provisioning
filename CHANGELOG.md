@@ -1,5 +1,11 @@
 # Chef Metal Changelog
 
+## 0.8 (4/8/2014)
+
+- New machine_execute resource! (irving@getchef.com)
+- Experimental "metal" command line: metal execute NODENAME COMMAND ARGS
+- Transport: Add ability to stream execute() for better nested chef-client debugging
+
 ## 0.7 (4/5/2014)
 
 - Change transport interface: add ability to rewrite URL instead of forwarding ports
