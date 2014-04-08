@@ -26,7 +26,7 @@ module ChefMetal
 
       # Return true or false depending on whether file exists
       def file_exists?(path)
-        result = transport.execute("ls -d #{path}")
+        result = transport.execute("ls -d #{path}", :read_only => true)
         result.exitstatus == 0 && result.stdout != ''
       end
 
@@ -36,7 +36,7 @@ module ChefMetal
         end
 
         # Get remote checksum of file
-        result = transport.execute("md5sum -b #{path}")
+        result = transport.execute("md5sum -b #{path}", :read_only => true)
         result.error!
         remote_sum = result.stdout.split(' ')[0]
 
@@ -85,7 +85,7 @@ module ChefMetal
 
       # Get file attributes { :mode, :owner, :group }
       def get_attributes(path)
-        file_info = transport.execute("stat -c '%a %U %G %n' #{path}").stdout.split(/\s+/)
+        file_info = transport.execute("stat -c '%a %U %G %n' #{path}", :read_only => true).stdout.split(/\s+/)
         if file_info.size <= 1
           raise "#{path} does not exist in set_attributes()"
         end

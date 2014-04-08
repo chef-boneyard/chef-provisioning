@@ -34,7 +34,7 @@ module ChefMetal
 
       def converge(action_handler, machine)
         # TODO For some reason I get a 500 back if I don't do -l debug
-        machine.transport.execute("chef-client -l debug")
+        machine.execute(action_handler, "chef-client -l debug")
       end
     end
   end

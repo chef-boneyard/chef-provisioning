@@ -23,12 +23,12 @@ module ChefMetal
 
       # Return true or false depending on whether file exists
       def file_exists?(path)
-        parse_boolean(transport.execute("Test-Path #{escape(path)}").stdout)
+        parse_boolean(transport.execute("Test-Path #{escape(path)}", :read_only => true).stdout)
       end
 
       def files_different?(path, local_path, content=nil)
         # Get remote checksum of file (from http://stackoverflow.com/a/13926809)
-        result = transport.execute <<-EOM
+        result = transport.execute(<<-EOM, :read_only => true)
 $md5 = [System.Security.Cryptography.MD5]::Create("MD5")
 $fd = [System.IO.File]::OpenRead(#{path.inspect})
 $buf = new-object byte[] (1024*1024*8) # 8mb buffer
