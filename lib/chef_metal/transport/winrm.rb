@@ -18,7 +18,7 @@ module ChefMetal
         output = session.run_powershell_script(command) do |stdout, stderr|
           stream_chunk(execute_options, stdout, stderr)
         end
-        WinRMResult.new(output)
+        WinRMResult.new(command, execute_options, output)
       end
 
       def read_file(path)
@@ -71,7 +71,9 @@ $file.Close
       end
 
       class WinRMResult
-        def initialize(output)
+        def initialize(command, options, output)
+          @command = command
+          @options = options
           @exitstatus = output[:exitcode]
           @stdout = ''
           @stderr = ''
@@ -84,9 +86,15 @@ $file.Close
         attr_reader :stdout
         attr_reader :stderr
         attr_reader :exitstatus
+        attr_reader :command
+        attr_reader :options
 
         def error!
-          raise "Error: code #{exitstatus}.\nSTDOUT:#{stdout}\nSTDERR:#{stderr}" if exitstatus != 0
+          if exitstatus != 0
+            msg = "Error: command '#{command}' exited with code #{exitstatus}.\n"
+            msg << "STDOUT: #{stdout}" if !options[:stream] && !options[:stream_stdout]
+            msg << "STDERR: #{stderr}" if !options[:stream] && !options[:stream_stderr]
+          end
         end
       end
     end

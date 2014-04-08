@@ -55,9 +55,9 @@ module ChefMetal
         channel.wait
 
         Chef::Log.info("Completed #{command} on #{username}@#{host}: exit status #{exitstatus}")
-        Chef::Log.debug("Stdout was:\n#{stdout}") if stdout != ''
-        Chef::Log.info("Stderr was:\n#{stderr}") if stderr != ''
-        SSHResult.new(stdout, stderr, exitstatus)
+        Chef::Log.debug("Stdout was:\n#{stdout}") if stdout != '' && !options[:stream] && !options[:stream_stdout]
+        Chef::Log.info("Stderr was:\n#{stderr}") if stderr != '' && !options[:stream] && !options[:stream_stderr]
+        SSHResult.new(command, execute_options, stdout, stderr, exitstatus)
       end
 
       def read_file(path)
@@ -155,18 +155,25 @@ module ChefMetal
       end
 
       class SSHResult
-        def initialize(stdout, stderr, exitstatus)
+        def initialize(command, options, stdout, stderr, exitstatus)
+          @command = command
+          @options = options
           @stdout = stdout
           @stderr = stderr
           @exitstatus = exitstatus
         end
 
+        attr_reader :command
+        attr_reader :options
         attr_reader :stdout
         attr_reader :stderr
         attr_reader :exitstatus
 
         def error!
-          raise "Error: code #{exitstatus}.\nSTDOUT:#{stdout}\nSTDERR:#{stderr}" if exitstatus != 0
+          if exitstatus != 0
+            # TODO stdout/stderr is already printed at info/debug level.  Let's not print it twice, it's a lot.
+            msg = "Error: command '#{command}' exited with code #{exitstatus}.\n"
+          end
         end
       end
     end
