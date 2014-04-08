@@ -92,8 +92,8 @@ $file.Close
         def error!
           if exitstatus != 0
             msg = "Error: command '#{command}' exited with code #{exitstatus}.\n"
-            msg << "STDOUT: #{stdout}" if !options[:stream] && !options[:stream_stdout]
-            msg << "STDERR: #{stderr}" if !options[:stream] && !options[:stream_stderr]
+            msg << "STDOUT: #{stdout}" if !options[:stream] && !options[:stream_stdout] && Chef::Config.log_level != :debug
+            msg << "STDERR: #{stderr}" if !options[:stream] && !options[:stream_stderr] && Chef::Config.log_level != :debug
           end
         end
       end

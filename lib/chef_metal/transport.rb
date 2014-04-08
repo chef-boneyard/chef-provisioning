@@ -36,7 +36,7 @@ module ChefMetal
 
     # Helper to implement stdout/stderr streaming in execute
     def stream_chunk(options, stdout_chunk, stderr_chunk)
-      if options[:stream].is_a?(Proc)
+      if options[:stream].is_a?(Proc) || Chef::Config.log_level == :debug
         options[:stream].call(stdout_chunk, stderr_chunk)
       else
         if stdout_chunk
