@@ -4,7 +4,7 @@ require 'socket'
 
 module ChefMetal
   class Transport
-    class SSH < Transport
+    class SSH < ChefMetal::Transport
       def initialize(host, username, ssh_options, options)
         require 'net/ssh'
         require 'net/scp'
@@ -19,8 +19,8 @@ module ChefMetal
       attr_reader :ssh_options
       attr_reader :options
 
-      def execute(command)
-        Chef::Log.info("Executing #{command} on #{username}@#{host}")
+      def execute(command, execute_options = {})
+        Chef::Log.info("Executing #{options[:prefix]}#{command} on #{username}@#{host}")
         stdout = ''
         stderr = ''
         exitstatus = nil
@@ -38,10 +38,12 @@ module ChefMetal
 
             channel.on_data do |ch2, data|
               stdout << data
+              stream_chunk(execute_options, data, nil)
             end
 
             channel.on_extended_data do |ch2, type, data|
               stderr << data
+              stream_chunk(execute_options, nil, data)
             end
 
             channel.on_request "exit-status" do |ch, data|

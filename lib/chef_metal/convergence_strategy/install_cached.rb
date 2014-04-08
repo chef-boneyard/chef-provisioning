@@ -33,7 +33,7 @@ module ChefMetal
       end
 
       def converge(action_handler, machine)
-        machine.execute(action_handler, 'chef-client')
+        machine.execute(action_handler, "chef-client", :stream => true)
       end
 
       private

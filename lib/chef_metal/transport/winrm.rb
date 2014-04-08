@@ -1,8 +1,9 @@
+require 'chef_metal/transport'
 require 'base64'
 
 module ChefMetal
   class Transport
-    class WinRM
+    class WinRM < ChefMetal::Transport
       def initialize(endpoint, type, options = {})
         @endpoint = endpoint
         @type = type
@@ -13,8 +14,10 @@ module ChefMetal
       attr_reader :type
       attr_reader :options
 
-      def execute(command)
-        output = session.run_powershell_script(command)
+      def execute(command, execute_options = {})
+        output = session.run_powershell_script(command) do |stdout, stderr|
+          stream_chunk(execute_options, stdout, stderr)
+        end
         WinRMResult.new(output)
       end
 
@@ -50,7 +53,7 @@ $file.Close
       end
 
       def disconnect
-        # 
+        #
       end
 
       def escape(string)

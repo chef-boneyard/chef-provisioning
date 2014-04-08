@@ -23,14 +23,14 @@ module ChefMetal
         convergence_strategy.converge(action_handler, self)
       end
 
-      def execute(action_handler, command)
+      def execute(action_handler, command, options = {})
         action_handler.converge_by "run '#{command}' on #{node['name']}" do
-          transport.execute(command).error!
+          transport.execute(command, options).error!
         end
       end
 
-      def execute_always(command)
-        transport.execute(command)
+      def execute_always(command, options = {})
+        transport.execute(command, options)
       end
 
       def read_file(path)

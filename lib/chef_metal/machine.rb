@@ -17,8 +17,12 @@ module ChefMetal
       raise "converge not overridden on #{self.class}"
     end
 
-    def execute(action_handler, command)
+    def execute(action_handler, command, options = {})
       raise "execute not overridden on #{self.class}"
+    end
+
+    def execute_always(command, options = {})
+      raise "execute_always not overridden on #{self.class}"
     end
 
     def read_file(path)

@@ -1,6 +1,6 @@
 module ChefMetal
   class Transport
-    def execute(command)
+    def execute(command, options = {})
       raise "execute not overridden on #{self.class}"
     end
 
@@ -30,6 +30,30 @@ module ChefMetal
 
     def available?
       raise "available? not overridden on #{self.class}"
+    end
+
+    protected
+
+    # Helper to implement stdout/stderr streaming in execute
+    def stream_chunk(options, stdout_chunk, stderr_chunk)
+      if options[:stream].is_a?(Proc)
+        options[:stream].call(stdout_chunk, stderr_chunk)
+      else
+        if stdout_chunk
+          if options[:stream_stdout]
+            options[:stream_stdout].print stdout_chunk
+          elsif options[:stream]
+            STDOUT.print stdout_chunk
+          end
+        end
+        if stderr_chunk
+          if options[:stream_stderr]
+            options[:stream_stderr].print stderr_chunk
+          elsif options[:stream]
+            STDERR.print stderr_chunk
+          end
+        end
+      end
     end
   end
 end
