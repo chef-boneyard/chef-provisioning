@@ -1,5 +1,6 @@
 require 'chef_metal/transport'
 require 'base64'
+require 'timeout'
 
 module ChefMetal
   class Transport
@@ -15,8 +16,10 @@ module ChefMetal
       attr_reader :options
 
       def execute(command, execute_options = {})
-        output = session.run_powershell_script(command) do |stdout, stderr|
-          stream_chunk(execute_options, stdout, stderr)
+        output = with_execute_timeout(execute_options) do
+          session.run_powershell_script(command) do |stdout, stderr|
+            stream_chunk(execute_options, stdout, stderr)
+          end
         end
         WinRMResult.new(command, execute_options, output)
       end

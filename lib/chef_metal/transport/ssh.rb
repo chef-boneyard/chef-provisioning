@@ -1,6 +1,7 @@
 require 'chef_metal/transport'
 require 'uri'
 require 'socket'
+require 'timeout'
 
 module ChefMetal
   class Transport
@@ -32,7 +33,6 @@ module ChefMetal
             end
           end
 
-
           channel.exec("#{options[:prefix]}#{command}") do |ch, success|
             raise "could not execute command: #{command.inspect}" unless success
 
@@ -52,11 +52,13 @@ module ChefMetal
           end
         end
 
-        channel.wait
+        with_execute_timeout(execute_options) do
+          channel.wait
+        end
 
         Chef::Log.info("Completed #{command} on #{username}@#{host}: exit status #{exitstatus}")
-        Chef::Log.debug("Stdout was:\n#{stdout}") if stdout != '' && !options[:stream] && !options[:stream_stdout]
-        Chef::Log.info("Stderr was:\n#{stderr}") if stderr != '' && !options[:stream] && !options[:stream_stderr]
+        Chef::Log.debug("Stdout was:\n#{stdout}") if stdout != '' && !options[:stream] && !options[:stream_stdout] && Chef::Config.log_level != :debug
+        Chef::Log.info("Stderr was:\n#{stderr}") if stderr != '' && !options[:stream] && !options[:stream_stderr] && Chef::Config.log_level != :debug
         SSHResult.new(command, execute_options, stdout, stderr, exitstatus)
       end
 

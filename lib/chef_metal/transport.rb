@@ -1,5 +1,20 @@
+require 'timeout'
+
 module ChefMetal
   class Transport
+    DEFAULT_TIMEOUT = 15*60
+
+    # Execute a program on the remote host.
+    #
+    # == Arguments
+    # command: command to run.  May be a shell-escaped string or a pre-split array containing [PROGRAM, ARG1, ARG2, ...].
+    # options: hash of options, including but not limited to:
+    #          :timeout => NUM_SECONDS - time to wait before program finishes (throws an exception otherwise).  Set to nil or 0 to run with no timeout.  Defaults to 15 minutes.
+    #          :stream => BOOLEAN - true to stream stdout and stderr to the console.
+    #          :stream => BLOCK - block to stream stdout and stderr to (block.call(stdout_chunk, stderr_chunk))
+    #          :stream_stdout => FD - FD to stream stdout to (defaults to IO.stdout)
+    #          :stream_stderr => FD - FD to stream stderr to (defaults to IO.stderr)
+    #          :read_only => BOOLEAN - true if command is guaranteed not to change system state (useful for Docker)
     def execute(command, options = {})
       raise "execute not overridden on #{self.class}"
     end
@@ -54,6 +69,14 @@ module ChefMetal
           end
         end
       end
+    end
+
+    def with_execute_timeout(options, &block)
+      Timeout::timeout(execute_timeout(options), &block)
+    end
+
+    def execute_timeout(options)
+      options.has_key?(:timeout) ? options[:timeout] : DEFAULT_TIMEOUT
     end
   end
 end
