@@ -25,7 +25,9 @@ module ChefMetal
 
       def execute(action_handler, command, options = {})
         action_handler.perform_action "run '#{command}' on #{node['name']}" do
-          transport.execute(command, options).error!
+          result = transport.execute(command, options)
+          result.error!
+          result
         end
       end
 
