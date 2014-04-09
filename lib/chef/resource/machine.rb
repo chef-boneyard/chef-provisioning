@@ -45,6 +45,10 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
   attribute :admin, :kind_of => [TrueClass, FalseClass]
   attribute :validator, :kind_of => [TrueClass, FalseClass]
 
+  # Client Ohai hints, allows machine to enable hints
+  # e.g. ohai_hint 'ec2' => { 'a' => 'b' } creates file ec2.json with json contents { 'a': 'b' }
+  attribute :ohai_hints, :kind_of => Hash
+
   # Allows you to turn convergence off in the :create action by writing "converge false"
   # or force it with "true"
   attribute :converge, :kind_of => [TrueClass, FalseClass]
