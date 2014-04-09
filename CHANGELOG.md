@@ -1,5 +1,11 @@
 # Chef Metal Changelog
 
+## 0.8.2 (4/9/2014)
+
+- Add timeout support to execute
+- Fix machine_file resource
+- Add ohai_hints DSL to machine resource (@xorl)
+
 ## 0.8.1 (4/9/2014)
 
 - Bug: error! was not raising an error in the SSH and WinRM transports
