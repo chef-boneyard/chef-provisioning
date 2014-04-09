@@ -47,7 +47,7 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
 
   # Client Ohai hints, allows machine to enable hints
   # e.g. ohai_hint 'ec2' => { 'a' => 'b' } creates file ec2.json with json contents { 'a': 'b' }
-  attribute :ohai_hint, :kind_of => Hash
+  attribute :ohai_hints, :kind_of => Hash
 
   # Allows you to turn convergence off in the :create action by writing "converge false"
   # or force it with "true"

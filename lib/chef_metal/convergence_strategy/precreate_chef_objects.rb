@@ -108,8 +108,8 @@ module ChefMetal
 
       # Create the ohai file(s)
       def create_ohai_files(action_handler, machine, machine_resource)
-        if machine_resource.ohai_hint
-          machine_resource.ohai_hint.each_pair do |hint, data|
+        if machine_resource.ohai_hints
+          machine_resource.ohai_hints.each_pair do |hint, data|
             # The location of the ohai hint
             ohai_hint = "/etc/chef/ohai/hints/#{hint}.json"
             machine.write_file(action_handler, ohai_hint, data.to_json, :ensure_dir => true)
