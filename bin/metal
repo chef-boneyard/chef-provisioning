@@ -71,6 +71,11 @@ class ChefMetal::Application < Chef::Application
     :boolean      => true,
     :description  => "Whether to stream output from the machine (default: true)"
 
+  option :timeout,
+    :long         => "--timeout",
+    :default      => 15*60,
+    :description  => "Time to wait for program to execute, or 0 for no timeout (default: 15 minutes)"
+
   def reconfigure
     super
 
@@ -117,7 +122,7 @@ class ChefMetal::Application < Chef::Application
     when 'execute'
       each_machine(cli_arguments.shift) do |machine, provisioner|
         puts "[#{machine.node['name']}] running '#{cli_arguments.join(' ')}'"
-        result = machine.execute(action_handler, cli_arguments.join(' '), :read_only => config[:read_only], :stream => config[:stream])
+        result = machine.execute(action_handler, cli_arguments.join(' '), :read_only => config[:read_only], :stream => config[:stream], :timeout => config[:timeout])
         puts result.stdout if result.stdout != '' && !config[:stream] && Chef::Config.log_level != :debug
         STDERR.puts result.stderr if result.stderr != '' && !config[:stream] && Chef::Config.log_level != :debug
         exit_code = result.exitstatus if result.exitstatus != 0
