@@ -24,7 +24,7 @@ module ChefMetal
       end
 
       def execute(action_handler, command, options = {})
-        action_handler.converge_by "run '#{command}' on #{node['name']}" do
+        action_handler.perform_action "run '#{command}' on #{node['name']}" do
           transport.execute(command, options).error!
         end
       end
@@ -39,7 +39,7 @@ module ChefMetal
 
       def download_file(action_handler, path, local_path)
         if files_different?(path, local_path)
-          action_handler.converge_by "download file #{path} on #{node['name']} to #{local_path}" do
+          action_handler.perform_action "download file #{path} on #{node['name']} to #{local_path}" do
             transport.download_file(path, local_path)
           end
         end
@@ -50,7 +50,7 @@ module ChefMetal
           if options[:ensure_dir]
             create_dir(action_handler, dirname_on_machine(path))
           end
-          action_handler.converge_by "write file #{path} on #{node['name']}" do
+          action_handler.perform_action "write file #{path} on #{node['name']}" do
             transport.write_file(path, content)
           end
         end
@@ -61,7 +61,7 @@ module ChefMetal
           if options[:ensure_dir]
             create_dir(action_handler, dirname_on_machine(path))
           end
-          action_handler.converge_by "upload file #{local_path} to #{path} on #{node['name']}" do
+          action_handler.perform_action "upload file #{local_path} to #{path} on #{node['name']}" do
             transport.upload_file(local_path, path)
           end
         end
