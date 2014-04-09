@@ -173,6 +173,7 @@ module ChefMetal
           if exitstatus != 0
             # TODO stdout/stderr is already printed at info/debug level.  Let's not print it twice, it's a lot.
             msg = "Error: command '#{command}' exited with code #{exitstatus}.\n"
+            raise msg
           end
         end
       end
