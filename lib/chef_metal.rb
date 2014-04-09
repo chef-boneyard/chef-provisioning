@@ -68,10 +68,14 @@ module ChefMetal
     provisioner_class.inflate(node)
   end
 
-  def self.connect_to_node(name)
+  def self.connect_to_machine(name)
     rest = Chef::ServerAPI.new()
     node = rest.get("/nodes/#{name}")
+    provisioner_output = node['normal']['provisioner_output']
+    if !provisioner_output
+      raise "Node #{name} was not provisioned with Metal."
+    end
     provisioner = provisioner_for_node(node)
-    provisioner.connect_to_node(node)
+    provisioner.connect_to_machine(node)
   end
 end

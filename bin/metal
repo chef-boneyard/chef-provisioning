@@ -8,6 +8,8 @@ require 'chef/rest'
 require 'chef/application'
 require 'chef/knife'
 require 'chef/server_api'
+require 'chef_metal/action_handler'
+require 'chef_metal/version'
 
 class ChefMetal::Application < Chef::Application
 
@@ -59,6 +61,16 @@ class ChefMetal::Application < Chef::Application
     :long         => "--chef-zero-port PORT",
     :description  => "Port to start chef-zero on"
 
+  option :read_only,
+    :long         => "--[no-]read-only",
+    :description  => "Promise that execution will not modify the machine (helps with Docker in particular)"
+
+  option :stream,
+    :long         => "--[no-]stream",
+    :default      => true,
+    :boolean      => true,
+    :description  => "Whether to stream output from the machine (default: true)"
+
   def reconfigure
     super
 
@@ -100,23 +112,49 @@ class ChefMetal::Application < Chef::Application
     Chef::Application.setup_server_connectivity
 
     command = cli_arguments.shift
+    exit_code = 0
     case command
     when 'execute'
-      exit_code = 0
-      each_machine(cli_arguments.shift) do |machine|
-        puts "#{machine.node['name']}: running '#{cli_arguments.join(' ')}'"
-        result = machine.execute_always(cli_arguments.join(' '))
-        puts result.stdout if result.stdout != ''
-        STDERR.puts result.stderr if result.stderr != ''
+      each_machine(cli_arguments.shift) do |machine, provisioner|
+        puts "[#{machine.node['name']}] running '#{cli_arguments.join(' ')}'"
+        result = machine.execute(action_handler, cli_arguments.join(' '), :read_only => config[:read_only], :stream => config[:stream])
+        puts result.stdout if result.stdout != '' && !config[:stream] && Chef::Config.log_level != :debug
+        STDERR.puts result.stderr if result.stderr != '' && !config[:stream] && Chef::Config.log_level != :debug
         exit_code = result.exitstatus if result.exitstatus != 0
       end
-      exit(exit_code) if exit_code != 0
+    when 'converge'
+      each_machine(cli_arguments.shift) do |machine, provisioner|
+        machine.converge(action_handler)
+      end
+    when 'delete'
+      each_machine(cli_arguments.shift) do |machine, provisioner|
+        provisioner.delete_machine(action_handler, machine.node)
+      end
+    when 'update'
+      each_machine(cli_arguments.shift) do |machine, provisioner|
+        machine = provisioner.acquire_machine(action_handler, machine.node)
+        machine.setup_convergence(action_handler)
+        machine.converge(action_handler)
+      end
+    when 'stop'
+      each_machine(cli_arguments.shift) do |machine, provisioner|
+        provisioner.stop_machine(action_handler, machine.node)
+      end
+    when 'cat'
+      each_machine(cli_arguments.shift) do |machine, provisioner|
+        cli_arguments.each do |remote_path|
+          puts machine.read_file(remote_path)
+        end
+      end
     else
       Chef::Log.error("Command '#{command}' unrecognized")
     end
 
     Chef::Application.destroy_server_connectivity
+    exit(exit_code) if exit_code != 0
   end
+
+  private
 
   def rest
     @rest ||= Chef::ServerAPI.new()
@@ -124,17 +162,27 @@ class ChefMetal::Application < Chef::Application
 
   def each_machine(spec)
     spec.split(',').each do |name|
-      node = rest.get("/nodes/#{name}")
-      provisioner_output = node['normal']['provisioner_output']
-      if !provisioner_output
-        Chef::Log.error("Node #{name} was not provisioned with Metal.")
-        next
-      end
+      yield ChefMetal.connect_to_machine(name)
+    end
+  end
 
-      provisioner = ChefMetal.provisioner_for_node(node)
-      machine = provisioner.connect_to_machine(node)
+  def action_handler
+    @action_handler ||= ActionHandler.new
+  end
 
-      yield machine
+  class ActionHandler < ChefMetal::ActionHandler
+    def recipe_context
+      # TODO: somehow remove this code; should context really always be needed?
+      node = Chef::Node.new
+      node.name 'nothing'
+      node.automatic[:platform] = 'metal'
+      node.automatic[:platform_version] = ChefMetal::VERSION
+      Chef::RunContext.new(node, {},
+        Chef::EventDispatch::Dispatcher.new(Chef::Formatters::Doc.new(STDOUT,STDERR)))
+    end
+
+    def debug_name
+      'metal'
     end
   end
 end
