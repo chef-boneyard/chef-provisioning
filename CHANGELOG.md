@@ -1,5 +1,13 @@
 # Chef Metal Changelog
 
+## 0.8.1 (4/9/2014)
+
+- Bug: error! was not raising an error in the SSH and WinRM transports
+- Transports: stream output automatically when in debug
+- Support the :read_only execute hint (for Docker)
+- Add more metal command lines (converge, update, delete)
+- Add ChefMetal.connect_to_machine(machine_name) method to get Machine object for a node name
+
 ## 0.8 (4/8/2014)
 
 - New machine_execute resource! (irving@getchef.com)
