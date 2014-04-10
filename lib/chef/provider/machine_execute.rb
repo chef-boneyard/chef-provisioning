@@ -3,6 +3,8 @@ require 'cheffish/cheffish_server_api'
 
 class Chef::Provider::MachineExecute < Chef::Provider::LWRPBase
 
+  include ChefMetal::ProviderActionHandler
+
   use_inline_resources
 
   def whyrun_supported?
