@@ -31,7 +31,7 @@ module ChefMetal
       end
 
       def files_different?(path, local_path, content=nil)
-        if !file_exists?(path) || !File.exists?(local_path)
+        if !file_exists?(path) || (local_path && !File.exists?(local_path))
           return true
         end
 

@@ -53,6 +53,38 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
   # or force it with "true"
   attribute :converge, :kind_of => [TrueClass, FalseClass]
 
+  # A list of files to upload, in the format REMOTE_PATH => LOCAL_PATH|HASH.
+  # == Examples
+  # files '/remote/path.txt' => '/local/path.txt'
+  # files '/remote/path.txt' => { :local_path => '/local/path.txt' }
+  # files '/remote/path.txt' => { :content => 'woo' }
+  attribute :files, :kind_of => Hash
+
+  # A single file to upload, in the format REMOTE_PATH, LOCAL_PATH|HASH.
+  # This directive may be passed multiple times, and multiple files will be uploaded.
+  # == Examples
+  # file '/remote/path.txt', '/local/path.txt'
+  # file '/remote/path.txt', { :local_path => '/local/path.txt' }
+  # file '/remote/path.txt', { :content => 'woo' }
+  def file(remote_path, local = nil)
+    @files ||= {}
+    if remote_path.is_a?(Hash)
+      if local
+        raise "file(Hash, something) does not make sense.  Either pass a hash, or pass a pair, please."
+      end
+      remote_path.each_pair do |remote, local|
+        @files[remote] = local
+      end
+    elsif remote_path.is_a?(String)
+      if !local
+        raise "Must pass both a remote path and a local path to file directive"
+      end
+      @files[remote_path] = local
+    else
+      raise "file remote_path must be a String, but is a #{remote_path.class}"
+    end
+  end
+
   # chef client version and omnibus
   # chef-zero boot method?
   # chef-client -z boot method?
