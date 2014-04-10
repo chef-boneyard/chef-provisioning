@@ -15,6 +15,7 @@ module ChefMetal
         @package_cache_path ||= options[:package_cache_path] || "#{ENV['HOME']}/.chef/package_cache"
         @package_cache = {}
         @tmp_dir = '/tmp'
+        @chef_client_timeout = options.has_key?(:chef_client_timeout) ? options[:chef_client_timeout] : 120*60 # Default: 2 hours
         FileUtils.mkdir_p(@package_cache_path)
         @package_cache_lock = Mutex.new
       end
@@ -33,7 +34,7 @@ module ChefMetal
       end
 
       def converge(action_handler, machine)
-        machine.execute(action_handler, "chef-client -l #{Chef::Config.log_level.to_s}", :stream => true)
+        machine.execute(action_handler, "chef-client -l #{Chef::Config.log_level.to_s}", :stream => true, :timeout => @chef_client_timeout)
       end
 
       private

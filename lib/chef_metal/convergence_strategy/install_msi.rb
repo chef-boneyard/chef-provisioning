@@ -9,6 +9,7 @@ module ChefMetal
       def initialize(options = {})
         @install_msi_url = options[:install_msi_url] || 'http://www.opscode.com/chef/install.msi'
         @install_msi_path = options[:install_msi_path] || "%TEMP%\\#{File.basename(@install_msi_url)}"
+        @chef_client_timeout = options.has_key?(:chef_client_timeout) ? options[:chef_client_timeout] : 120*60 # Default: 2 hours
       end
 
       attr_reader :install_msi_url
@@ -34,7 +35,7 @@ module ChefMetal
 
       def converge(action_handler, machine)
         # TODO For some reason I get a 500 back if I don't do -l debug
-        machine.execute(action_handler, "chef-client -l debug")
+        machine.execute(action_handler, "chef-client -l debug", :stream => true, :timeout => @chef_client_timeout)
       end
     end
   end

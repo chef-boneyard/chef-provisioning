@@ -5,8 +5,7 @@ end
 machine 'mario' do
   #recipe 'mydb'
   tag 'mydb_master'
-  files '/etc/woo.txt' => '/tmp/blah.txt'
-  action :create#[:delete, :create]
+  action [:delete, :create]
 end
 
 machine_file '/etc/blah.conf' do

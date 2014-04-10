@@ -11,6 +11,7 @@ module ChefMetal
         @install_sh_path = options[:install_sh_path] || '/tmp/chef-install.sh'
         @client_rb_path ||= '/etc/chef/client.rb'
         @client_pem_path ||= '/etc/chef/client.pem'
+        @chef_client_timeout = options.has_key?(:chef_client_timeout) ? options[:chef_client_timeout] : 120*60 # Default: 2 hours
       end
 
       attr_reader :install_sh_url
@@ -29,7 +30,7 @@ module ChefMetal
       end
 
       def converge(action_handler, machine)
-        machine.execute(action_handler, "chef-client -l #{Chef::Config.log_level.to_s}", :stream => true)
+        machine.execute(action_handler, "chef-client -l #{Chef::Config.log_level.to_s}", :stream => true, :timeout => @chef_client_timeout)
       end
     end
   end
