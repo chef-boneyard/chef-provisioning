@@ -24,6 +24,12 @@ module ChefMetal
         end
       end
 
+      def is_directory?(path)
+        result = transport.execute("stat -c '%F' #{path}", :read_only => true)
+        return nil if result.exitstatus != 0
+        result.stdout.chomp == 'directory'
+      end
+
       # Return true or false depending on whether file exists
       def file_exists?(path)
         result = transport.execute("ls -d #{path}", :read_only => true)
@@ -31,7 +37,7 @@ module ChefMetal
       end
 
       def files_different?(path, local_path, content=nil)
-        if !file_exists?(path)
+        if !file_exists?(path) || !File.exists?(local_path)
           return true
         end
 
@@ -85,7 +91,9 @@ module ChefMetal
 
       # Get file attributes { :mode, :owner, :group }
       def get_attributes(path)
-        file_info = transport.execute("stat -c '%a %U %G %n' #{path}", :read_only => true).stdout.split(/\s+/)
+        result = transport.execute("stat -c '%a %U %G %n' #{path}", :read_only => true)
+        return nil if result.exitstatus != 0
+        file_info = result.stdout.split(/\s+/)
         if file_info.size <= 1
           raise "#{path} does not exist in set_attributes()"
         end

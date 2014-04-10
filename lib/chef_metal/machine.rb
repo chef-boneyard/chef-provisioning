@@ -50,6 +50,11 @@ module ChefMetal
       raise "delete_file not overridden on #{self.class}"
     end
 
+    # Return true if directory, false/nil if not
+    def is_directory?(path)
+      raise "is_directory? not overridden on #{self.class}"
+    end
+
     # Return true or false depending on whether file exists
     def file_exists?(path)
       raise "file_exists? not overridden on #{self.class}"

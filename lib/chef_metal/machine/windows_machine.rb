@@ -21,12 +21,20 @@ module ChefMetal
         end
       end
 
+      def is_directory?(path)
+        parse_boolean(transport.execute("Test-Path #{escape(path)} -pathtype container", :read_only => true).stdout)
+      end
+
       # Return true or false depending on whether file exists
       def file_exists?(path)
         parse_boolean(transport.execute("Test-Path #{escape(path)}", :read_only => true).stdout)
       end
 
       def files_different?(path, local_path, content=nil)
+        if !file_exists?(path) || !File.exists?(local_path)
+          return true
+        end
+
         # Get remote checksum of file (from http://stackoverflow.com/a/13926809)
         result = transport.execute(<<-EOM, :read_only => true)
 $md5 = [System.Security.Cryptography.MD5]::Create("MD5")

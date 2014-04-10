@@ -57,6 +57,10 @@ class ChefMetal::Application < Chef::Application
     :description  => "Point chef-client at local repository",
     :boolean      => true
 
+  option :chef_repo_path,
+    :long         => '--chef-repo-path=PATH',
+    :description  => "Path to Chef repository"
+
   option :chef_zero_port,
     :long         => "--chef-zero-port PORT",
     :description  => "Port to start chef-zero on"
@@ -72,14 +76,16 @@ class ChefMetal::Application < Chef::Application
     :description  => "Whether to stream output from the machine (default: true)"
 
   option :timeout,
-    :long         => "--timeout",
+    :long         => "--timeout=TIMEOUT",
     :default      => 15*60,
     :description  => "Time to wait for program to execute, or 0 for no timeout (default: 15 minutes)"
 
   def reconfigure
     super
 
-    Chef::Config[:chef_server_url] = config[:chef_server_url] if config.has_key? :chef_server_url
+    Chef::Config.chef_server_url = config[:chef_server_url] if config.has_key? :chef_server_url
+
+    Chef::Config.chef_repo_path = config[:chef_repo_path] if config.has_key? :chef_repo_path
 
     Chef::Config.local_mode = config[:local_mode] if config.has_key?(:local_mode)
     if Chef::Config.local_mode && !Chef::Config.has_key?(:cookbook_path) && !Chef::Config.has_key?(:chef_repo_path)
@@ -121,8 +127,7 @@ class ChefMetal::Application < Chef::Application
     case command
     when 'execute'
       each_machine(cli_arguments.shift) do |machine, provisioner|
-        puts "[#{machine.node['name']}] running '#{cli_arguments.join(' ')}'"
-        result = machine.execute(action_handler, cli_arguments.join(' '), :read_only => config[:read_only], :stream => config[:stream], :timeout => config[:timeout])
+        result = machine.execute(action_handler, cli_arguments.join(' '), :read_only => config[:read_only], :stream => config[:stream], :timeout => config[:timeout].to_f)
         puts result.stdout if result.stdout != '' && !config[:stream] && Chef::Config.log_level != :debug
         STDERR.puts result.stderr if result.stderr != '' && !config[:stream] && Chef::Config.log_level != :debug
         exit_code = result.exitstatus if result.exitstatus != 0
@@ -149,6 +154,47 @@ class ChefMetal::Application < Chef::Application
       each_machine(cli_arguments.shift) do |machine, provisioner|
         cli_arguments.each do |remote_path|
           puts machine.read_file(remote_path)
+        end
+      end
+    when 'cp'
+      machines = {}
+      to = cli_arguments.pop
+      if to =~ /^([^\/:]+):(.+)$/
+        to_server = $1
+        machines[to_server] ||= ChefMetal.connect_to_machine(to_server)
+        to_path = $2
+        to_is_directory = machines[to_server].is_directory?(to_path)
+      else
+        to_server = nil
+        to_path = File.absolute_path(to)
+      end
+
+      cli_arguments.each do |from|
+        if from =~ /^([^\/:]+):(.+)$/
+          from_server = $1
+          from_path = $2
+          if to_server
+            raise "Cannot copy from one server to another, or intraserver (from=#{from}, to=#{to})"
+          end
+
+          machines[from_server] ||= ChefMetal.connect_to_machine(from_server)
+          if File.directory?(to_path)
+            machines[from_server].download_file(action_handler, from_path, "#{to_path}/#{File.basename(from_path)}")
+          else
+            machines[from_server].download_file(action_handler, from_path, to_path)
+          end
+        else
+          from_server = nil
+          from_path = File.absolute_path(from)
+          if !to_server
+            raise "Cannot copy two local files.  One of the arguments must be MACHINE:PATH.  (from=#{from}, to=#{to})"
+          end
+
+          if to_is_directory
+            machines[to_server].upload_file(action_handler, from_path, "#{to_path}/#{File.basename(from_path)}")
+          else
+            machines[to_server].upload_file(action_handler, from_path, to_path)
+          end
         end
       end
     else
