@@ -8,7 +8,9 @@ require 'chef_metal/convergence_strategy/install_msi'
 require 'chef_metal/convergence_strategy/install_cached'
 require 'chef_metal/transport/ssh'
 require 'fog'
+require 'fog/core'
 require 'fog/compute'
+require 'fog/aws'
 
 module ChefMetalFog
   # Provisions machines in vagrant.
@@ -152,19 +154,12 @@ module ChefMetalFog
       # Set up the modified node data
       provisioner_output = node['normal']['provisioner_output'] || {
         'provisioner_url' => provisioner_url,
-        'provisioner_version' => ChefMetal::VERSION,
+        'provisioner_version' => ChefMetalFog::VERSION,
         'creator' => aws_login_info[1]
       }
 
       if provisioner_output['provisioner_url'] != provisioner_url
-        if (provisioner_output['provisioner_version'].to_f <= 0.3) && provisioner_output['provisioner_url'].start_with?('fog:AWS:') && compute_options[:provider] == 'AWS'
-          Chef::Log.warn "The upgrade from chef-metal 0.3 to 0.4 changed the provisioner URL format!  Metal will assume you are in fact using the same AWS account, and modify the provisioner URL to match."
-          provisioner_output['provisioner_url'] = provisioner_url
-          provisioner_output['provisioner_version'] ||= ChefMetal::VERSION
-          provisioner_output['creator'] ||= aws_login_info[1]
-        else
-          raise "Switching providers for a machine is not currently supported!  Use machine :destroy and then re-create the machine on the new action_handler."
-        end
+        raise "Switching a machine's provider from #{provisioner_output['provisioner_url']} to #{provisioner_url} for is not currently supported!  Use machine :destroy and then re-create the machine on the new provisioner."
       end
 
       node['normal']['provisioner_output'] = provisioner_output
@@ -332,7 +327,6 @@ module ChefMetalFog
       @base_bootstrap_options_for[machine] = current_base_bootstrap_options
     end
 
-
     def compute
       @compute ||= Fog::Compute.new(compute_options)
     end
@@ -466,11 +460,17 @@ module ChefMetalFog
     def convergence_strategy_for(node)
       if node['normal']['provisioner_options'] && node['normal']['provisioner_options']['is_windows']
         @windows_convergence_strategy ||= begin
-          ChefMetal::ConvergenceStrategy::InstallMsi.new
+          options = {}
+          provisioner_options = node['normal']['provisioner_options'] || {}
+          options[:chef_client_timeout] = provisioner_options['chef_client_timeout'] if provisioner_options.has_key?('chef_client_timeout')
+          ChefMetal::ConvergenceStrategy::InstallMsi.new(options)
         end
       else
         @unix_convergence_strategy ||= begin
-          ChefMetal::ConvergenceStrategy::InstallCached.new
+          options = {}
+          provisioner_options = node['normal']['provisioner_options'] || {}
+          options[:chef_client_timeout] = provisioner_options['chef_client_timeout'] if provisioner_options.has_key?('chef_client_timeout')
+          ChefMetal::ConvergenceStrategy::InstallCached.new(options)
         end
       end
     end
