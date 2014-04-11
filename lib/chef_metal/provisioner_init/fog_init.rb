@@ -1,4 +1,4 @@
-require 'chef_metal/provisioner/fog_provisioner'
+require 'chef_metal_fog/fog_provisioner'
 
 ChefMetal.add_registered_provisioner_class("fog",
-  ChefMetal::Provisioner::FogProvisioner)
+  ChefMetalFog::FogProvisioner)
