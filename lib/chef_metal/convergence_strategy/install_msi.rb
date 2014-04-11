@@ -33,7 +33,9 @@ module ChefMetal
         end
       end
 
-      def converge(action_handler, machine)
+      def converge(action_handler, machine, chef_server)
+        super
+        
         # TODO For some reason I get a 500 back if I don't do -l debug
         machine.execute(action_handler, "chef-client -l debug", :stream => true, :timeout => @chef_client_timeout)
       end

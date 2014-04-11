@@ -2,7 +2,6 @@
 
 require 'rubygems'
 $:.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
-require 'chef'
 require 'chef_metal'
 require 'chef/rest'
 require 'chef/application'
@@ -134,7 +133,7 @@ class ChefMetal::Application < Chef::Application
       end
     when 'converge'
       each_machine(cli_arguments.shift) do |machine, provisioner|
-        machine.converge(action_handler)
+        machine.converge(action_handler, chef_server)
       end
     when 'delete'
       each_machine(cli_arguments.shift) do |machine, provisioner|
@@ -143,8 +142,9 @@ class ChefMetal::Application < Chef::Application
     when 'update'
       each_machine(cli_arguments.shift) do |machine, provisioner|
         machine = provisioner.acquire_machine(action_handler, machine.node)
+        # TODO find out what files were uploaded so we can do it again
         machine.setup_convergence(action_handler)
-        machine.converge(action_handler)
+        machine.converge(action_handler, chef_server)
       end
     when 'stop'
       each_machine(cli_arguments.shift) do |machine, provisioner|
@@ -219,6 +219,16 @@ class ChefMetal::Application < Chef::Application
 
   def action_handler
     @action_handler ||= ActionHandler.new
+  end
+
+  def chef_server
+    {
+      :chef_server_url => Chef::Config[:chef_server_url],
+      :options => {
+        :client_name => Chef::Config[:node_name],
+        :signing_key_filename => Chef::Config[:client_key]
+      }
+    }
   end
 
   class ActionHandler < ChefMetal::ActionHandler

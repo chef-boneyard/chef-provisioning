@@ -104,9 +104,11 @@ module ChefMetal
         uri = URI(local_url)
         host = Socket.getaddrinfo(uri.host, uri.scheme, nil, :STREAM)[0][3]
         if host == '127.0.0.1' || host == '[::1]'
-          # TODO IPv6
-          Chef::Log.debug("Forwarding local server 127.0.0.1:#{uri.port} to port #{uri.port} on #{username}@#{host}")
-          session.forward.remote(uri.port, "127.0.0.1", uri.port)
+          unless session.forward.active_remotes.any? { |port, bind| port == uri.port && bind == '127.0.0.1' }
+            # TODO IPv6
+            Chef::Log.debug("Forwarding local server 127.0.0.1:#{uri.port} to port #{uri.port} on #{username}@#{host}")
+            session.forward.remote(uri.port, '127.0.0.1', uri.port)
+          end
         end
         local_url
       end

@@ -21,6 +21,7 @@ module ChefMetal
         create_chef_objects(action_handler, machine, machine_resource, public_key)
 
         # If the chef server lives on localhost, tunnel the port through to the guest
+        # (we need to know what got tunneled!)
         chef_server_url = machine_resource.chef_server[:chef_server_url]
         chef_server_url = machine.make_url_available_to_remote(chef_server_url)
 
@@ -30,6 +31,10 @@ module ChefMetal
         # Create client.rb and client.pem on machine
         content = client_rb_content(chef_server_url, machine.node['name'])
         machine.write_file(action_handler, client_rb_path, content, :ensure_dir => true)
+      end
+
+      def converge(action_handler, machine, chef_server)
+        machine.make_url_available_to_remote(chef_server[:chef_server_url])
       end
 
       def cleanup_convergence(action_handler, node)

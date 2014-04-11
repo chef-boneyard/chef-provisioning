@@ -4,7 +4,6 @@ api_key = ENV['DIGITALOCEAN_API_KEY']
 client_id = ENV['DIGITALOCEAN_CLIENT_ID']
 ec2testdir = File.expand_path('~/ec2test')
 
-
 directory ec2testdir
 
 with_fog_provisioner :provider => 'DigitalOcean',

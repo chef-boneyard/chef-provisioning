@@ -76,6 +76,7 @@ module ChefMetal
       raise "Node #{name} was not provisioned with Metal."
     end
     provisioner = provisioner_for_node(node)
-    provisioner.connect_to_machine(node)
+    machine = provisioner.connect_to_machine(node)
+    [ machine, provisioner ]
   end
 end

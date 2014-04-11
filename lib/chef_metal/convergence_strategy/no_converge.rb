@@ -19,9 +19,6 @@ module ChefMetal
         end
       end
 
-      def converge(action_handler, machine)
-      end
-
       def cleanup_convergence(action_handler, node)
         ChefMetal.inline_resource(action_handler) do
           chef_node node['name'] do

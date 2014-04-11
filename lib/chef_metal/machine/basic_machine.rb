@@ -19,8 +19,8 @@ module ChefMetal
         convergence_strategy.setup_convergence(action_handler, self, machine_resource)
       end
 
-      def converge(action_handler)
-        convergence_strategy.converge(action_handler, self)
+      def converge(action_handler, chef_server)
+        convergence_strategy.converge(action_handler, self, chef_server)
       end
 
       def execute(action_handler, command, options = {})

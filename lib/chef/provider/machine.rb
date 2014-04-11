@@ -23,7 +23,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
       # If we were asked to converge, or anything changed, or if a converge has never succeeded, converge.
       if new_resource.converge || (new_resource.converge.nil? && resource_updated?) ||
          !node_json['automatic'] || node_json['automatic'].size == 0
-        machine.converge(self)
+        machine.converge(self, new_resource.chef_server)
       end
     ensure
       machine.disconnect
@@ -35,7 +35,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
     node_json['normal']['provisioner_options'] = new_resource.provisioner_options
     machine = new_resource.provisioner.connect_to_machine(node_json)
     begin
-      machine.converge(self)
+      machine.converge(self, new_resource.chef_server)
     ensure
       machine.disconnect
     end

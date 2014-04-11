@@ -4,7 +4,7 @@ module ChefMetal
       raise "setup_convergence not overridden on #{self.class}"
     end
 
-    def converge(action_handler, machine)
+    def converge(action_handler, machine, chef_server)
       raise "converge not overridden on #{self.class}"
     end
 
