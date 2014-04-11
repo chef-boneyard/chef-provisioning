@@ -1,5 +1,13 @@
 # Chef Metal Changelog
 
+## 0.9 (4/9/2014)
+
+- Add `files` and `file` attributes to the `machine` resource
+- Fix `machine_execute` resource (@irvingpop)
+- Make chef-client timeout longer by default (2 hours)
+- Make chef_client_timeout a configurable option for all convergence strategies and provisioner_options
+- Add `metal cp` command
+
 ## 0.8.2 (4/9/2014)
 
 - Add timeout support to execute
