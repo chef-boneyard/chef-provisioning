@@ -4,6 +4,7 @@
 
 - Add `files` and `file` attributes to the `machine` resource
 - Fix `machine_execute` resource (@irvingpop)
+- Fix `machine :converge` action (thanks @double-z)
 - Make chef-client timeout longer by default (2 hours)
 - Make chef_client_timeout a configurable option for all convergence strategies and provisioner_options
 - Add `metal cp` command
