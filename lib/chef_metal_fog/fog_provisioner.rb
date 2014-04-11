@@ -139,9 +139,11 @@ module ChefMetalFog
     #           -- ssh_timeout - the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
     #
     #        Example bootstrap_options for ec2:
-    #           :image_id =>'ami-311f2b45',
-    #           :flavor_id =>'t1.micro',
-    #           :key_name => 'key-pair-name'
+    #          'bootstrap_options' => {
+    #            'image_id' =>'ami-311f2b45',
+    #            'flavor_id' =>'t1.micro',
+    #            'key_name' => 'key-pair-name'
+    #          }
     #
     #        node['normal']['provisioner_output'] will be populated with information
     #        about the created machine.  For vagrant, it is a hash with this
