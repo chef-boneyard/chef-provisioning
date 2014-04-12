@@ -1,5 +1,9 @@
 # Chef Metal Changelog
 
+## 0.9.1 (4/11/2014)
+
+- Make write_file and upload_file create parent directory
+
 ## 0.9 (4/9/2014)
 
 - Add `files` and `file` attributes to the `machine` resource
