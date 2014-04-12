@@ -75,12 +75,13 @@ module ChefMetal
       end
 
       def write_file(path, content)
+        execute("mkdir -p #{File.dirname(path)}").error!
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
           remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
           Chef::Log.debug("Writing #{content.length} bytes to #{remote_tempfile} on #{username}@#{host}")
           Net::SCP.new(session).upload!(StringIO.new(content), remote_tempfile)
-          execute("mv #{remote_tempfile} #{path}")
+          execute("mv #{remote_tempfile} #{path}").error!
         else
           Chef::Log.debug("Writing #{content.length} bytes to #{path} on #{username}@#{host}")
           Net::SCP.new(session).upload!(StringIO.new(content), path)
@@ -88,12 +89,13 @@ module ChefMetal
       end
 
       def upload_file(local_path, path)
+        execute("mkdir -p #{File.dirname(path)}").error!
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
           remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
           Chef::Log.debug("Uploading #{local_path} to #{remote_tempfile} on #{username}@#{host}")
           Net::SCP.new(session).upload!(local_path, remote_tempfile)
-          execute("mv #{remote_tempfile} #{path}")
+          execute("mv #{remote_tempfile} #{path}").error!
         else
           Chef::Log.debug("Uploading #{local_path} to #{path} on #{username}@#{host}")
           Net::SCP.new(session).upload!(local_path, path)
