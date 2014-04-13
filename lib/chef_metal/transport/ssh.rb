@@ -25,6 +25,7 @@ module ChefMetal
         stdout = ''
         stderr = ''
         exitstatus = nil
+        session # grab session outside timeout, it has its own timeout
         with_execute_timeout(execute_options) do
           channel = session.open_channel do |channel|
             # Enable PTY unless otherwise specified, some instances require this
@@ -141,7 +142,11 @@ module ChefMetal
         @session ||= begin
           Chef::Log.debug("Opening SSH connection to #{username}@#{host} with options #{ssh_options.inspect}")
           # Small initial connection timeout (10s) to help us fail faster when server is just dead
-          Net::SSH.start(host, username, { :timeout => 10 }.merge(ssh_options))
+          begin
+            Net::SSH.start(host, username, { :timeout => 10 }.merge(ssh_options))
+          rescue Timeout::Error
+            raise InitialConnectTimeout.new($!)
+          end
         end
       end
 
@@ -184,6 +189,15 @@ module ChefMetal
             raise msg
           end
         end
+      end
+
+      class InitialConnectTimeout < Timeout::Error
+        def initialize(original_error)
+          super(original_error.message)
+          @original_error = original_error
+        end
+
+        attr_reader :original_error
       end
     end
   end
