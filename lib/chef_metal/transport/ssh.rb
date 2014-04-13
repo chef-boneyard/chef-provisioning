@@ -25,34 +25,34 @@ module ChefMetal
         stdout = ''
         stderr = ''
         exitstatus = nil
-        channel = session.open_channel do |channel|
-          # Enable PTY unless otherwise specified, some instances require this
-          unless options[:ssh_pty_enable] == false
-            channel.request_pty do |chan, success|
-               raise "could not get pty" if !success && options[:ssh_pty_enable]
-            end
-          end
-
-          channel.exec("#{options[:prefix]}#{command}") do |ch, success|
-            raise "could not execute command: #{command.inspect}" unless success
-
-            channel.on_data do |ch2, data|
-              stdout << data
-              stream_chunk(execute_options, data, nil)
-            end
-
-            channel.on_extended_data do |ch2, type, data|
-              stderr << data
-              stream_chunk(execute_options, nil, data)
-            end
-
-            channel.on_request "exit-status" do |ch, data|
-              exitstatus = data.read_long
-            end
-          end
-        end
-
         with_execute_timeout(execute_options) do
+          channel = session.open_channel do |channel|
+            # Enable PTY unless otherwise specified, some instances require this
+            unless options[:ssh_pty_enable] == false
+              channel.request_pty do |chan, success|
+                 raise "could not get pty" if !success && options[:ssh_pty_enable]
+              end
+            end
+
+            channel.exec("#{options[:prefix]}#{command}") do |ch, success|
+              raise "could not execute command: #{command.inspect}" unless success
+
+              channel.on_data do |ch2, data|
+                stdout << data
+                stream_chunk(execute_options, data, nil)
+              end
+
+              channel.on_extended_data do |ch2, type, data|
+                stderr << data
+                stream_chunk(execute_options, nil, data)
+              end
+
+              channel.on_request "exit-status" do |ch, data|
+                exitstatus = data.read_long
+              end
+            end
+          end
+
           channel.wait
         end
 
@@ -127,9 +127,10 @@ module ChefMetal
       end
 
       def available?
-        execute('pwd')
+        # If you can't pwd within 10 seconds, you can't pwd
+        execute('pwd', :timeout => 10)
         true
-      rescue Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, Net::SSH::AuthenticationFailed, Net::SSH::Disconnect, Net::SSH::HostKeyMismatch
+      rescue Timeout::Error, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, Net::SSH::AuthenticationFailed, Net::SSH::Disconnect, Net::SSH::HostKeyMismatch
         Chef::Log.debug("#{username}@#{host} unavailable: could not execute 'pwd' on #{host}: #{$!.inspect}")
         false
       end
@@ -139,7 +140,8 @@ module ChefMetal
       def session
         @session ||= begin
           Chef::Log.debug("Opening SSH connection to #{username}@#{host} with options #{ssh_options.inspect}")
-          Net::SSH.start(host, username, ssh_options)
+          # Small initial connection timeout (10s) to help us fail faster when server is just dead
+          Net::SSH.start(host, username, { :timeout => 10 }.merge(ssh_options))
         end
       end
 
