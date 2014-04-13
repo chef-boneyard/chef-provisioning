@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'net-ssh', '~> 2.0'
   s.add_dependency 'net-scp', '~> 1.0'
   s.add_dependency 'inifile', '~> 2.0'
-  s.add_dependency 'chef-metal-fog', '~> 0.2'
+  s.add_dependency 'chef-metal-fog', '~> 0.3'
   s.add_dependency 'chef-metal-vagrant', '~> 0.2'
 #  s.add_dependency 'ruby-lxc'
 

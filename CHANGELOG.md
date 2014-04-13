@@ -1,5 +1,9 @@
 # Chef Metal Changelog
 
+## 0.9.2 (4/13/2014)
+
+- Timeout stability fixes (makes EC2 a little stabler for some AMIs)
+
 ## 0.9.1 (4/11/2014)
 
 - Make write_file and upload_file create parent directory
