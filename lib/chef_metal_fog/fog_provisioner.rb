@@ -242,7 +242,7 @@ module ChefMetalFog
                 begin
                   transport.execute('pwd')
                   true
-                rescue ChefMetal::Transport::SSH::InitialConnectTimeout, Errno::ECONNREFUSED, Net::SSH::Disconnect
+                rescue ChefMetal::Transport::SSH::InitialConnectTimeout, Errno::ECONNREFUSED, Net::SSH::Disconnect, Errno::EHOSTUNREACH
                   false
                 rescue
                   true
