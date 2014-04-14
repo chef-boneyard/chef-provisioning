@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 (4/13/2014)
+
+- Treat EHOSTUNREACH as "machine not yet available"
+
 ## 0.3 (4/13/2014)
 
 - Catch new initial connect timeout from chef-metal
