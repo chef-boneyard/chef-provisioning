@@ -1,5 +1,9 @@
 # Chef Metal Changelog
 
+## 0.9.3 (4/13/2014)
+
+- SSH: Treat EHOSTUNREACH as "machine not yet available" (helps with AWS)
+
 ## 0.9.2 (4/13/2014)
 
 - Timeout stability fixes (makes EC2 a little stabler for some AMIs)
