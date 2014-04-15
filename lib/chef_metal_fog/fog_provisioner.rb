@@ -296,7 +296,6 @@ module ChefMetalFog
     #    https://github.com/test-kitchen/kitchen-openstack/blob/master/lib/kitchen/driver/openstack.rb#L209-L213
     def attach_ip(server, allocation_id, ip)
       Chef::Log.info "Attaching floating IP <#{ip}>"
-      server.associate_address ip
       compute.associate_address(:instance_id => server.id,
                                 :allocation_id => allocation_id
                                 :public_ip => ip)
