@@ -1,5 +1,5 @@
-ChefMetal
-=========
+Chef Metal
+==========
 
 This library solves the problem of repeatably creating machines and infrastructures in Chef.  It has a plugin model that lets you write bootstrappers for your favorite infrastructures, including VirtualBox, EC2, LXC, bare metal, and many more!
 
@@ -54,6 +54,11 @@ end
 
 You will notice the dynamic nature of the number of web servers.  It's all code, your imagination is the limit :)
 
+Kitchen
+-------
+
+Chef Metal also works with Test Kitchen, allowing you to test entire clusters, not just machines!  The repository for the kitchen-metal gem is https://github.com/doubt72/kitchen-metal.
+
 Provisioners
 ------------
 
@@ -66,6 +71,21 @@ Provisioners handle the real work of getting those abstract definitions into rea
 The provisioner API is separated out so that new provisioners can be made with minimal effort (without having to rewrite ssh, tunneling, bootstrapping, and OS support).  But to the user, they appear as a single thing, so that the machine acquisition can use its smarts to autodetect the other bits (transports, OS's, etc.).
 
 Provisioners save their data in the Chef node itself, so that they will be accessible to everyone who is using the Chef server to manage the nodes.
+
+Provisioners each have their own repository.  Current provisioners:
+
+**Cloud:**
+- [FOG: EC2, DigitalOcean, OpenStack, etc.](https://github.com/opscode/chef-metal-fog)
+
+**Virtualization:**
+- [Vagrant: VirtualBox, VMWare Fusion, etc.](https://github.com/opscode/chef-metal-vagrant)
+
+**Containers:**
+- [LXC](https://github.com/opscode/chef-metal-lxc)
+- [Docker](https://github.com/opscode/chef-metal-docker)
+
+**Bare Metal:**
+- [SSH (no PXE)](https://github.com/double-z/chef-metal-ssh)
 
 ### Vagrant
 
