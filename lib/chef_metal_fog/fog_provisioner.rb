@@ -227,7 +227,7 @@ module ChefMetalFog
             Chef::Log.info 'Attaching given IP'
             server.wait_for { ready? }
             action_handler.perform_action "attach floating IP #{bootstrap_options[:floating_ip]}" do
-              attach_ip(server, bootstrap_options[:floating_ip])
+              attach_ip(server, bootstrap_options[:allocation_id], bootstrap_options[:floating_ip])
             end
           end
           action_handler.perform_action "machine #{node['name']} created as #{server.id} on #{provisioner_url}" do
@@ -294,9 +294,12 @@ module ChefMetalFog
     # Attach given IP to machine
     # Code taken from kitchen-openstack driver
     #    https://github.com/test-kitchen/kitchen-openstack/blob/master/lib/kitchen/driver/openstack.rb#L209-L213
-    def attach_ip(server, ip)
+    def attach_ip(server, allocation_id, ip)
       Chef::Log.info "Attaching floating IP <#{ip}>"
       server.associate_address ip
+      compute.associate_address(:instance_id => server.id,
+                                :allocation_id => allocation_id
+                                :public_ip => ip)
       (server.addresses['public'] ||= []) << { 'version' => 4, 'addr' => ip }
     end
 
