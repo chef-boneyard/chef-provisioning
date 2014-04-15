@@ -154,10 +154,17 @@ module ChefMetalFog
     #
     def acquire_machine(action_handler, node)
       # Set up the modified node data
+      creator = case compute_options[:provider]
+        when 'AWS'
+          aws_login_info[1]
+        when 'Openstack'
+          compute_options['openstack_username']
+      end
+
       provisioner_output = node['normal']['provisioner_output'] || {
         'provisioner_url' => provisioner_url,
         'provisioner_version' => ChefMetalFog::VERSION,
-        'creator' => aws_login_info[1]
+        'creator' => creator
       }
 
       if provisioner_output['provisioner_url'] != provisioner_url
