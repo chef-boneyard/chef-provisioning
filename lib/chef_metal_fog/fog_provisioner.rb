@@ -157,8 +157,8 @@ module ChefMetalFog
       creator = case compute_options[:provider]
         when 'AWS'
           aws_login_info[1]
-        when 'Openstack'
-          compute_options['openstack_username']
+        when 'OpenStack'
+          compute_options[:openstack_username]
       end
 
       provisioner_output = node['normal']['provisioner_output'] || {
@@ -304,7 +304,7 @@ module ChefMetalFog
     def attach_ip(server, allocation_id, ip)
       Chef::Log.info "Attaching floating IP <#{ip}>"
       compute.associate_address(:instance_id => server.id,
-                                :allocation_id => allocation_id
+                                :allocation_id => allocation_id,
                                 :public_ip => ip)
       (server.addresses['public'] ||= []) << { 'version' => 4, 'addr' => ip }
     end
@@ -496,7 +496,7 @@ module ChefMetalFog
         :host_key_alias => "#{server.id}.#{compute_options[:provider]}"
       }
       if server.respond_to?(:private_key) && server.private_key
-        result[:keys] = [ server.private_key ]
+        result[:key_data] = [ server.private_key ]
       elsif server.respond_to?(:key_name) && key_pairs[server.key_name]
         # TODO generalize for others?
         result[:keys] ||= [ key_pairs[server.key_name].private_key_path ]
