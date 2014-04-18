@@ -306,7 +306,6 @@ module ChefMetalFog
       compute.associate_address(:instance_id => server.id,
                                 :allocation_id => allocation_id,
                                 :public_ip => ip)
-      (server.addresses['public'] ||= []) << { 'version' => 4, 'addr' => ip }
     end
 
     # Connect to machine without acquiring it
