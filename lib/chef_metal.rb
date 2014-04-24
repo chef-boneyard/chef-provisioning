@@ -2,6 +2,8 @@
 require 'chef_metal/recipe_dsl'
 require 'chef/resource/machine'
 require 'chef/provider/machine'
+require 'chef/resource/machine_batch'
+require 'chef/provider/machine_batch'
 require 'chef/resource/machine_file'
 require 'chef/provider/machine_file'
 require 'chef/resource/machine_execute'
@@ -34,8 +36,29 @@ module ChefMetal
     end
   end
 
+  def self.with_machine_batch(machine_batch)
+    old_machine_batch = ChefMetal.enclosing_machine_batch
+    ChefMetal.enclosing_machine_batch = machine_batch
+    if block_given?
+      begin
+        yield
+      ensure
+        ChefMetal.enclosing_machine_batch = old_machine_batch
+      end
+    end
+  end
+
+
   def self.inline_resource(action_handler, &block)
     InlineResource.new(action_handler).instance_eval(&block)
+  end
+
+  @@enclosing_machine_batch = nil
+  def self.enclosing_machine_batch
+    @@enclosing_machine_batch
+  end
+  def self.enclosing_machine_batch=(machine_batch)
+    @@enclosing_machine_batch = machine_batch
   end
 
   @@enclosing_provisioner = nil
@@ -55,6 +78,7 @@ module ChefMetal
     @@enclosing_provisioner_options = provisioner_options
   end
 
+  # Helpers for provisioner inflation
   @@registered_provisioner_classes = {}
   def self.add_registered_provisioner_class(name, provisioner)
     @@registered_provisioner_classes[name] = provisioner

@@ -1,5 +1,6 @@
 require 'chef/provider/lwrp_base'
 require 'cheffish/cheffish_server_api'
+require 'chef_metal/provider_action_handler'
 
 class Chef::Provider::MachineFile < Chef::Provider::LWRPBase
 

@@ -12,6 +12,12 @@ module ChefMetal
       raise "#{self.class} does not override self.inflate"
     end
 
+    def start_acquire_machines(action_handler, nodes)
+    end
+
+    def start_acquire_machine(action_handler, node)
+    end
+
     # Acquire a machine, generally by provisioning it.  Returns a Machine
     # object pointing at the machine, allowing useful actions like setup,
     # converge, execute, file and directory.  The Machine object will have a

@@ -11,6 +11,9 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
     @chef_server = Cheffish.enclosing_chef_server
     @provisioner = ChefMetal.enclosing_provisioner
     @provisioner_options = ChefMetal.enclosing_provisioner_options
+    if ChefMetal.enclosing_machine_batch
+      ChefMetal.enclosing_machine_batch.machines << self
+    end
   end
 
   def after_created
