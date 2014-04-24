@@ -1,5 +1,9 @@
 # Chef Metal Changelog
 
+## 0.9.4 (4/23/2014)
+
+- Preserve provisioner_output in machine resource (don't destroy it!!)
+
 ## 0.9.3 (4/13/2014)
 
 - SSH: Treat EHOSTUNREACH as "machine not yet available" (helps with AWS)
