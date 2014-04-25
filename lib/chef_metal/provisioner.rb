@@ -12,12 +12,6 @@ module ChefMetal
       raise "#{self.class} does not override self.inflate"
     end
 
-    def start_acquire_machines(action_handler, nodes)
-    end
-
-    def start_acquire_machine(action_handler, node)
-    end
-
     # Acquire a machine, generally by provisioning it.  Returns a Machine
     # object pointing at the machine, allowing useful actions like setup,
     # converge, execute, file and directory.  The Machine object will have a
@@ -75,6 +69,31 @@ module ChefMetal
     # Provider notification that happens at the point a resource is declared
     # (after all properties have been set on it)
     def resource_created(machine)
+    end
+
+    #
+    # Batch methods
+    #
+
+    # Acquire machines in batch, in parallel if possible.
+    def acquire_machines(action_handler, nodes_json, parallelizer)
+      parallelizer.parallelize(nodes_json) do |node_json|
+        acquire_machine(action_handler, node_json)
+      end.to_a
+    end
+
+    # Stop machines in batch, in parallel if possible.
+    def stop_machines(action_handler, nodes_json, parallelizer)
+      parallelizer.parallelize(nodes_json) do |node_json|
+        stop_machine(action_handler, node_json)
+      end.to_a
+    end
+
+    # Delete machines in batch, in parallel if possible.
+    def delete_machines(action_handler, nodes_json, parallelizer)
+      parallelizer.parallelize(nodes_json) do |node_json|
+        delete_machine(action_handler, node_json)
+      end.to_a
     end
 
     protected

@@ -9,8 +9,10 @@ class Chef::Resource::MachineBatch < Chef::Resource::LWRPBase
     @chef_server = Cheffish.enclosing_chef_server
   end
 
-  actions :create, :setup, :converge, :stop
-  default_action :create
+  # TODO there is a useful action sequence where one does an ohai on all machines,
+  # waits for that to complete, save the nodes, and THEN converges.
+  actions :acquire, :setup, :converge, :stop, :delete
+  default_action :setup
 
   attribute :machines, :kind_of => [ Array ]
   attribute :max_simultaneous, :kind_of => [ Integer ]

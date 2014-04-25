@@ -1,13 +1,4 @@
-with_machine_batch 'the_new_batch'
-
-machine 'batch_a' do
-  action :nothing
-end
-
-machine 'batch_b' do
-  action :nothing
-end
-
-machine 'batch_c' do
-  action :nothing
+with_machine_batch 'the_new_batch', :action => [ :delete, :converge ]
+1.upto(5) do |i|
+  machine "batch#{i}"
 end
