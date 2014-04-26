@@ -59,14 +59,20 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
         machine
       end
 
-      nodes = machines.map { |machine| machine[:node] }
-      machine_objects = provisioner.acquire_machines(self, nodes, parallelizer)
-      parallel_do(machines.zip(machine_objects)) do |machine, machine_obj|
+      # TODO I don't understand why the object_id hack was necessary.  Using the
+      # node as a key didn't work. If we could pass node_urls through acquire_machines,
+      # that would solve the problem in a bestest way (nodes themselves are not
+      # necessarily unique without knowing the chef_server with which they are
+      # associated)
+      by_node_json = machines.inject({}) { |result, machine| result[machine[:node].object_id] = machine; result }
+      provisioner.acquire_machines(self, by_node_json.values.map { |m| m[:node] }, parallelizer) do |node_json, machine_obj|
+        machine = by_node_json[node_json.object_id]
+
+        machine[:machine] = machine_obj
         begin
-          machine[:machine] = machine_obj
           yield machine if block_given?
         ensure
-          machine[:machine].disconnect
+          machine_obj.disconnect
         end
       end
     end
