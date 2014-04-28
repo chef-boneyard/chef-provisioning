@@ -13,37 +13,37 @@ require 'chef_metal/inline_resource'
 
 module ChefMetal
   def self.with_provisioner(provisioner)
-    old_provisioner = ChefMetal.enclosing_provisioner
-    ChefMetal.enclosing_provisioner = provisioner
+    old_provisioner = ChefMetal.current_provisioner
+    ChefMetal.current_provisioner = provisioner
     if block_given?
       begin
         yield
       ensure
-        ChefMetal.enclosing_provisioner = old_provisioner
+        ChefMetal.current_provisioner = old_provisioner
       end
     end
   end
 
   def self.with_provisioner_options(provisioner_options)
-    old_provisioner_options = ChefMetal.enclosing_provisioner_options
-    ChefMetal.enclosing_provisioner_options = provisioner_options
+    old_provisioner_options = ChefMetal.current_provisioner_options
+    ChefMetal.current_provisioner_options = provisioner_options
     if block_given?
       begin
         yield
       ensure
-        ChefMetal.enclosing_provisioner_options = old_provisioner_options
+        ChefMetal.current_provisioner_options = old_provisioner_options
       end
     end
   end
 
   def self.with_machine_batch(machine_batch)
-    old_machine_batch = ChefMetal.enclosing_machine_batch
-    ChefMetal.enclosing_machine_batch = machine_batch
+    old_machine_batch = ChefMetal.current_machine_batch
+    ChefMetal.current_machine_batch = machine_batch
     if block_given?
       begin
         yield
       ensure
-        ChefMetal.enclosing_machine_batch = old_machine_batch
+        ChefMetal.current_machine_batch = old_machine_batch
       end
     end
   end
@@ -53,29 +53,29 @@ module ChefMetal
     InlineResource.new(action_handler).instance_eval(&block)
   end
 
-  @@enclosing_machine_batch = nil
-  def self.enclosing_machine_batch
-    @@enclosing_machine_batch
+  @@current_machine_batch = nil
+  def self.current_machine_batch
+    @@current_machine_batch
   end
-  def self.enclosing_machine_batch=(machine_batch)
-    @@enclosing_machine_batch = machine_batch
-  end
-
-  @@enclosing_provisioner = nil
-  def self.enclosing_provisioner
-    @@enclosing_provisioner
-  end
-  def self.enclosing_provisioner=(provisioner)
-    @@enclosing_provisioner = provisioner
+  def self.current_machine_batch=(machine_batch)
+    @@current_machine_batch = machine_batch
   end
 
-  @@enclosing_provisioner_options = nil
-  def self.enclosing_provisioner_options
-    @@enclosing_provisioner_options
+  @@current_provisioner = nil
+  def self.current_provisioner
+    @@current_provisioner
+  end
+  def self.current_provisioner=(provisioner)
+    @@current_provisioner = provisioner
   end
 
-  def self.enclosing_provisioner_options=(provisioner_options)
-    @@enclosing_provisioner_options = provisioner_options
+  @@current_provisioner_options = nil
+  def self.current_provisioner_options
+    @@current_provisioner_options
+  end
+
+  def self.current_provisioner_options=(provisioner_options)
+    @@current_provisioner_options = provisioner_options
   end
 
   # Helpers for provisioner inflation

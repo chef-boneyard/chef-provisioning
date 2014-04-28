@@ -6,7 +6,7 @@ class Chef::Resource::MachineBatch < Chef::Resource::LWRPBase
   def initialize(*args)
     super
     @machines = []
-    @chef_server = Cheffish.enclosing_chef_server
+    @chef_server = Cheffish.current_chef_server
   end
 
   # TODO there is a useful action sequence where one does an ohai on all machines,

@@ -8,8 +8,8 @@ class Chef::Resource::MachineExecute < Chef::Resource::LWRPBase
 
   def initialize(*args)
     super
-    @chef_server = Cheffish.enclosing_chef_server
-    @provisioner = ChefMetal.enclosing_provisioner
+    @chef_server = Cheffish.current_chef_server
+    @provisioner = ChefMetal.current_provisioner
   end
 
   actions :run
