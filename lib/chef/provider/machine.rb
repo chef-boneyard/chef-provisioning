@@ -64,15 +64,13 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   attr_reader :node_provider
 
   def load_current_resource
-    @node_provider = Chef::Provider::ChefNode.new(new_resource, nil)
+    @node_provider = Chef::Provider::ChefNode.new(new_resource, run_context)
     @node_provider.load_current_resource
   end
 
-  private
-
-  def upload_files(machine)
-    if new_resource.files
-      new_resource.files.each_pair do |remote_file, local|
+  def self.upload_files(action_handler, machine, files)
+    if files
+      files.each_pair do |remote_file, local|
         if local.is_a?(Hash)
           if local[:local_path]
             machine.upload_file(self, local[:local_path], remote_file)
@@ -84,5 +82,11 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
         end
       end
     end
+  end
+
+  private
+
+  def upload_files(machine)
+    Machine.upload_files(self, machine, new_resource.files)
   end
 end

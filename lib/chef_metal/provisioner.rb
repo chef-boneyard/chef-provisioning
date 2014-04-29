@@ -71,6 +71,35 @@ module ChefMetal
     def resource_created(machine)
     end
 
+    #
+    # Batch methods
+    #
+
+    # Acquire machines in batch, in parallel if possible.
+    def acquire_machines(action_handler, nodes_json, parallelizer)
+      parallelizer.parallelize(nodes_json) do |node_json|
+        machine = acquire_machine(action_handler, node_json)
+        yield node_json, machine if block_given?
+        machine
+      end.to_a
+    end
+
+    # Stop machines in batch, in parallel if possible.
+    def stop_machines(action_handler, nodes_json, parallelizer)
+      parallelizer.parallelize(nodes_json) do |node_json|
+        stop_machine(action_handler, node_json)
+        yield node_json if block_given?
+      end.to_a
+    end
+
+    # Delete machines in batch, in parallel if possible.
+    def delete_machines(action_handler, nodes_json, parallelizer)
+      parallelizer.parallelize(nodes_json) do |node_json|
+        delete_machine(action_handler, node_json)
+        yield node_json if block_given?
+      end.to_a
+    end
+
     protected
 
     def save_node(provider, node, chef_server)

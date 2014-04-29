@@ -1,13 +1,33 @@
-require 'chef_metal'
+require 'chef_metal/chef_run_data'
 
 class Chef
   class Recipe
     def with_provisioner(provisioner, &block)
-      ChefMetal.with_provisioner(provisioner, &block)
+      run_context.chef_metal.with_provisioner(provisioner, &block)
     end
 
     def with_provisioner_options(provisioner_options, &block)
-      ChefMetal.with_provisioner_options(provisioner_options, &block)
+      run_context.chef_metal.with_provisioner_options(provisioner_options, &block)
+    end
+
+    def with_machine_batch(the_machine_batch, options = {}, &block)
+      if the_machine_batch.is_a?(String)
+        the_machine_batch = machine_batch the_machine_batch do
+          if options[:action]
+            action options[:action]
+          end
+          if options[:max_simultaneous]
+            max_simultaneous options[:max_simultaneous]
+          end
+        end
+      end
+      run_context.chef_metal.with_machine_batch(the_machine_batch, &block)
+    end
+  end
+
+  class RunContext
+    def chef_metal
+      @chef_metal ||= ChefMetal::ChefRunData.new
     end
   end
 end

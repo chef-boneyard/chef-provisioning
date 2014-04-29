@@ -2,59 +2,22 @@
 require 'chef_metal/recipe_dsl'
 require 'chef/resource/machine'
 require 'chef/provider/machine'
+require 'chef/resource/machine_batch'
+require 'chef/provider/machine_batch'
 require 'chef/resource/machine_file'
 require 'chef/provider/machine_file'
 require 'chef/resource/machine_execute'
 require 'chef/provider/machine_execute'
+require 'chef/server_api'
 
 require 'chef_metal/inline_resource'
 
 module ChefMetal
-  def self.with_provisioner(provisioner)
-    old_provisioner = ChefMetal.enclosing_provisioner
-    ChefMetal.enclosing_provisioner = provisioner
-    if block_given?
-      begin
-        yield
-      ensure
-        ChefMetal.enclosing_provisioner = old_provisioner
-      end
-    end
-  end
-
-  def self.with_provisioner_options(provisioner_options)
-    old_provisioner_options = ChefMetal.enclosing_provisioner_options
-    ChefMetal.enclosing_provisioner_options = provisioner_options
-    if block_given?
-      begin
-        yield
-      ensure
-        ChefMetal.enclosing_provisioner_options = old_provisioner_options
-      end
-    end
-  end
-
   def self.inline_resource(action_handler, &block)
     InlineResource.new(action_handler).instance_eval(&block)
   end
 
-  @@enclosing_provisioner = nil
-  def self.enclosing_provisioner
-    @@enclosing_provisioner
-  end
-  def self.enclosing_provisioner=(provisioner)
-    @@enclosing_provisioner = provisioner
-  end
-
-  @@enclosing_provisioner_options = nil
-  def self.enclosing_provisioner_options
-    @@enclosing_provisioner_options
-  end
-
-  def self.enclosing_provisioner_options=(provisioner_options)
-    @@enclosing_provisioner_options = provisioner_options
-  end
-
+  # Helpers for provisioner inflation
   @@registered_provisioner_classes = {}
   def self.add_registered_provisioner_class(name, provisioner)
     @@registered_provisioner_classes[name] = provisioner
