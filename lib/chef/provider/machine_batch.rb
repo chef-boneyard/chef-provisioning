@@ -99,7 +99,7 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
       next unless Array(machine_resource.action).include?(:create)
       @by_node[node_url(machine_resource)] = {
         :resource => machine_resource,
-        :provider => Chef::Provider::Machine.new(machine_resource, nil)
+        :provider => Chef::Provider::Machine.new(machine_resource, run_context)
       }
       @by_provisioner[machine_resource.provisioner] ||= []
       @by_provisioner[machine_resource.provisioner] << node_url(machine_resource)

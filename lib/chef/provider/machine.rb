@@ -64,7 +64,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   attr_reader :node_provider
 
   def load_current_resource
-    @node_provider = Chef::Provider::ChefNode.new(new_resource, nil)
+    @node_provider = Chef::Provider::ChefNode.new(new_resource, run_context)
     @node_provider.load_current_resource
   end
 

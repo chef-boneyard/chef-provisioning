@@ -8,8 +8,8 @@ class Chef::Resource::MachineFile < Chef::Resource::LWRPBase
 
   def initialize(*args)
     super
-    @chef_server = Cheffish.current_chef_server
-    @provisioner = ChefMetal.current_provisioner
+    @chef_server = run_context.cheffish.current_chef_server
+    @provisioner = run_context.chef_metal.current_provisioner
   end
 
   actions :upload, :download, :delete, :nothing
