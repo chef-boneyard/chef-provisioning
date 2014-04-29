@@ -48,16 +48,29 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         ensure_keys
       end
 
-      new_fingerprint = case new_resource.provisioner.compute_options[:provider]
+      new_fingerprints = case new_resource.provisioner.compute_options[:provider]
       when 'DigitalOcean'
-        Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)
+        [Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)]
       when 'OpenStack'
-        Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)
+        [Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)]
       else
-        Cheffish::KeyFormatter.encode(desired_key, :format => :fingerprint)
+        # “The nice thing about standards is that you have so many to
+        # choose from.” - Andrew S. Tanenbaum
+        #
+        # The AWS EC2 API uses a PKCS#1 MD5 fingerprint for keys that you
+        # import into EC2, but a PKCS#8 SHA1 fingerprint for keys that you
+        # generate using its web console. Both fingerprints are different
+        # from the familiar RFC4716 MD5 fingerprint that OpenSSH displays
+        # for host keys.
+        #
+        # So compute both possible AWS fingerprints and check if either of
+        # them matches.
+        [Cheffish::KeyFormatter.encode(desired_key, :format => :fingerprint),
+         Cheffish::KeyFormatter.encode(desired_private_key,
+                                       :format => :pkcs8sha1fingerprint)]
       end
 
-      if new_fingerprint != @current_fingerprint
+      if !new_fingerprints.include? @current_fingerprint
         if new_resource.allow_overwrite
           converge_by "update #{key_description} to match local key at #{new_resource.private_key_path}" do
             case new_resource.provisioner.compute_options[:provider]
@@ -70,7 +83,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
             end
           end
         else
-          raise "#{key_description} does not match local private key, and allow_overwrite is false!"
+          raise "#{key_description} with fingerprint #{@current_fingerprint} does not match local key fingerprint(s) #{new_fingerprints}, and allow_overwrite is false!"
         end
       end
     else
@@ -111,9 +124,15 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         public_key, format = Cheffish::KeyFormatter.decode(IO.read(new_resource.public_key_path))
         public_key
       else
-        private_key, format = Cheffish::KeyFormatter.decode(IO.read(new_resource.private_key_path))
-        private_key.public_key
+        desired_private_key.public_key
       end
+    end
+  end
+
+  def desired_private_key
+    @desired_private_key ||= begin
+        private_key, format = Cheffish::KeyFormatter.decode(IO.read(new_resource.private_key_path))
+        private_key
     end
   end
 
