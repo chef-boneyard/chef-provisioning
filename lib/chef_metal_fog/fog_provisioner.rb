@@ -316,8 +316,10 @@ module ChefMetalFog
     def delete_machine(action_handler, node)
       if node['normal']['provisioner_output'] && node['normal']['provisioner_output']['server_id']
         server = compute.servers.get(node['normal']['provisioner_output']['server_id'])
-        action_handler.perform_action "destroy machine #{node['name']} (#{node['normal']['provisioner_output']['server_id']} at #{provisioner_url})" do
-          server.destroy
+        if server
+          action_handler.perform_action "destroy machine #{node['name']} (#{node['normal']['provisioner_output']['server_id']} at #{provisioner_url})" do
+            server.destroy
+          end
         end
         convergence_strategy_for(node).cleanup_convergence(action_handler, node)
       end
