@@ -88,6 +88,10 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
     end
   end
 
+  def add_provisioner_options(options)
+    @provisioner_options = Chef::Mixin::DeepMerge.hash_only_merge(@provisioner_options, options)
+  end
+
   # chef client version and omnibus
   # chef-zero boot method?
   # chef-client -z boot method?

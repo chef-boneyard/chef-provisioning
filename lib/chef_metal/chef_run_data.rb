@@ -1,4 +1,5 @@
 require 'cheffish/with_pattern'
+require 'chef/mixin/deep_merge'
 
 module ChefMetal
   class ChefRunData
@@ -6,5 +7,9 @@ module ChefMetal
     with :provisioner
     with :provisioner_options
     with :machine_batch
+
+    def add_provisioner_options(options, &block)
+      with_provisioner_options(Chef::Mixin::DeepMerge.hash_only_merge(current_provisioner_options, options), &block)
+    end
   end
 end

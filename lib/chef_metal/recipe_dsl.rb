@@ -23,6 +23,14 @@ class Chef
       end
       run_context.chef_metal.with_machine_batch(the_machine_batch, &block)
     end
+
+    def current_provisioner_options
+      run_context.chef_metal.current_provisioner_options
+    end
+
+    def add_provisioner_options(options, &block)
+      run_context.chef_metal.add_provisioner_options(options, &block)
+    end
   end
 
   class RunContext
