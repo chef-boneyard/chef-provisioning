@@ -155,15 +155,14 @@ module ChefMetal
         begin
           channel.wait
         rescue Net::SCP::Error => e
-          # re-raise "SCP did not finish successfully" errors
-          raise e unless /did\snot\sfinish/.match(e.message).nil?
-          # otherwise, ignore for now
+          # TODO we need a way to distinguish between "directory of file does not exist" and "SCP did not finish successfully"
           nil
         # ensure the channel is closed when a rescue happens above
         ensure
           channel.close
           channel.wait
         end
+        nil
       end
 
       class SSHResult
