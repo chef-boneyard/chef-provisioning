@@ -154,16 +154,15 @@ module ChefMetal
         channel = Net::SCP.new(session).download(path, local_path)
         begin
           channel.wait
-        rescue Net::SCP::Error
+        rescue Net::SCP::Error => e
+          # re-raise "SCP did not finish successfully" errors
+          raise e unless /did\snot\sfinish/.match(e.message).nil?
+          # otherwise, ignore for now
           nil
-        rescue
-          # This works around https://github.com/net-ssh/net-scp/pull/10 until a new net-scp is merged.
-          begin
-            channel.close
-            channel.wait
-          rescue Net::SCP::Error
-            nil
-          end
+        # ensure the channel is closed when a rescue happens above
+        ensure
+          channel.close
+          channel.wait
         end
       end
 
