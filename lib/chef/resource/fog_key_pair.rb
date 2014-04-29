@@ -5,7 +5,7 @@ class Chef::Resource::FogKeyPair < Chef::Resource::LWRPBase
 
   def initialize(*args)
     super
-    @provisioner = ChefMetal.enclosing_provisioner
+    @provisioner = run_context.chef_metal.current_provisioner
   end
 
   def after_created

@@ -133,7 +133,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
     if !new_resource.provisioner.kind_of?(ChefMetalFog::FogProvisioner)
       raise 'ec2_key_pair only works with fog_provisioner'
     end
-    @current_resource = Chef::Resource::FogKeyPair.new(new_resource.name)
+    @current_resource = Chef::Resource::FogKeyPair.new(new_resource.name, run_context)
     case new_resource.provisioner.compute_options[:provider]
     when 'DigitalOcean'
       current_key_pair = compute.ssh_keys.select { |key| key.name == new_resource.name }.first
