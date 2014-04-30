@@ -37,5 +37,17 @@ module ChefMetal
     def debug_name
       self.cookbook_name
     end
+
+    def open_stream(name, &block)
+      if self.run_context.respond_to?(:open_stream)
+        self.run_context.open_stream({ :name => name }, &block)
+      else
+        if block_given?
+          yield STDOUT
+        else
+          STDOUT
+        end
+      end
+    end
   end
 end
