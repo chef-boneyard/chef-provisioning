@@ -1,8 +1,6 @@
 include_recipe 'chef-metal'
 
-chef_gem 'fog'
-
-require 'chef_metal/fog'
+require 'chef_metal_fog'
 
 openstack_testdir = File.expand_path('~/openstack_test')
 
