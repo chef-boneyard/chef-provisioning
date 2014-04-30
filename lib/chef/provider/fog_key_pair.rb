@@ -13,7 +13,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
   end
 
   action :create do
-    create_key
+    create_key(:create)
   end
 
   action :delete do
@@ -35,17 +35,17 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
     "#{new_resource.name} on #{new_resource.provisioner.provisioner_url}"
   end
 
-  def create_key
+  def create_key(action)
     if current_resource_exists?
       # If the public keys are different, update the server public key
       if !current_resource.private_key_path
         if new_resource.allow_overwrite
-          ensure_keys
+          ensure_keys(action)
         else
           raise "#{key_description} already exists on the server, but the private key #{new_resource.private_key_path} does not exist!"
         end
       else
-        ensure_keys
+        ensure_keys(action)
       end
 
       new_fingerprints = case new_resource.provisioner.compute_options[:provider]
@@ -66,11 +66,11 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         # So compute both possible AWS fingerprints and check if either of
         # them matches.
         [Cheffish::KeyFormatter.encode(desired_key, :format => :fingerprint),
-         Cheffish::KeyFormatter.encode(desired_private_key,
-                                       :format => :pkcs8sha1fingerprint)]
+         lambda { Cheffish::KeyFormatter.encode(desired_private_key,
+                                       :format => :pkcs8sha1fingerprint) }]
       end
 
-      if !new_fingerprints.include? @current_fingerprint
+      if !new_fingerprints.any? { |f| (f.is_a?(Proc) ? f.call : f) == @current_fingerprint }
         if new_resource.allow_overwrite
           converge_by "update #{key_description} to match local key at #{new_resource.private_key_path}" do
             case new_resource.provisioner.compute_options[:provider]
@@ -88,7 +88,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
       end
     else
       # Generate the private and/or public keys if they do not exist
-      ensure_keys
+      ensure_keys(action)
 
       # Create key
       converge_by "create #{key_description} from local key at #{new_resource.private_key_path}" do
@@ -104,9 +104,9 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
     end
   end
 
-  def ensure_keys
+  def ensure_keys(action)
     resource = new_resource
-    Cheffish.inline_resource(self) do
+    Cheffish.inline_resource(self, action) do
       private_key resource.private_key_path do
         public_key_path resource.public_key_path
         if resource.private_key_options
