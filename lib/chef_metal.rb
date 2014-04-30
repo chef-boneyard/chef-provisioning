@@ -9,13 +9,28 @@ require 'chef/provider/machine_file'
 require 'chef/resource/machine_execute'
 require 'chef/provider/machine_execute'
 require 'chef/server_api'
-
-require 'chef_metal/inline_resource'
+require 'cheffish/basic_chef_client'
 
 module ChefMetal
   def self.inline_resource(action_handler, &block)
-    InlineResource.new(action_handler).instance_eval(&block)
+    events = ActionHandlerForward.new(action_handler)
+    Cheffish::BasicChefClient.converge_block(nil, events, &block)
   end
+
+  class ActionHandlerForward < Chef::EventDispatch::Base
+    def initialize(action_handler)
+      @action_handler = action_handler
+    end
+
+    attr_reader :action_handler
+
+    def resource_update_applied(resource, action, update)
+      prefix = action_handler.should_perform_actions ? "" : "Would "
+      update = Array(update).map { |u| "#{prefix}#{u}"}
+      action_handler.performed_action(update)
+    end
+  end
+
 
   # Helpers for provisioner inflation
   @@registered_provisioner_classes = {}

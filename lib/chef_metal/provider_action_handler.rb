@@ -22,12 +22,18 @@ module ChefMetal
   module ProviderActionHandler
     # Implementation of ActionHandler interface
 
-    def recipe_context
-      self.run_context
-    end
-
     def updated!
       self.new_resource.updated_by_last_action(true)
+    end
+
+    def should_perform_actions
+      !Chef::Config.why_run
+    end
+
+    def performed_action(description)
+      self.converge_by description do
+        # We already did the action, but we trust whoever told us that they did it.
+      end
     end
 
     def perform_action(description, &block)

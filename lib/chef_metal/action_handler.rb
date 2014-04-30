@@ -20,26 +20,27 @@
 module ChefMetal
   class ActionHandler
 
-    # This should be the run context
-    def recipe_context
-      raise ActionFailed, "ActionHandler behavior requires a recipe_context"
-    end
-
-    # This should be repaced with whatever records the update; by default it
+    # This should be replaced with whatever records the update; by default it
     # essentially does nothing here.
     def updated!
       @updated = true
     end
 
+    def should_perform_actions
+      true
+    end
+
+    def performed_action(description)
+      puts description
+    end
+
     # This should perform the actual action (e.g., converge) if there is an
     # action that needs to be done.
-    #
-    # By default, it will simply execute the block as so:
     def perform_action(description)
-      puts description
-      if block_given?
+      if should_perform_actions
         yield
       end
+      performed_action(description)
     end
 
     # This is the name that will show up in the output, so should be something
