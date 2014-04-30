@@ -2,6 +2,7 @@ require 'chef/chef_fs/parallelizer'
 require 'chef/provider/lwrp_base'
 require 'chef/provider/machine'
 require 'chef_metal/provider_action_handler'
+require 'chef_metal/add_prefix_action_handler'
 
 class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
 
@@ -23,16 +24,18 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
 
   action :setup do
     with_booted_machines do |machine|
-      machine[:machine].setup_convergence(self, machine[:resource])
-      Chef::Provider::Machine.upload_files(self, machine[:machine], machine[:resource].files)
+      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(self, "[#{machine[:resource].name}] ")
+      machine[:machine].setup_convergence(prefixed_handler, machine[:resource])
+      Chef::Provider::Machine.upload_files(prefixed_handler, machine[:machine], machine[:resource].files)
     end
   end
 
   action :converge do
     with_booted_machines do |machine|
-      machine[:machine].setup_convergence(self, machine[:resource])
-      Chef::Provider::Machine.upload_files(self, machine[:machine], machine[:resource].files)
-      machine[:machine].converge(self, machine[:resource].chef_server)
+      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(self, "[#{machine[:resource].name}] ")
+      machine[:machine].setup_convergence(prefixed_handler, machine[:resource])
+      Chef::Provider::Machine.upload_files(prefixed_handler, machine[:machine], machine[:resource].files)
+      machine[:machine].converge(prefixed_handler, machine[:resource].chef_server)
     end
   end
 

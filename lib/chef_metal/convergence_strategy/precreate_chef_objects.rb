@@ -75,7 +75,7 @@ module ChefMetal
         else
 
           # If the server does not already have keys, create them and upload
-          Cheffish.inline_resource(action_handler) do
+          ChefMetal.inline_resource(action_handler) do
             private_key 'in_memory' do
               path :none
               if machine_resource.private_key_options

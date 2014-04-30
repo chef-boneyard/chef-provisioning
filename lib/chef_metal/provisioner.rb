@@ -1,3 +1,5 @@
+require 'chef_metal/add_prefix_action_handler'
+
 module ChefMetal
   class Provisioner
     # Inflate a provisioner from node information; we don't want to force the
@@ -78,7 +80,7 @@ module ChefMetal
     # Acquire machines in batch, in parallel if possible.
     def acquire_machines(action_handler, nodes_json, parallelizer)
       parallelizer.parallelize(nodes_json) do |node_json|
-        machine = acquire_machine(action_handler, node_json)
+        machine = acquire_machine(add_prefix(node_json, action_handler), node_json)
         yield node_json, machine if block_given?
         machine
       end.to_a
@@ -87,7 +89,7 @@ module ChefMetal
     # Stop machines in batch, in parallel if possible.
     def stop_machines(action_handler, nodes_json, parallelizer)
       parallelizer.parallelize(nodes_json) do |node_json|
-        stop_machine(action_handler, node_json)
+        stop_machine(add_prefix(node_json, action_handler), node_json)
         yield node_json if block_given?
       end.to_a
     end
@@ -95,7 +97,7 @@ module ChefMetal
     # Delete machines in batch, in parallel if possible.
     def delete_machines(action_handler, nodes_json, parallelizer)
       parallelizer.parallelize(nodes_json) do |node_json|
-        delete_machine(action_handler, node_json)
+        delete_machine(add_prefix(node_json, action_handler), node_json)
         yield node_json if block_given?
       end.to_a
     end
@@ -110,6 +112,10 @@ module ChefMetal
           raw_json node
         end
       end
+    end
+
+    def add_prefix(node_json, action_handler)
+      AddPrefixActionHandler.new(action_handler, "[#{node_json['name']}] ")
     end
   end
 end
