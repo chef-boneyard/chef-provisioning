@@ -1,3 +1,3 @@
 module ChefMetal
-  VERSION = '0.9.4'
+  VERSION = '0.10'
 end
