@@ -1,5 +1,12 @@
 # Chef Metal Changelog
 
+## Unreleased
+
+- Parallelism!
+  - All machines by default will be created in parallel just before the first "machine" definition. They will attempt to run all the way to converge.  If they fail, add "with_machine_batch 'mybatch', :setup"
+  - Use "with_machine_batch 'mybatch'" before any machines if you want tighter control. Actions include :delete, :acquire, :setup, and :converge.
+- Parallelizableness: chef-metal now stores data in the run_context instead of globally, so that it can be run multiple times in parallel. This capability is not yet being used.
+
 ## 0.9.4 (4/23/2014)
 
 - Preserve provisioner_output in machine resource (don't destroy it!!)
