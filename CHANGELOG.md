@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4 (5/1/2014)
+
+- Work with new Cheffish 0.4 inline_resource
+- Increase stability of delete_machine in error conditions (@andrewdotn)
+- [EC2] Support automatically-created PKCS#8 SHA1 fingerprints for keys
+- [Openstack] Make floating IP attach work (@ohlol)
+- [Openstack] Fill in "creator" field of provisioner_output (@wilreichert)
+
 ## 0.3.1 (4/13/2014)
 
 - Treat EHOSTUNREACH as "machine not yet available"

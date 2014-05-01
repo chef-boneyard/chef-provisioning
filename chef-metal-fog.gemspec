@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
   s.homepage = 'https://github.com/opscode/chef-metal-fog'
 
   s.add_dependency 'chef'
+  s.add_dependency 'cheffish', '>= 0.4'
 #  s.add_dependency 'chef-metal', '~> 0.5' # We are installed by default with chef-metal, so we don't circular dep back
   s.add_dependency 'fog'
 
