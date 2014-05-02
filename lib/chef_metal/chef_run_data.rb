@@ -9,7 +9,11 @@ module ChefMetal
     with :machine_batch
 
     def add_provisioner_options(options, &block)
-      with_provisioner_options(Chef::Mixin::DeepMerge.hash_only_merge(current_provisioner_options, options), &block)
+      if current_provisioner_options
+        with_provisioner_options(Chef::Mixin::DeepMerge.hash_only_merge(current_provisioner_options, options), &block)
+      else
+        with_provisioner_options(options)
+      end
     end
   end
 end
