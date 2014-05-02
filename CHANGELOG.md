@@ -1,6 +1,10 @@
 # Chef Metal Changelog
 
-## Unreleased
+## 0.10.1 (5/2/2014)
+
+- Fix a crash when uploading files in a machine batch
+
+## 0.10 (5/1/2014)
 
 - Parallelism!
   - All machines by default will be created in parallel just before the first "machine" definition. They will attempt to run all the way to converge.  If they fail, add "with_machine_batch 'mybatch', :setup"
