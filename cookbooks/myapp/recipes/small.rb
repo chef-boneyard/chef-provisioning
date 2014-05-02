@@ -2,6 +2,8 @@ file '/tmp/blah.txt' do
   content 'woo'
 end
 
+with_machine_batch 'blah', :action => :nothing
+
 machine 'mario' do
   #recipe 'mydb'
   tag 'mydb_master'
