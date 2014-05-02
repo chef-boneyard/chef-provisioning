@@ -1,5 +1,9 @@
 # Chef Metal Changelog
 
+## 0.10.2 (5/2/2014)
+
+- Fix crash with add_provisioner_options when provisioner_options is not yet set
+
 ## 0.10.1 (5/2/2014)
 
 - Fix a crash when uploading files in a machine batch
