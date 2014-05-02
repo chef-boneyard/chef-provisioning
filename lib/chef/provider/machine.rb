@@ -73,12 +73,12 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
       files.each_pair do |remote_file, local|
         if local.is_a?(Hash)
           if local[:local_path]
-            machine.upload_file(self, local[:local_path], remote_file)
+            machine.upload_file(action_handler, local[:local_path], remote_file)
           else
-            machine.write_file(self, remote_file, local[:content])
+            machine.write_file(action_handler, remote_file, local[:content])
           end
         else
-          machine.upload_file(self, local, remote_file)
+          machine.upload_file(action_handler, local, remote_file)
         end
       end
     end
