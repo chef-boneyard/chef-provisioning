@@ -535,6 +535,7 @@ module ChefMetalFog
 
       #Enable pty by default
       options[:ssh_pty_enable] = true
+      options[:ssh_gateway] = compute_options[:ssh_gateway] if compute_options.key?(:ssh_gateway)
 
       ChefMetal::Transport::SSH.new(remote_host, username, ssh_options, options)
     end
