@@ -5,18 +5,18 @@ class Chef::Resource::FogKeyPair < Chef::Resource::LWRPBase
 
   def initialize(*args)
     super
-    @provisioner = run_context.chef_metal.current_provisioner
+    @driver = run_context.chef_metal.current_driver
   end
 
   def after_created
     # Make the credentials usable
-    provisioner.key_pairs[name] = self
+    ChefMetalFog::FogDriver.add_key_pair(driver.driver_url, name, self)
   end
 
   actions :create, :delete, :nothing
   default_action :create
 
-  attribute :provisioner
+  attribute :driver
   # Private key to use as input (will be generated if it does not exist)
   attribute :private_key_path, :kind_of => String
   # Public key to use as input (will be generated if it does not exist)

@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.version = ChefMetalFog::VERSION
   s.platform = Gem::Platform::RUBY
   s.extra_rdoc_files = ['README.md', 'LICENSE' ]
-  s.summary = 'Provisioner for creating Fog instances in Chef Metal.'
+  s.summary = 'Driver for creating Fog instances in Chef Metal.'
   s.description = s.summary
   s.author = 'John Keiser'
   s.email = 'jkeiser@getchef.com'
