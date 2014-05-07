@@ -9,6 +9,7 @@ module ChefMetal
       def initialize(host, username, ssh_options, options)
         require 'net/ssh'
         require 'net/scp'
+        require 'net/ssh/gateway'
         @host = host
         @username = username
         @ssh_options = ssh_options
@@ -138,12 +139,37 @@ module ChefMetal
 
       protected
 
+      def gateway?
+        options.key?(:ssh_gateway) and ! options[:ssh_gateway].nil?
+      end
+
+      def gateway
+        @gateway ||= begin
+          gw_host, gw_user = options[:ssh_gateway].split('@').reverse
+          gw_host, gw_port = gw_host.split(':')
+          gw_user = ssh_options[:ssh_username] unless gw_user
+
+          ssh_start_opts = { timeout:10 }.merge(ssh_options)
+          ssh_start_opts[:port] = gw_port || 22
+
+          Chef::Log.debug("Opening SSH gateway to #{gw_user}@#{gw_host} with options #{ssh_start_opts.inspect}")
+          begin
+            Net::SSH::Gateway.new(gw_host, gw_user)
+          rescue Errno::ETIMEDOUT
+            raise InitialConnectTimeout.new($!)
+          end
+        end
+      end
+
       def session
         @session ||= begin
-          Chef::Log.debug("Opening SSH connection to #{username}@#{host} with options #{ssh_options.inspect}")
+          ssh_start_opts = { timeout:10 }.merge(ssh_options)
+          Chef::Log.debug("Opening SSH connection to #{username}@#{host} with options #{ssh_start_opts.inspect}")
           # Small initial connection timeout (10s) to help us fail faster when server is just dead
           begin
-            Net::SSH.start(host, username, { :timeout => 10 }.merge(ssh_options))
+            if gateway? then gateway.ssh(host, username, ssh_start_opts)
+            else Net::SSH.start(host, username, ssh_start_opts)
+            end
           rescue Timeout::Error
             raise InitialConnectTimeout.new($!)
           end
