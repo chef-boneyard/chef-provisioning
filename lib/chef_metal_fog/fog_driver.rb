@@ -134,8 +134,7 @@ module ChefMetalFog
     #
     def allocate_machine(action_handler, machine_spec, machine_options)
       # If the server does not exist, create it
-      server = create_server(action_handler, machine_spec, machine_options)
-      attach_floating_ips(action_handler, machine_spec, machine_options, server)
+      create_server(action_handler, machine_spec, machine_options)
     end
 
     def ready_machine(action_handler, machine_spec, machine_options)
@@ -144,20 +143,27 @@ module ChefMetalFog
         raise "Machine #{machine_spec.name} does not have a server associated with it, or server does not exist."
       end
 
+      # Attach floating IPs if necessary
+      attach_floating_ips(action_handler, machine_spec, machine_options, server)
+
       # Start the server if needed, and wait for it to start
       start_server(action_handler, machine_spec, server)
       wait_until_ready(action_handler, machine_spec, machine_options, server)
       begin
         wait_for_transport(action_handler, machine_spec, machine_options, server)
       rescue Fog::Errors::TimeoutError
-
-        # Sometimes (on EC2) the machine comes up but gets stuck or has
-        # some other problem.  If this is the case, we restart the server
-        # to unstick it.  Reboot covers a multitude of sins.
-        Chef::Log.warn "Machine #{machine_spec.name} (#{server.id} on #{driver_url}) was started but SSH did not come up.  Rebooting machine in an attempt to unstick it ..."
-        restart_server(action_handler, machine_spec, machine_options, server)
-        wait_until_ready(action_handler, machine_spec, machine_options, server)
-        wait_for_transport(action_handler, machine_spec, machine_options, server)
+        # Only ever reboot once, and only if it's been less than 10 minutes since we stopped waiting
+        if machine.location['started_at'] || remaining_wait_time(machine_spec, machine_options) < -(10*60)
+          raise
+        else
+          # Sometimes (on EC2) the machine comes up but gets stuck or has
+          # some other problem.  If this is the case, we restart the server
+          # to unstick it.  Reboot covers a multitude of sins.
+          Chef::Log.warn "Machine #{machine_spec.name} (#{server.id} on #{driver_url}) was started but SSH did not come up.  Rebooting machine in an attempt to unstick it ..."
+          restart_server(action_handler, machine_spec, machine_options, server)
+          wait_until_ready(action_handler, machine_spec, machine_options, server)
+          wait_for_transport(action_handler, machine_spec, machine_options, server)
+        end
       end
 
       machine_for(machine_spec, server)
@@ -288,7 +294,6 @@ module ChefMetalFog
         }
       end
       action_handler.performed_action "machine #{machine_spec.name} created as #{server.id} on #{driver_url}"
-      machine_spec.save(action_handler)
       server
     end
 
@@ -305,6 +310,13 @@ module ChefMetalFog
           server.start
           machine_spec.location['started_at'] = Time.now.utc.to_s
         end
+      end
+    end
+
+    def restart_server(action_handler, machine_spec, server)
+      action_handler.perform_action "restart machine #{machine_spec.name} (#{server.id} on #{driver_url})" do
+        server.reboot
+        machine_spec.location['started_at'] = Time.now.utc.to_s
       end
     end
 
@@ -343,6 +355,7 @@ module ChefMetalFog
     end
 
     def attach_floating_ips(action_handler, machine_spec, machine_options, server)
+      # TODO this is not particularly idempotent. OK, it is not idempotent AT ALL.  Fix.
       if option_for(machine_options, :floating_ip_pool)
         Chef::Log.info 'Attaching IP from pool'
         action_handler.perform_action "attach floating IP from #{option_for(machine_options, :floating_ip_pool)} pool" do
