@@ -1,7 +1,7 @@
 require 'chef/resource/lwrp_base'
 require 'chef_metal'
 require 'chef_metal/machine'
-require 'chef_metal/provisioner'
+require 'chef_metal/driver'
 
 class Chef::Resource::MachineFile < Chef::Resource::LWRPBase
   self.resource_name = 'machine_file'
@@ -9,7 +9,7 @@ class Chef::Resource::MachineFile < Chef::Resource::LWRPBase
   def initialize(*args)
     super
     @chef_server = run_context.cheffish.current_chef_server
-    @provisioner = run_context.chef_metal.current_provisioner
+    @driver = run_context.chef_metal.current_driver
   end
 
   actions :upload, :download, :delete, :nothing
@@ -25,5 +25,5 @@ class Chef::Resource::MachineFile < Chef::Resource::LWRPBase
   attribute :mode, :kind_of => String
 
   attribute :chef_server, :kind_of => Hash
-  attribute :provisioner, :kind_of => ChefMetal::Provisioner
+  attribute :driver, :kind_of => ChefMetal::Driver
 end

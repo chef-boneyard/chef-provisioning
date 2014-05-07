@@ -134,22 +134,22 @@ class ChefMetal::Application < Chef::Application
       end
     when 'converge'
       each_machine(cli_arguments.shift) do |machine, provisioner|
-        machine.converge(action_handler, chef_server)
+        machine.converge(action_handler)
       end
     when 'delete'
       each_machine(cli_arguments.shift) do |machine, provisioner|
-        provisioner.delete_machine(action_handler, machine.node)
+        provisioner.delete_machine(action_handler, machine.machine_spec)
       end
     when 'update'
       each_machine(cli_arguments.shift) do |machine, provisioner|
-        machine = provisioner.acquire_machine(action_handler, machine.node)
+        machine = provisioner.acquire_machine(action_handler, machine.machine_spec)
         # TODO find out what files were uploaded so we can do it again
         machine.setup_convergence(action_handler)
-        machine.converge(action_handler, chef_server)
+        machine.converge(action_handler)
       end
     when 'stop'
       each_machine(cli_arguments.shift) do |machine, provisioner|
-        provisioner.stop_machine(action_handler, machine.node)
+        provisioner.stop_machine(action_handler, machine.machine_spec)
       end
     when 'cat'
       each_machine(cli_arguments.shift) do |machine, provisioner|

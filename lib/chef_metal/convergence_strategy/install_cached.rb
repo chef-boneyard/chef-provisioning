@@ -33,7 +33,7 @@ module ChefMetal
         end
       end
 
-      def converge(action_handler, machine, chef_server)
+      def converge(action_handler, machine)
         super
 
         action_handler.open_stream(machine.node['name']) do |stdout|

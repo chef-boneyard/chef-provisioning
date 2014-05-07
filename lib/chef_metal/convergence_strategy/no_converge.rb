@@ -9,19 +9,15 @@ module ChefMetal
       attr_reader :client_pem_path
 
       def setup_convergence(action_handler, machine, machine_resource)
-        # Save the node
-        ChefMetal.inline_resource(action_handler) do
-          # TODO strip automatic attributes first so we don't race with "current state"
-          chef_node machine.node['name'] do
-            chef_server machine_resource.chef_server
-            raw_json machine.node
-          end
-        end
+        machine_spec.save(action_handler)
       end
 
-      def cleanup_convergence(action_handler, node)
+      def converge(action_handler, machine)
+      end
+
+      def cleanup_convergence(action_handler, machine_spec)
         ChefMetal.inline_resource(action_handler) do
-          chef_node node['name'] do
+          chef_node machine_spec.name do
             action :delete
           end
         end

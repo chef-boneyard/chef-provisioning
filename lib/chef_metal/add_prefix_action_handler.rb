@@ -13,8 +13,10 @@ module ChefMetal
     attr_reader :prefix
 
     def_delegators :@action_handler, :should_perform_actions, :updated!, :debug_name, :open_stream
-    # TODO remove this as soon as HUMANLY POSSIBLE (looking at you, chef-metal-fog)
-    def_delegators :@action_handler, :new_resource
+
+    def report_progress(description)
+      action_handler.report_progress(Array(description).map { |d| "#{prefix}#{d}" })
+    end
 
     def performed_action(description)
       action_handler.performed_action(Array(description).map { |d| "#{prefix}#{d}" })

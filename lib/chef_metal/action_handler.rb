@@ -30,8 +30,12 @@ module ChefMetal
       true
     end
 
+    def report_progress(description)
+      Array(description).each { |d| puts d }
+    end
+
     def performed_action(description)
-      puts description
+      Array(description).each { |d| puts d }
     end
 
     # This should perform the actual action (e.g., converge) if there is an

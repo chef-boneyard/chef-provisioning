@@ -16,10 +16,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This is included in the metal provisioners to proxy from generic requests needed
-# to specific provider actions
+# This is included in the metal drivers to proxy from generic requests needed
+# to specific driver actions
 module ChefMetal
-  module ProviderActionHandler
+  module ChefProviderActionHandler
     # Implementation of ActionHandler interface
 
     def updated!
@@ -28,6 +28,9 @@ module ChefMetal
 
     def should_perform_actions
       !Chef::Config.why_run
+    end
+
+    def report_progress(description)
     end
 
     def performed_action(description)

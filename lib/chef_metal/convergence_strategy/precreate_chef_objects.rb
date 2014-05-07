@@ -22,7 +22,7 @@ module ChefMetal
 
         # If the chef server lives on localhost, tunnel the port through to the guest
         # (we need to know what got tunneled!)
-        chef_server_url = machine_resource.chef_server[:chef_server_url]
+        chef_server_url = machine.machine_spec.chef_server[:chef_server_url]
         chef_server_url = machine.make_url_available_to_remote(chef_server_url)
 
         #Support for multiple ohai hints, required on some platforms
@@ -33,16 +33,16 @@ module ChefMetal
         machine.write_file(action_handler, client_rb_path, content, :ensure_dir => true)
       end
 
-      def converge(action_handler, machine, chef_server)
-        machine.make_url_available_to_remote(chef_server[:chef_server_url])
+      def converge(action_handler, machine)
+        machine.make_url_available_to_remote(machine.machine_spec.chef_server[:chef_server_url])
       end
 
-      def cleanup_convergence(action_handler, node)
+      def cleanup_convergence(action_handler, machine_spec)
         ChefMetal.inline_resource(action_handler) do
-          chef_node node['name'] do
+          chef_node machine_spec.name do
             action :delete
           end
-          chef_client node['name'] do
+          chef_client machine_spec.name do
             action :delete
           end
         end
@@ -126,7 +126,7 @@ module ChefMetal
         # Save the node and create the client keys and client.
         ChefMetal.inline_resource(action_handler) do
           # Create client
-          chef_client machine.node['name'] do
+          chef_client machine.name do
             chef_server machine_resource.chef_server
             source_key public_key
             output_key_path machine_resource.public_key_path
@@ -137,7 +137,7 @@ module ChefMetal
 
           # Create node
           # TODO strip automatic attributes first so we don't race with "current state"
-          chef_node machine.node['name'] do
+          chef_node machine.name do
             chef_server machine_resource.chef_server
             raw_json machine.node
           end
@@ -145,7 +145,7 @@ module ChefMetal
 
         # If using enterprise/hosted chef, fix acls
         if machine_resource.chef_server[:chef_server_url] =~ /\/+organizations\/.+/
-          grant_client_node_permissions(machine_resource.chef_server, machine.node['name'], ["read", "update"])
+          grant_client_node_permissions(machine_resource.chef_server, machine.name, ["read", "update"])
         end
       end
 

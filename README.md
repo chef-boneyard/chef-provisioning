@@ -89,7 +89,7 @@ Provisioners each have their own repository.  Current provisioners:
 
 ### Vagrant
 
-chef-zero comes with a provisioner for Vagrant, an abstraction that covers VirtualBox, VMWare and other Virtual Machine providers. To run it, you can check out the sample recipes with:
+chef-zero comes with a provisioner for Vagrant, an abstraction that covers VirtualBox, VMWare and other Virtual Machine drivers. To run it, you can check out the sample recipes with:
 
 ```
 chef-client -z -o myapp::vagrant,myapp::linux,myapp::small
@@ -144,7 +144,7 @@ end
 
 ### Fog (EC2 and friends)
 
-chef-metal also comes with a [Fog](http://fog.io/) provisioner that handles provisioning to Amazon's EC2 and other cloud providers.  (Only EC2 has been tested so far.)  Before you begin, you will need to put your AWS credentials in ~/.aws/config in the format [mentioned in Option 1 here](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#d0e726).
+chef-metal also comes with a [Fog](http://fog.io/) provisioner that handles provisioning to Amazon's EC2 and other cloud drivers.  (Only EC2 has been tested so far.)  Before you begin, you will need to put your AWS credentials in ~/.aws/config in the format [mentioned in Option 1 here](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#d0e726).
 
 Once your credentials are in, basic usage looks like this:
 
@@ -159,7 +159,7 @@ ec2testdir = File.expand_path('~/ec2test')
 
 directory ec2testdir
 
-with_fog_ec2_provisioner # :provider => 'AWS'
+with_fog_ec2_provisioner # :driver => 'AWS'
 
 with_provisioner_options :image_id => 'ami-5ee70037'
 

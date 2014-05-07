@@ -4,12 +4,12 @@ require 'chef/resource_collection'
 class Chef
   module DSL
     module Recipe
-      def with_provisioner(provisioner, &block)
-        run_context.chef_metal.with_provisioner(provisioner, &block)
+      def with_driver(driver, &block)
+        run_context.chef_metal.with_driver(driver, &block)
       end
 
-      def with_provisioner_options(provisioner_options, &block)
-        run_context.chef_metal.with_provisioner_options(provisioner_options, &block)
+      def with_machine_options(machine_options, &block)
+        run_context.chef_metal.with_machine_options(machine_options, &block)
       end
 
       def with_machine_batch(the_machine_batch, options = {}, &block)
@@ -26,12 +26,12 @@ class Chef
         run_context.chef_metal.with_machine_batch(the_machine_batch, &block)
       end
 
-      def current_provisioner_options
-        run_context.chef_metal.current_provisioner_options
+      def current_machine_options
+        run_context.chef_metal.current_machine_options
       end
 
-      def add_provisioner_options(options, &block)
-        run_context.chef_metal.add_provisioner_options(options, &block)
+      def add_machine_options(options, &block)
+        run_context.chef_metal.add_machine_options(options, &block)
       end
 
       # When the machine resource is first declared, create a machine_batch (if there

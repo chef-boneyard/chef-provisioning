@@ -4,7 +4,7 @@ require 'digest'
 module ChefMetal
   class Machine
     class UnixMachine < BasicMachine
-      def initialize(node, transport, convergence_strategy)
+      def initialize(machine_spec, transport, convergence_strategy)
         super
 
         @tmp_dir = '/tmp'
@@ -18,7 +18,7 @@ module ChefMetal
       # Delete file
       def delete_file(action_handler, path)
         if file_exists?(path)
-          action_handler.perform_action "delete file #{path} on #{node['name']}" do
+          action_handler.perform_action "delete file #{path} on #{machine_spec.name}" do
             transport.execute("rm -f #{path}").error!
           end
         end
@@ -61,7 +61,7 @@ module ChefMetal
 
       def create_dir(action_handler, path)
         if !file_exists?(path)
-          action_handler.perform_action "create directory #{path} on #{node['name']}" do
+          action_handler.perform_action "create directory #{path} on #{machine_spec.name}" do
             transport.execute("mkdir -p #{path}").error!
           end
         end
@@ -72,17 +72,17 @@ module ChefMetal
         if attributes[:mode] || attributes[:owner] || attributes[:group]
           current_attributes = get_attributes(path)
           if attributes[:mode] && current_attributes[:mode].to_i != attributes[:mode].to_i
-            action_handler.perform_action "change mode of #{path} on #{node['name']} from #{current_attributes[:mode].to_i} to #{attributes[:mode].to_i}" do
+            action_handler.perform_action "change mode of #{path} on #{machine_spec.name} from #{current_attributes[:mode].to_i} to #{attributes[:mode].to_i}" do
               transport.execute("chmod #{attributes[:mode].to_i} #{path}").error!
             end
           end
           if attributes[:owner] && current_attributes[:owner] != attributes[:owner]
-            action_handler.perform_action "change group of #{path} on #{node['name']} from #{current_attributes[:owner]} to #{attributes[:owner]}" do
+            action_handler.perform_action "change group of #{path} on #{machine_spec.name} from #{current_attributes[:owner]} to #{attributes[:owner]}" do
               transport.execute("chown #{attributes[:owner]} #{path}").error!
             end
           end
           if attributes[:group] && current_attributes[:group] != attributes[:group]
-            action_handler.perform_action "change group of #{path} on #{node['name']} from #{current_attributes[:group]} to #{attributes[:group]}" do
+            action_handler.perform_action "change group of #{path} on #{machine_spec.name} from #{current_attributes[:group]} to #{attributes[:group]}" do
               transport.execute("chgrp #{attributes[:group]} #{path}").error!
             end
           end

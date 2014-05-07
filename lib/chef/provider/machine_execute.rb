@@ -1,10 +1,10 @@
 require 'chef/provider/lwrp_base'
 require 'cheffish/cheffish_server_api'
-require 'chef_metal/provider_action_handler'
+require 'chef_metal/chef_provider_action_handler'
 
 class Chef::Provider::MachineExecute < Chef::Provider::LWRPBase
 
-  include ChefMetal::ProviderActionHandler
+  include ChefMetal::ChefProviderActionHandler
 
   use_inline_resources
 
@@ -17,9 +17,7 @@ class Chef::Provider::MachineExecute < Chef::Provider::LWRPBase
       if new_resource.machine.kind_of?(ChefMetal::Machine)
         new_resource.machine
       else
-        # TODO this is inefficient, can we cache or something?
-        node = Cheffish::CheffishServerAPI.new(new_resource.chef_server).get("/nodes/#{new_resource.machine}")
-        new_resource.provisioner.connect_to_machine(node)
+        ChefMetal::MachineSpec.get(new_resource.machine, new_resource.chef_server).connect
       end
     end
   end

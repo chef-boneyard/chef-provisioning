@@ -3,7 +3,7 @@ require 'chef_metal/machine/basic_machine'
 module ChefMetal
   class Machine
     class WindowsMachine < BasicMachine
-      def initialize(node, transport, convergence_strategy)
+      def initialize(machine_spec, transport, convergence_strategy)
         super
       end
 
@@ -15,7 +15,7 @@ module ChefMetal
       # Delete file
       def delete_file(action_handler, path)
         if file_exists?(path)
-          action_handler.perform_action "delete file #{escape(path)} on #{node['name']}" do
+          action_handler.perform_action "delete file #{escape(path)} on #{machine_spec.name}" do
             transport.execute("Remove-Item #{escape(path)}").error!
           end
         end
@@ -68,7 +68,7 @@ EOM
 
       def create_dir(action_handler, path)
         if !file_exists?(path)
-          action_handler.perform_action "create directory #{path} on #{node['name']}" do
+          action_handler.perform_action "create directory #{path} on #{machine_spec.name}" do
             transport.execute("New-Item #{escape(path)} -Type directory")
           end
         end

@@ -31,30 +31,19 @@ module ChefMetal
     end
   end
 
-
-  # Helpers for provisioner inflation
-  @@registered_provisioner_classes = {}
-  def self.add_registered_provisioner_class(name, provisioner)
-    @@registered_provisioner_classes[name] = provisioner
+  # Helpers for driver inflation
+  @@registered_driver_classes = {}
+  def self.add_registered_driver_class(name, driver)
+    @@registered_driver_classes[name] = driver
   end
 
-  def self.provisioner_for_node(node)
-    provisioner_url = node['normal']['provisioner_output']['provisioner_url']
-    cluster_type = provisioner_url.split(':', 2)[0]
-    require "chef_metal/provisioner_init/#{cluster_type}_init"
-    provisioner_class = @@registered_provisioner_classes[cluster_type]
-    provisioner_class.inflate(node)
-  end
-
-  def self.connect_to_machine(name)
-    rest = Chef::ServerAPI.new()
-    node = rest.get("/nodes/#{name}")
-    provisioner_output = node['normal']['provisioner_output']
-    if !provisioner_output
-      raise "Node #{name} was not provisioned with Metal."
+  @@drivers_by_url = {}
+  def self.driver_for_url(driver_url)
+    @@drivers_by_url[driver_url] ||= begin
+      cluster_type = driver_url.split(':', 2)[0]
+      require "chef_metal/driver_init/#{cluster_type}"
+      driver_class = @@registered_driver_classes[cluster_type]
+      driver_class.from_url(driver_url)
     end
-    provisioner = provisioner_for_node(node)
-    machine = provisioner.connect_to_machine(node)
-    [ machine, provisioner ]
   end
 end

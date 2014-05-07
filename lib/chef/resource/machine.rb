@@ -9,24 +9,24 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
     super
     @chef_environment = run_context.cheffish.current_environment
     @chef_server = run_context.cheffish.current_chef_server
-    @provisioner = run_context.chef_metal.current_provisioner
-    @provisioner_options = run_context.chef_metal.current_provisioner_options
+    @driver = run_context.chef_metal.current_driver
+    @machine_options = run_context.chef_metal.current_machine_options
     if run_context.chef_metal.current_machine_batch
       run_context.chef_metal.current_machine_batch.machines << self
     end
   end
 
   def after_created
-    # Notify the provisioner of this machine's creation
-    @provisioner.resource_created(self)
+    # Notify the driver of this machine's creation
+    @driver.resource_created(self)
   end
 
-  actions :create, :delete, :stop, :converge, :nothing
-  default_action :create
+  actions :allocate, :ready, :setup, :converge, :converge_only, :delete, :stop
+  default_action :converge
 
-  # Provisioner attributes
-  attribute :provisioner
-  attribute :provisioner_options
+  # Driver attributes
+  attribute :driver
+  attribute :machine_options
 
   # Node attributes
   Cheffish.node_attributes(self)
@@ -88,8 +88,8 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
     end
   end
 
-  def add_provisioner_options(options)
-    @provisioner_options = Chef::Mixin::DeepMerge.hash_only_merge(@provisioner_options, options)
+  def add_machine_options(options)
+    @machine_options = Chef::Mixin::DeepMerge.hash_only_merge(@machine_options, options)
   end
 
   # chef client version and omnibus

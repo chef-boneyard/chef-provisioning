@@ -29,10 +29,17 @@ module ChefMetal
         end
       end
 
-      def converge(action_handler, machine, chef_server)
+      def converge(action_handler, machine)
         super
-        
-        machine.execute(action_handler, "chef-client -l #{Chef::Config.log_level.to_s}", :stream => true, :timeout => @chef_client_timeout)
+
+        action_handler.open_stream(machine.node['name']) do |stdout|
+          action_handler.open_stream(machine.node['name']) do |stderr|
+            machine.execute(action_handler, "chef-client -l #{Chef::Config.log_level.to_s}",
+              :stream_stdout => stdout,
+              :stream_stderr => stderr,
+              :timeout => @chef_client_timeout)
+          end
+        end
       end
     end
   end

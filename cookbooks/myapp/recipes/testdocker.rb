@@ -5,9 +5,9 @@ TestHelper.install_latest_gem(self, 'chef-metal-docker', '/tmp/packages_from_hos
 
 require 'chef_metal_docker'
 
-with_provisioner ChefMetalDocker::DockerProvisioner.new
+with_driver ChefMetalDocker::DockerProvisioner.new
 
-with_provisioner_options 'base_image' => 'ubuntu:precise', 'command' => 'echo true'
+with_machine_options 'base_image' => 'ubuntu:precise', 'command' => 'echo true'
 
 execute 'docker pull ubuntu'
 
