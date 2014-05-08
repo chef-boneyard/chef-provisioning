@@ -31,6 +31,10 @@ module ChefMetal
     end
 
     def report_progress(description)
+      # TODO this seems wrong but Chef doesn't have another thing
+      self.converge_by description do
+        # We already did the action, but we trust whoever told us that they did it.
+      end
     end
 
     def performed_action(description)
