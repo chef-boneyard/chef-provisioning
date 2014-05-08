@@ -205,7 +205,7 @@ module ChefMetalFog
       if need_to_create
         # If the server does not exist, create it
         bootstrap_options = bootstrap_options_for(action_handler.new_resource, node)
-        bootstrap_options.merge(:name => action_handler.new_resource.name)
+        bootstrap_options = bootstrap_options.merge(:name => action_handler.new_resource.name)
 
         start_time = Time.now
         timeout = option_for(node, :create_timeout)
