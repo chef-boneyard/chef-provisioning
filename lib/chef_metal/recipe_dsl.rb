@@ -59,9 +59,6 @@ class Chef
       # open ended for whatever the driver wants
       config_strict_mode false
     end
-    configurable(:private_keys)
-    default(:private_key_paths) { [ path_join(config_dir, 'keys'), path_join(user_home, '.ssh') ] }
-    default(:private_key_write_path) { private_key_paths.first }
   end
 
   class RunContext
