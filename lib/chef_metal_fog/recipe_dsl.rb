@@ -4,7 +4,8 @@ class Chef
   module DSL
     module Recipe
       def with_fog_driver(provider, driver_config = nil, &block)
-        driver = ChefMetalFog::FogDriver.from_provider(provider, driver_config, run_context.config)
+        config = Cheffish::MergedConfig.new({ :driver_config => driver_config }, run_context.config)
+        driver = ChefMetalFog::FogDriver.from_provider(provider, config)
         run_context.chef_metal.with_driver(driver, &block)
       end
 

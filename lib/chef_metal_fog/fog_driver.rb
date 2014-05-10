@@ -15,6 +15,7 @@ require 'fog/aws'
 require 'socket'
 require 'etc'
 require 'time'
+require 'cheffish/merged_config'
 
 module ChefMetalFog
   # Provisions cloud machines with the Fog driver.
@@ -87,15 +88,20 @@ module ChefMetalFog
       :ssh_timeout => 20
     }
 
-    def self.from_url(driver_url, driver_config)
+    # Passed in a driver_url, and a config in the format of Driver.config.
+    def self.from_url(driver_url, config)
       scheme, provider, id = driver_url.split(':', 3)
-      compute_options = compute_options_for(provider, id, driver_config)
-      FogDriver.new(driver_url, driver_config, compute_options)
+      config = compute_options_for(provider, id, config)
+      FogDriver.new(driver_url, config)
     end
 
-    def self.from_provider(provider, driver_config, config)
-      driver_config ||= {}
-      compute_options = compute_options_for(provider, nil, driver_config)
+    # Passed in a config which is *not* merged with driver_url (because we don't
+    # know what it is yet) but which has the same keys
+    def self.from_provider(provider, config)
+      # Figure out the options and merge them into the config
+      config = compute_options_for(provider, nil, config)
+      driver_config = config[:driver_config] || {}
+      compute_options = driver_config[:compute_options] || {}
 
       id = case provider
         when 'AWS'
@@ -110,47 +116,30 @@ module ChefMetalFog
 
       driver_url = "fog:#{provider}:#{id}"
 
-      # merge in any external config now that we know the true url
-      # TODO this is a bit gross.  Find a better way to flip it around, or
-      # remove it entirely.
-      external_config = ChefMetal.driver_config_for_url(driver_url, driver_config, config)
-      if external_config
-        driver_config = Cheffish::MergedConfig.new(driver_config, external_config)
-        if external_config[:compute_options]
-          compute_options = Cheffish::MergedConfig.new(compute_options, external_config[:compute_options])
-        end
-      end
-
-      FogDriver.new(driver_url, driver_config, compute_options)
+      config = ChefMetal.config_for_url(driver_url, config)
+      puts config.keys
+      FogDriver.new(driver_url, config)
     end
 
     # Create a new fog driver.
     #
     # ## Parameters
     # driver_url - URL of driver.  "fog:<provider>:<provider_id>"
-    # driver_config - hash of options:
-    #   - compute_options: the hash of options to Fog::Compute.new.  This will have
-    #     information from driver_url and environment credentials merged into it.
+    # config - configuration.  :driver_config, :keys, :key_paths and :log_level are used.
+    #   driver_config is a hash with these possible options:
+    #   - compute_options: the hash of options to Fog::Compute.new.
     #   - aws_config_file: aws config file (default: ~/.aws/config)
     #   - aws_csv_file: aws csv credentials file downloaded from EC2 interface
     #   - aws_profile: profile name to use for credentials
     #   - aws_credentials: AWSCredentials object. (will be created for you by default)
     #   - log_level: :debug, :info, :warn, :error
-    # compute_options: final hash of compute options (generally computed by
-    #                  FogDriver.from_url or FogDriver.from_provider)
-    #
-    # Special options:
-    #   - :aws_credentials is an AWS CSV file (created with Download Credentials)
-    #     containing your aws key information.  If you do not specify aws_access_key_id
-    #     and aws_secret_access_key explicitly, the first line from this file
-    #     will be used.  You may pass a Cheffish::AWSCredentials object.
-    # id - the ID in the driver_url (fog:PROVIDER:ID)
-    def initialize(driver_url, driver_config, compute_options)
-      super(driver_url, driver_config)
-      @compute_options = compute_options
+    def initialize(driver_url, config)
+      super(driver_url, config)
     end
 
-    attr_reader :compute_options
+    def compute_options
+      driver_config[:compute_options] || {}
+    end
 
     def provider
       compute_options[:provider]
@@ -237,7 +226,7 @@ module ChefMetalFog
     # key pairs. Ultimately, key pairs (and private keys in particular) should
     # be grabbed from the system and we should not rely on recipes creating them.
     def self.key_pairs
-      @@key_pairs ||= {}
+      @@_pairs ||= {}
     end
 
     def self.add_key_pair(driver_url, name, fog_key_pair)
@@ -549,11 +538,11 @@ module ChefMetalFog
       ChefMetal::Transport::SSH.new(remote_host, username, ssh_options, options)
     end
 
-    def self.compute_options_for(provider, id, driver_config)
-      compute_options = (driver_config[:compute_options] || {}).to_hash.dup
-
-      # Set provider.
-      compute_options[:provider] = provider
+    def self.compute_options_for(provider, id, config)
+      driver_config = config[:driver_config] || {}
+      compute_options = driver_config[:compute_options] || {}
+      new_compute_options = {}
+      new_compute_options[:provider] = provider
 
       # Set the identifier from the URL
       if id
@@ -561,9 +550,9 @@ module ChefMetalFog
         when 'AWS'
           # the identifier is secondary to the credentials for AWS
         when 'DigitalOcean'
-          compute_options[:digitalocean_client_id] = id
+          new_compute_options[:digitalocean_client_id] = id
         when 'OpenStack'
-          compute_options[:openstack_auth_url] = id
+          new_compute_options[:openstack_auth_url] = id
         else
           raise "unsupported fog provider #{provider}"
         end
@@ -575,7 +564,7 @@ module ChefMetalFog
         # Grab the profile
         aws_profile = FogDriverAWS.get_aws_profile(driver_config, compute_options, id)
         [ :aws_access_key_id, :aws_secret_access_key, :aws_session_token ].each do |key|
-          compute_options[key] = aws_profile[key] if aws_profile[key]
+          new_compute_options[key] = aws_profile[key] if aws_profile[key]
         end
       when 'OpenStack'
         # TODO it is supposed to be unnecessary to load credentials from fog this way;
@@ -583,13 +572,19 @@ module ChefMetalFog
         # TODO support http://docs.openstack.org/cli-reference/content/cli_openrc.html
         credential = Fog.credential
 
-        compute_options[:openstack_username] ||= credential[:openstack_username]
-        compute_options[:openstack_api_key] ||= openstack_credentials.default[:openstack_api_key]
-        compute_options[:openstack_auth_url] ||= openstack_credentials.default[:openstack_auth_url]
-        compute_options[:openstack_tenant] ||= openstack_credentials.default[:openstack_tenant]
+        new_compute_options[:openstack_username] ||= credential[:openstack_username]
+        new_compute_options[:openstack_api_key] ||= openstack_credentials.default[:openstack_api_key]
+        new_compute_options[:openstack_auth_url] ||= openstack_credentials.default[:openstack_auth_url]
+        new_compute_options[:openstack_tenant] ||= openstack_credentials.default[:openstack_tenant]
       end
 
-      compute_options
+      if new_compute_options.size > 0
+        Cheffish::MergedConfig.new(
+          { :driver_config => { :compute_options => new_compute_options } },
+          config)
+      else
+        config
+      end
     end
   end
 end
