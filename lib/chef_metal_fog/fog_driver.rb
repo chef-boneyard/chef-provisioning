@@ -535,7 +535,7 @@ module ChefMetalFog
       options[:ssh_pty_enable] = true
       options[:ssh_gateway] = machine_spec.location[:ssh_gateway] if machine_spec.location.has_key?(:ssh_gateway)
 
-      ChefMetal::Transport::SSH.new(remote_host, username, ssh_options, options)
+      ChefMetal::Transport::SSH.new(remote_host, username, ssh_options, options, config)
     end
 
     def self.compute_options_for(provider, id, config)
