@@ -20,6 +20,9 @@ module ChefMetal
           chef_node machine_spec.name do
             action :delete
           end
+          chef_client machine_spec.name do
+            action :delete
+          end
         end
       end
     end

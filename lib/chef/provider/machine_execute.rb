@@ -4,7 +4,9 @@ require 'chef_metal/chef_provider_action_handler'
 
 class Chef::Provider::MachineExecute < Chef::Provider::LWRPBase
 
-  include ChefMetal::ChefProviderActionHandler
+  def action_handler
+    @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
+  end
 
   use_inline_resources
 
@@ -17,12 +19,12 @@ class Chef::Provider::MachineExecute < Chef::Provider::LWRPBase
       if new_resource.machine.kind_of?(ChefMetal::Machine)
         new_resource.machine
       else
-        ChefMetal::MachineSpec.get(new_resource.machine, new_resource.chef_server).connect
+        run_context.chef_metal.connect_to_machine(new_resource.machine, new_resource.chef_server)
       end
     end
   end
 
   action :run do
-    machine.execute(self, new_resource.command)
+    machine.execute(action_handler, new_resource.command)
   end
 end

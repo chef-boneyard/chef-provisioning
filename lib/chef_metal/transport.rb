@@ -49,6 +49,7 @@ module ChefMetal
 
     protected
 
+    # TODO Chef::Config.log_level is a bad way to do things.  Have something associated with the instance.
     # Helper to implement stdout/stderr streaming in execute
     def stream_chunk(options, stdout_chunk, stderr_chunk)
       if options[:stream].is_a?(Proc)

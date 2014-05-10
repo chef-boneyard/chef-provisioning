@@ -66,6 +66,11 @@ module ChefMetal
       set_metal_attr('location', value)
     end
 
+    # URL to the driver.  Convenience for location['driver_url']
+    def driver_url
+      location ? location['driver_url'] : nil
+    end
+
     #
     # Save this node to the server.  If you have significant information that
     # could be lost, you should do this as quickly as possible.  Data will be
@@ -87,24 +92,6 @@ module ChefMetal
     #
     def chef_api
       Cheffish::CheffishServerAPI.new(@chef_server)
-    end
-
-    #
-    # Driver that provisioned the given machine
-    #
-    def driver
-      if location
-        ChefMetal.driver_for_url(location['driver_url'])
-      else
-        nil
-      end
-    end
-
-    #
-    # Connect to (and return) the Machine at this MachineSpec's location
-    #
-    def connect
-      driver.connect_to_machine(self)
     end
 
     private

@@ -16,44 +16,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require 'chef_metal/action_handler'
+
 # This is included in the metal drivers to proxy from generic requests needed
 # to specific driver actions
 module ChefMetal
-  module ChefProviderActionHandler
-    # Implementation of ActionHandler interface
+  class ChefProviderActionHandler < ActionHandler
+    def initialize(provider)
+      @provider = provider
+    end
+
+    attr_reader :provider
 
     def updated!
-      self.new_resource.updated_by_last_action(true)
+      provider.new_resource.updated_by_last_action(true)
     end
 
     def should_perform_actions
-      !Chef::Config.why_run
+      !provider.run_context.config.why_run
     end
 
     def report_progress(description)
       # TODO this seems wrong but Chef doesn't have another thing
-      self.converge_by description do
+      provider.converge_by description do
         # We already did the action, but we trust whoever told us that they did it.
       end
     end
 
     def performed_action(description)
-      self.converge_by description do
+      provider.converge_by description do
         # We already did the action, but we trust whoever told us that they did it.
       end
     end
 
     def perform_action(description, &block)
-      self.converge_by(description, &block)
+      provider.converge_by(description, &block)
     end
 
     def debug_name
-      self.cookbook_name
+      provider.cookbook_name
     end
 
     def open_stream(name, &block)
-      if self.run_context.respond_to?(:open_stream)
-        self.run_context.open_stream({ :name => name }, &block)
+      if provider.run_context.respond_to?(:open_stream)
+        provider.run_context.open_stream({ :name => name }, &block)
       else
         if block_given?
           yield STDOUT

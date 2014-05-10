@@ -45,9 +45,25 @@ class Chef
     end
   end
 
+  class Config
+    default(:driver) { ENV['CHEF_DRIVER'] }
+    config_context :drivers do
+      # each key is a driver_url, and each value can have driver, driver_config and machine_options
+      config_strict_mode false
+    end
+    config_context :driver_config do
+      # open ended for whatever the driver wants
+      config_strict_mode false
+    end
+    config_context :machine_options do
+      # open ended for whatever the driver wants
+      config_strict_mode false
+    end
+  end
+
   class RunContext
     def chef_metal
-      @chef_metal ||= ChefMetal::ChefRunData.new
+      @chef_metal ||= ChefMetal::ChefRunData.new(config)
     end
   end
 end

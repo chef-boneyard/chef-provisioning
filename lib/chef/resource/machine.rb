@@ -16,11 +16,6 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
     end
   end
 
-  def after_created
-    # Notify the driver of this machine's creation
-    @driver.resource_created(self)
-  end
-
   actions :allocate, :ready, :setup, :converge, :converge_only, :delete, :stop
   default_action :converge
 

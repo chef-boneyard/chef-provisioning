@@ -6,7 +6,9 @@ require 'chef_metal/add_prefix_action_handler'
 
 class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
 
-  include ChefMetal::ChefProviderActionHandler
+  def action_handler
+    @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
+  end
 
   use_inline_resources
 
@@ -21,7 +23,7 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
   action :allocate do
     @by_driver.each do |driver, machines|
       machine_specs = machines.inject({}) { |result, m| result[m[:spec]] = m[:resource].machine_options; result }
-      driver.allocate_machines(self, machine_specs, parallelizer)
+      driver.allocate_machines(action_handler, machine_specs, parallelizer)
     end
   end
 
@@ -31,7 +33,7 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
 
   action :setup do
     with_ready_machines do |m|
-      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(self, "[#{m[:resource].name}] ")
+      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{m[:resource].name}] ")
       machine[:machine].setup_convergence(prefixed_handler, m[:resource])
       Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:resource].files)
     end
@@ -39,7 +41,7 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
 
   action :converge do
     with_ready_machines do |m|
-      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(self, "[#{m[:resource].name}] ")
+      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{m[:resource].name}] ")
       m[:machine].setup_convergence(prefixed_handler, m[:resource])
       Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:resource].files)
       m[:machine].converge(prefixed_handler)
@@ -47,14 +49,16 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
   end
 
   action :stop do
-    parallel_do(@by_driver) do |driver, machines|
-      driver.stop_machines(self, machines.map { |m| m[:spec] }, parallelizer)
+    parallel_do(by_current_driver) do |driver_url, machines|
+      driver = run_context.chef_metal.driver_for_url(driver_url)
+      driver.stop_machines(action_handler, machines.map { |m| m[:spec] }, parallelizer)
     end
   end
 
   action :delete do
-    parallel_do(@by_driver) do |driver, machines|
-      driver.delete_machines(self, machines.map { |m| m[:spec] }, parallelizer)
+    parallel_do(by_current_driver) do |driver_url, machines|
+      driver = run_context.chef_metal.driver_for_url(driver_url)
+      driver.delete_machines(action_handler, machines.map { |m| m[:spec] }, parallelizer)
     end
   end
 
@@ -63,12 +67,12 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
     parallel_do(@by_driver) do |driver, machines|
       by_id = machines.inject({}) { |hash,m| hash[m[:spec].id] = m; hash }
       machine_specs = machines.inject({}) { |result, m| result[m[:spec]] = m[:resource].machine_options; result }
-      driver.ready_machines(self, machine_specs, parallelizer) do |machine_obj|
-        machine = by_id[machine_obj.machine_spec.id]
+      driver.ready_machines(action_handler, machine_specs, parallelizer) do |machine_obj|
+        m = by_id[machine_obj.machine_spec.id]
 
-        machine[:machine] = machine_obj
+        m[:machine] = machine_obj
         begin
-          yield machine if block_given?
+          yield m if block_given?
         ensure
           machine_obj.disconnect
         end
@@ -83,6 +87,10 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
     parallelizer.parallelize(enum, options, &block).to_a
   end
 
+  def by_current_driver
+    @by_driver.values.select { |m| m[:spec].driver_url }.group_by { |m| m[:spec].driver_url }
+  end
+
   def load_current_resource
     # Load nodes in parallel
     @by_driver = parallel_do(new_resource.machines) do |machine_resource|
@@ -92,7 +100,7 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
         :resource => machine_resource,
         :spec => provider.machine_spec
       }
-    end.group_by { |machine| machine[:resource].driver }
+    end.group_by { |m| m[:resource].driver }
   end
 
 end

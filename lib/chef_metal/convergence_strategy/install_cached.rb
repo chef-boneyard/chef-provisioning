@@ -38,7 +38,9 @@ module ChefMetal
 
         action_handler.open_stream(machine.node['name']) do |stdout|
           action_handler.open_stream(machine.node['name']) do |stderr|
-            machine.execute(action_handler, "chef-client -l #{Chef::Config.log_level.to_s}",
+            command_line = "chef-client"
+            command_line << "-l #{log_level.to_s}" if log_level
+            machine.execute(action_handler, "chef-client",
               :stream_stdout => stdout,
               :stream_stderr => stderr,
               :timeout => @chef_client_timeout)

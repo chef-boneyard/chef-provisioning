@@ -9,10 +9,12 @@ module ChefMetal
         super
         @client_rb_path = options[:client_rb_path]
         @client_pem_path = options[:client_pem_path]
+        @log_level = options[:log_level]
       end
 
       attr_reader :client_rb_path
       attr_reader :client_pem_path
+      attr_reader :log_level
 
       def setup_convergence(action_handler, machine, machine_resource)
         # Create keys on machine

@@ -7,6 +7,7 @@ module ChefMetal
       @@install_sh_cache = {}
 
       def initialize(options = {})
+        super
         @install_sh_url = options[:install_sh_url] || 'http://www.opscode.com/chef/install.sh'
         @install_sh_path = options[:install_sh_path] || '/tmp/chef-install.sh'
         @client_rb_path ||= '/etc/chef/client.rb'
@@ -34,7 +35,9 @@ module ChefMetal
 
         action_handler.open_stream(machine.node['name']) do |stdout|
           action_handler.open_stream(machine.node['name']) do |stderr|
-            machine.execute(action_handler, "chef-client -l #{Chef::Config.log_level.to_s}",
+            command_line = "chef-client"
+            command_line << "-l #{log_level.to_s}" if log_level
+            machine.execute(action_handler, command_line,
               :stream_stdout => stdout,
               :stream_stderr => stderr,
               :timeout => @chef_client_timeout)

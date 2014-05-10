@@ -6,7 +6,9 @@ require 'chef_metal/machine_spec'
 
 class Chef::Provider::Machine < Chef::Provider::LWRPBase
 
-  include ChefMetal::ChefProviderActionHandler
+  def action_handler
+    @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
+  end
 
   use_inline_resources
 
@@ -15,19 +17,19 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   end
 
   action :allocate do
-    new_resource.driver.allocate_machine(self, machine_spec, new_resource.machine_options)
-    machine_spec.save(self)
+    new_resource.driver.allocate_machine(action_handler, machine_spec, new_resource.machine_options)
+    machine_spec.save(action_handler)
   end
 
   action :ready do
     action_allocate
-    machine = machine_spec.driver.ready_machine(self, machine_spec, new_resource.machine_options)
+    machine = current_driver.ready_machine(action_handler, machine_spec, new_resource.machine_options)
   end
 
   action :setup do
     machine = action_ready
     begin
-      machine.setup_convergence(self, new_resource)
+      machine.setup_convergence(action_handler, new_resource)
       upload_files(machine)
     ensure
       machine.disconnect
@@ -37,12 +39,12 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   action :converge do
     machine = action_ready
     begin
-      machine.setup_convergence(self, new_resource)
+      machine.setup_convergence(action_handler, new_resource)
       upload_files(machine)
       # If we were asked to converge, or anything changed, or if a converge has never succeeded, converge.
       if new_resource.converge || (new_resource.converge.nil? && resource_updated?) ||
          !machine_spec.node['automatic'] || machine_spec.node['automatic'].size == 0
-        machine.converge(self)
+        machine.converge(action_handler)
       end
     ensure
       machine.disconnect
@@ -50,25 +52,29 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   end
 
   action :converge_only do
-    machine = machine_spec.connect
+    machine = run_context.chef_metal.connect_to_machine(machine_spec)
     begin
-      machine.converge(self)
+      machine.converge(action_handler)
     ensure
       machine.disconnect
     end
   end
 
   action :stop do
-    driver = machine_spec.driver
-    if driver
-      driver.stop_machine(self, machine_spec)
+    if current_driver
+      current_driver.stop_machine(action_handler, machine_spec)
     end
   end
 
   action :delete do
-    driver = machine_spec.driver
-    if driver
-      driver.delete_machine(self, machine_spec)
+    if current_driver
+      current_driver.delete_machine(action_handler, machine_spec)
+    end
+  end
+
+  def current_driver
+    if machine_spec.driver_url
+      run_context.chef_metal.driver_for_url(machine_spec.driver_url)
     end
   end
 
@@ -101,6 +107,6 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   private
 
   def upload_files(machine)
-    Machine.upload_files(self, machine, new_resource.files)
+    Machine.upload_files(action_handler, machine, new_resource.files)
   end
 end

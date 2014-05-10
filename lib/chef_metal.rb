@@ -10,6 +10,7 @@ require 'chef/resource/machine_execute'
 require 'chef/provider/machine_execute'
 require 'chef/server_api'
 require 'cheffish/basic_chef_client'
+require 'cheffish/merged_config'
 
 module ChefMetal
   def self.inline_resource(action_handler, &block)
@@ -37,13 +38,33 @@ module ChefMetal
     @@registered_driver_classes[name] = driver
   end
 
-  @@drivers_by_url = {}
-  def self.driver_for_url(driver_url)
-    @@drivers_by_url[driver_url] ||= begin
-      cluster_type = driver_url.split(':', 2)[0]
-      require "chef_metal/driver_init/#{cluster_type}"
-      driver_class = @@registered_driver_classes[cluster_type]
-      driver_class.from_url(driver_url)
+  def self.driver_config_for_url(driver_url, explicit_config = nil, config = Chef::Config)
+    if config[:drivers] && config[:drivers][driver_url]
+      driver_config = Cheffish::MergedConfig.new(config[:drivers][driver_url], config)[:driver_config]
+    else
+      driver_config = config[:drivers][:driver_url]
+    end
+    driver_config ||= {}
+    if explicit_config
+      driver_config = Cheffish::MergedConfig.new(explicit_config, driver_config)
+    end
+    driver_config
+  end
+
+  def self.driver_for_url(driver_url, explicit_config = nil, config = Chef::Config)
+    cluster_type = driver_url.split(':', 2)[0]
+    require "chef_metal/driver_init/#{cluster_type}"
+    driver_class = @@registered_driver_classes[cluster_type]
+    driver_config = driver_config_for_url(driver_url, explicit_config, config)
+    driver_class.from_url(driver_url, driver_config || {})
+  end
+
+  def self.connect_to_machine(machine_spec, config = Chef::Config)
+    driver = driver_for_url(machine_spec.driver_url, nil, config)
+    if driver
+      driver.connect_to_machine(machine_spec)
+    else
+      nil
     end
   end
 end

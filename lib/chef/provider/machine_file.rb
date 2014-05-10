@@ -4,7 +4,9 @@ require 'chef_metal/chef_provider_action_handler'
 
 class Chef::Provider::MachineFile < Chef::Provider::LWRPBase
 
-  include ChefMetal::ChefProviderActionHandler
+  def action_handler
+    @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
+  end
 
   use_inline_resources
 
@@ -17,16 +19,16 @@ class Chef::Provider::MachineFile < Chef::Provider::LWRPBase
       if new_resource.machine.kind_of?(ChefMetal::Machine)
         new_resource.machine
       else
-        ChefMetal::MachineSpec.get(new_resource.machine, new_resource.chef_server).connect
+        run_context.chef_metal.connect_to_machine(new_resource.machine, new_resource.chef_server)
       end
     end
   end
 
   action :upload do
     if new_resource.content
-      machine.write_file(self, new_resource.path, new_resource.content)
+      machine.write_file(action_handler, new_resource.path, new_resource.content)
     else
-      machine.upload_file(self, new_resource.local_path, new_resource.path)
+      machine.upload_file(action_handler, new_resource.local_path, new_resource.path)
     end
 
     attributes = {}
@@ -34,14 +36,14 @@ class Chef::Provider::MachineFile < Chef::Provider::LWRPBase
     attributes[:owner] = new_resource.owner if new_resource.owner
     attributes[:mode] = new_resource.mode if new_resource.mode
 
-    machine.set_attributes(self, new_resource.path, attributes)
+    machine.set_attributes(action_handler, new_resource.path, attributes)
   end
 
   action :download do
-    machine.download_file(self, new_resource.path, new_resource.local_path)
+    machine.download_file(action_handler, new_resource.path, new_resource.local_path)
   end
 
   action :delete do
-    machine.delete_file(self, new_resource.path)
+    machine.delete_file(action_handler, new_resource.path)
   end
 end

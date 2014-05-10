@@ -45,9 +45,9 @@ module ChefMetal
     #
     # ## Returns
     # A Driver representing the given driver_url.
-    def initialize(driver_url)
-      # We do not save it ... it's up to the driver to extract whatever information
-      # it wants.
+    def initialize(driver_url, driver_config)
+      @driver_url = driver_url
+      @driver_config = driver_config
     end
 
     #
@@ -64,9 +64,12 @@ module ChefMetal
     # - lxc:
     # - docker:
     #
-    def driver_url
-      raise "#{self.class} does not implement driver_url"
-    end
+    attr_reader :driver_url
+
+    #
+    # Arbitrary value containing configuration data for the driver
+    #
+    attr_reader :driver_config
 
     #
     # Allocate a machine from the PXE/cloud/VM/container driver.  This method
@@ -228,13 +231,6 @@ module ChefMetal
         delete_machine(add_prefix(machine_spec, action_handler), machine_spec)
         yield machine_spec if block_given?
       end.to_a
-    end
-
-    #
-    # Driver notification that happens at the point a machine resource is declared
-    # (after all properties have been set on it)
-    #
-    def resource_created(machine)
     end
 
     protected
