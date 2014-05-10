@@ -42,12 +42,13 @@ module ChefMetal
     #
     # ## Parameters
     # driver_url - the URL to inflate the driver
+    # config - a configuration hash.  See "config" for a list of known keys.
     #
     # ## Returns
     # A Driver representing the given driver_url.
-    def initialize(driver_url, driver_config)
+    def initialize(driver_url, config)
       @driver_url = driver_url
-      @driver_config = driver_config
+      @config = config
     end
 
     #
@@ -66,10 +67,21 @@ module ChefMetal
     #
     attr_reader :driver_url
 
-    #
-    # Arbitrary value containing configuration data for the driver
-    #
-    attr_reader :driver_config
+    # A configuration hash.  These keys may be present:
+    #   - :driver_config: a driver-defined object containing driver config.
+    #   - :private_keys: a hash of private keys, with a "name" and a "value".  Values are either strings (paths) or PrivateKey objects.
+    #   - :private_key_paths: a list of paths to directories containing private keys.
+    #   - :write_private_key_path: the path to which we write new keys by default.
+    #   - :log_level: :debug/:info/:warn/:error/:fatal
+    #   - :chef_server_url: url to chef server
+    #   - :node_name: username to talk to chef server
+    #   - :client_key: path to key used to talk to chef server
+    attr_reader :config
+
+    # driver configuration. Equivalent to config[:driver_config] || {}
+    def driver_config
+      config[:driver_config] || {}
+    end
 
     #
     # Allocate a machine from the PXE/cloud/VM/container driver.  This method

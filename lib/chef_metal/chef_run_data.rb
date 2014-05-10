@@ -39,7 +39,7 @@ module ChefMetal
     end
 
     def driver_for_url(driver_url)
-      drivers[driver_url] ||= ChefMetal.driver_for_url(driver_url, nil, config)
+      drivers[driver_url] ||= ChefMetal.driver_for_url(driver_url, config)
     end
 
     def connect_to_machine(name, chef_server = nil)
@@ -49,6 +49,18 @@ module ChefMetal
         machine_spec = ChefMetal::MachineSpec.get(name, chef_server)
       end
       ChefMetal.connect_to_machine(machine_spec, config)
+    end
+
+    def keys
+      result = (config.keys || {}).dup
+      Array(config.key_path) do |key_path|
+        Dir.entries(key_path).each do |key|
+          if File.extname(key) == '.pem'
+            result[File.basename(key)[0..-5]] ||= key
+          end
+        end
+      end
+      result
     end
   end
 end
