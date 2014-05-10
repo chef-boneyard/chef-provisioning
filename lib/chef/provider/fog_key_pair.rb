@@ -33,13 +33,19 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
   end
 
   def create_key(action)
+    if @should_create_directory
+      Cheffish.inline_resource(self, action) do
+        directory run_context.config[:private_key_write_path]
+      end
+    end
+
     if current_resource_exists?
       # If the public keys are different, update the server public key
       if !current_resource.private_key_path
         if new_resource.allow_overwrite
           ensure_keys(action)
         else
-          raise "#{key_description} already exists on the server, but the private key #{new_resource.private_key_path} does not exist!"
+          raise "#{key_description} already exists on the server, but the private key #{new_private_key_path} does not exist!"
         end
       else
         ensure_keys(action)
@@ -103,8 +109,9 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
 
   def ensure_keys(action)
     resource = new_resource
+    private_key_path = new_private_key_path
     Cheffish.inline_resource(self, action) do
-      private_key resource.private_key_path do
+      private_key private_key_path do
         public_key_path resource.public_key_path
         if resource.private_key_options
           resource.private_key_options.each_pair do |key,value|
@@ -128,7 +135,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
 
   def desired_private_key
     @desired_private_key ||= begin
-        private_key, format = Cheffish::KeyFormatter.decode(IO.read(new_resource.private_key_path))
+        private_key, format = Cheffish::KeyFormatter.decode(IO.read(new_private_key_path))
         private_key
     end
   end
@@ -145,12 +152,28 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
     current_resource.source_key
   end
 
+  def new_private_key_path
+    private_key_path = new_resource.private_key_path || "#{new_resource.name}.pem"
+    if private_key_path.is_a?(Symbol)
+      private_key_path
+    elsif Pathname.new(private_key_path).relative? && new_resource.driver.config[:private_key_write_path]
+      @should_create_directory = true
+      ::File.join(new_resource.driver.config[:private_key_write_path], private_key_path)
+    else
+      private_key_path
+    end
+  end
+
+  def new_public_key_path
+    new_resource.public_key_path
+  end
+
   def load_current_resource
     if !new_resource.driver.kind_of?(ChefMetalFog::FogDriver)
-      raise 'ec2_key_pair only works with fog_driver'
+      raise 'fog_key_pair only works with fog_driver'
     end
     @current_resource = Chef::Resource::FogKeyPair.new(new_resource.name, run_context)
-    case new_resource.driver.compute_options[:provider]
+    case new_resource.driver.provider
     when 'DigitalOcean'
       current_key_pair = compute.ssh_keys.select { |key| key.name == new_resource.name }.first
       if current_key_pair
@@ -176,11 +199,11 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
       end
     end
 
-    if new_resource.private_key_path && ::File.exist?(new_resource.private_key_path)
-      current_resource.private_key_path new_resource.private_key_path
+    if new_private_key_path && ::File.exist?(new_private_key_path)
+      current_resource.private_key_path new_private_key_path
     end
-    if new_resource.public_key_path && ::File.exist?(new_resource.public_key_path)
-      current_resource.public_key_path new_resource.public_key_path
+    if new_public_key_path && ::File.exist?(new_public_key_path)
+      current_resource.public_key_path new_public_key_path
     end
   end
 end

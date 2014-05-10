@@ -8,11 +8,6 @@ class Chef::Resource::FogKeyPair < Chef::Resource::LWRPBase
     @driver = run_context.chef_metal.current_driver
   end
 
-  def after_created
-    # Make the credentials usable
-    ChefMetalFog::FogDriver.add_key_pair(driver.driver_url, name, self)
-  end
-
   actions :create, :delete, :nothing
   default_action :create
 

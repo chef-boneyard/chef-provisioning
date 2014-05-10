@@ -117,7 +117,6 @@ module ChefMetalFog
       driver_url = "fog:#{provider}:#{id}"
 
       config = ChefMetal.config_for_url(driver_url, config)
-      puts config.keys
       FogDriver.new(driver_url, config)
     end
 
@@ -220,25 +219,7 @@ module ChefMetalFog
       create_ssh_transport(machine_spec, server)
     end
 
-    # TODO This is not particularly cool, but in the absence of better credentials
-    # storage, it'll have to do. We're using global storage so that if you
-    # create multiple provisioners of the same sort, they will share the same
-    # key pairs. Ultimately, key pairs (and private keys in particular) should
-    # be grabbed from the system and we should not rely on recipes creating them.
-    def self.key_pairs
-      @@_pairs ||= {}
-    end
-
-    def self.add_key_pair(driver_url, name, fog_key_pair)
-      key_pairs[driver_url] ||= {}
-      key_pairs[driver_url][name] = fog_key_pair
-    end
-
     protected
-
-    def key_pairs
-      ChefMetalFog::FogDriver.key_pairs[driver_url] ||= {}
-    end
 
     def option_for(machine_options, key)
       machine_options[key] || DEFAULT_OPTIONS[key]
@@ -261,7 +242,7 @@ module ChefMetalFog
         end
       end
 
-      bootstrap_options = bootstrap_options_for(machine_spec, machine_options)
+      bootstrap_options = bootstrap_options_for(action_handler, machine_spec, machine_options)
 
       description = [ "creating machine #{machine_spec.name} on #{driver_url}" ]
       bootstrap_options.each_pair { |key,value| description << "  #{key}: #{value.inspect}" }
@@ -282,6 +263,7 @@ module ChefMetalFog
           'creator' => creator,
           'allocated_at' => Time.now.utc.to_s
         }
+        machine_spec.location['key_name'] = bootstrap_options[:key_name] if bootstrap_options[:key_name]
         %w(is_windows chef_client_timeout ssh_username sudo use_private_ip_for_ssh ssh_gateway).each do |key|
           machine_spec.location[key] = machine_options[key.to_sym] if machine_options[key.to_sym]
         end
@@ -401,15 +383,29 @@ module ChefMetalFog
       end
     end
 
-    def bootstrap_options_for(machine_spec, machine_options)
+    @@metal_default_lock = Mutex.new
+
+    def overwrite_default_key_willy_nilly(action_handler)
+      driver = self
+      updated = @@metal_default_lock.synchronize do
+        ChefMetal.inline_resource(action_handler) do
+          fog_key_pair 'metal_default' do
+            driver driver
+            allow_overwrite true
+          end
+        end
+      end
+      if updated
+        # Only warn the first time
+        Chef::Log.warn("Using metal_default key, which is not shared between machines!  It is recommended to create an AWS key pair with the fog_key_pair resource, and set :bootstrap_options => { :key_name => <key name> }")
+      end
+      'metal_default'
+    end
+
+    def bootstrap_options_for(action_handler, machine_spec, machine_options)
       bootstrap_options = symbolize_keys(machine_options[:bootstrap_options] || {})
-      # TODO take this order dependency out of the running entirely!!!!
-      if key_pairs.size > 0
-        last_pair_name = key_pairs.keys.last
-        last_pair = key_pairs[last_pair_name]
-        bootstrap_options[:key_name] ||= last_pair_name
-        bootstrap_options[:private_key_path] ||= last_pair.private_key_path
-        bootstrap_options[:public_key_path] ||= last_pair.public_key_path
+      if !bootstrap_options[:key_name]
+        bootstrap_options[:key_name] = overwrite_default_key_willy_nilly(action_handler)
       end
       tags = {
           'Name' => machine_spec.name,
@@ -482,7 +478,7 @@ module ChefMetalFog
       end
     end
 
-    def ssh_options_for(server)
+    def ssh_options_for(machine_spec, server)
       result = {
 # TODO create a user known hosts file
 #          :user_known_hosts_file => vagrant_ssh_config['UserKnownHostsFile'],
@@ -493,21 +489,19 @@ module ChefMetalFog
       }
       if server.respond_to?(:private_key) && server.private_key
         result[:key_data] = [ server.private_key ]
-      elsif server.respond_to?(:key_name) && key_pairs[server.key_name]
-        # TODO generalize for others?
-        result[:keys] ||= [ key_pairs[server.key_name].private_key_path ]
+      elsif server.respond_to?(:key_name)
+        result[:key_data] = [ get_private_key(server.key_name) ]
+      elsif machine_spec.location['key_name']
+        result[:key_data] = [ get_private_key(machine_spec.location['key_name']) ]
       else
-        if key_pairs.size == 0
-          raise "No key pairs found!  Did you forget to declare a fog_key_pair?"
-        end
-        # TODO need a way to know which key if there were multiple
-        result[:keys] = [ key_pairs.first[1].private_key_path ]
+        # TODO make a way to suggest other keys to try ...
+        raise "No key found to connect to #{machine_spec.name}!"
       end
       result
     end
 
     def create_ssh_transport(machine_spec, server)
-      ssh_options = ssh_options_for(server)
+      ssh_options = ssh_options_for(machine_spec, server)
       # If we're on AWS, the default is to use ubuntu, not root
       if provider == 'AWS'
         username = machine_spec.location[:ssh_username] || 'ubuntu'
@@ -584,6 +578,44 @@ module ChefMetalFog
           config)
       else
         config
+      end
+    end
+
+    def get_default_private_key
+      if config[:private_keys] && config[:private_keys].size > 0
+        get_private_key(config[:private_keys].keys.first)
+      else
+        config[:private_key_paths].each do |private_key_path|
+          Dir.entries(private_key_path).each do |key|
+            if File.extname(key) == '.pem'
+              key_name = key[0..-5]
+              if key_name == name
+                return IO.read("#{private_key_path}/#{key}")
+              end
+            end
+          end
+        end
+      end
+    end
+
+    def get_private_key(name)
+      if config[:private_keys] && config[:private_keys][name]
+        if config[:private_keys][name].is_a?(String)
+          IO.read(config[:private_keys][name])
+        else
+          config[:private_keys][name].to_pem
+        end
+      elsif config[:private_key_paths]
+        config[:private_key_paths].each do |private_key_path|
+          Dir.entries(private_key_path).each do |key|
+            if File.extname(key) == '.pem'
+              key_name = key[0..-5]
+              if key_name == name
+                return IO.read("#{private_key_path}/#{key}")
+              end
+            end
+          end
+        end
       end
     end
   end
