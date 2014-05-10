@@ -1,13 +1,13 @@
 require 'chef_metal/driver'
-require 'chef_metal/aws_credentials'
-require 'chef_metal/openstack_credentials'
 require 'chef_metal/machine/windows_machine'
 require 'chef_metal/machine/unix_machine'
 require 'chef_metal/machine_spec'
 require 'chef_metal/convergence_strategy/install_msi'
 require 'chef_metal/convergence_strategy/install_cached'
+require 'chef_metal/convergence_strategy/no_converge'
 require 'chef_metal/transport/ssh'
 require 'chef_metal_fog/version'
+require 'chef_metal_fog/fog_driver_aws'
 require 'fog'
 require 'fog/core'
 require 'fog/compute'
@@ -17,7 +17,66 @@ require 'etc'
 require 'time'
 
 module ChefMetalFog
-  # Provisions machines in vagrant.
+  # Provisions cloud machines with the Fog driver.
+  #
+  # ## Fog Driver URLs
+  #
+  # All Metal drivers use URLs to uniquely identify a driver's "bucket" of machines.
+  # Fog URLs are of the form fog:<provider>:<identifier>:
+  #
+  #   fog:AWS:<account_id>
+  #   fog:OpenStack:https://identityHost:portNumber/v2.0
+  #   fog:DigitalOcean:<client id>
+  #
+  # Identifier is generally something uniquely identifying the account.  If multiple
+  # users can access the account, the identifier should be the same for all of
+  # them (do not use the username in these cases).
+  #
+  # ## Supporting a new Fog provider
+  #
+  # The Fog driver does not immediately support all Fog providers out of the box.
+  # Some minor work needs to be done to plug them into metal.
+  #
+  # To add a new supported Fog provider, pick an appropriate identifier, go to
+  # from_provider and compute_options_for, and add the new provider in the case
+  # statements so that URLs for your fog provider can be generated.  If your
+  # cloud provider has environment variables or standard config files (like
+  # ~/.aws/config), you can read those and merge that information in the
+  # compute_options_for function.
+  #
+  # ## Location format
+  #
+  # All machines have a location hash to find them.  These are the keys used by
+  # the fog provisioner:
+  #
+  # - driver_url: fog:<driver>:<unique_account_info>
+  # - server_id: the ID of the server so it can be found again
+  # - created_at: timestamp server was created
+  # - started_at: timestamp server was last started
+  # - is_windows, chef_client_timeout, ssh_username, sudo, use_private_ip_for_ssh: copied from machine_options
+  #
+  # ## Machine options
+  #
+  # Machine options (for allocation and readying the machine) include:
+  #
+  # - bootstrap_options: hash of options to pass to compute.servers.create
+  # - is_windows: true if windows.  TODO detect this from ami?
+  # - create_timeout - the time to wait for the instance to boot to ssh (defaults to 600)
+  # - start_timeout - the time to wait for the instance to start (defaults to 600)
+  # - ssh_timeout - the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
+  # - chef_client_timeout - the time to wait for chef-client to finish
+  # - ssh_username - username to use for ssh
+  # - sudo - true to prefix all commands with "sudo"
+  # - use_private_ip_for_ssh - hint to use private ip when available
+  #
+  # Example bootstrap_options for ec2:
+  #
+  #   :bootstrap_options => {
+  #     :image_id =>'ami-311f2b45',
+  #     :flavor_id =>'t1.micro',
+  #     :key_name => 'key-pair-name'
+  #   }
+  #
   class FogDriver < ChefMetal::Driver
 
     include Chef::Mixin::ShellOut
@@ -28,110 +87,78 @@ module ChefMetalFog
       :ssh_timeout => 20
     }
 
-    def self.from_url(driver_url)
-      scheme, driver, id = driver_url.split(':', 3)
-      FogDriver.new({ :provider => driver }, id)
+    def self.from_url(driver_url, driver_config)
+      scheme, provider, id = driver_url.split(':', 3)
+      compute_options = compute_options_for(provider, id, driver_config)
+      FogDriver.new(driver_url, driver_config, compute_options)
+    end
+
+    def self.from_provider(provider, driver_config, config)
+      driver_config ||= {}
+      compute_options = compute_options_for(provider, nil, driver_config)
+
+      id = case provider
+        when 'AWS'
+          FogDriverAWS.aws_account_info_for(compute_options)[:aws_account_id]
+        when 'DigitalOcean'
+          compute_options[:digitalocean_client_id]
+        when 'OpenStack'
+          compute_options[:openstack_auth_url]
+        else
+          raise "unsupported fog provider #{provider}"
+        end
+
+      driver_url = "fog:#{provider}:#{id}"
+
+      # merge in any external config now that we know the true url
+      # TODO this is a bit gross.  Find a better way to flip it around, or
+      # remove it entirely.
+      external_config = ChefMetal.driver_config_for_url(driver_url, driver_config, config)
+      if external_config
+        driver_config = Cheffish::MergedConfig.new(driver_config, external_config)
+        if external_config[:compute_options]
+          compute_options = Cheffish::MergedConfig.new(compute_options, external_config[:compute_options])
+        end
+      end
+
+      FogDriver.new(driver_url, driver_config, compute_options)
     end
 
     # Create a new fog driver.
     #
     # ## Parameters
-    # compute_options - hash of options to be passed to Fog::Compute.new
+    # driver_url - URL of driver.  "fog:<provider>:<provider_id>"
+    # driver_config - hash of options:
+    #   - compute_options: the hash of options to Fog::Compute.new.  This will have
+    #     information from driver_url and environment credentials merged into it.
+    #   - aws_config_file: aws config file (default: ~/.aws/config)
+    #   - aws_csv_file: aws csv credentials file downloaded from EC2 interface
+    #   - aws_profile: profile name to use for credentials
+    #   - aws_credentials: AWSCredentials object. (will be created for you by default)
+    #   - log_level: :debug, :info, :warn, :error
+    # compute_options: final hash of compute options (generally computed by
+    #                  FogDriver.from_url or FogDriver.from_provider)
+    #
     # Special options:
-    #   - :base_bootstrap_options is merged with bootstrap_options in acquire_machine
-    #     to present the full set of bootstrap options.  Write down any bootstrap_options
-    #     you intend to apply universally here.
     #   - :aws_credentials is an AWS CSV file (created with Download Credentials)
     #     containing your aws key information.  If you do not specify aws_access_key_id
     #     and aws_secret_access_key explicitly, the first line from this file
     #     will be used.  You may pass a Cheffish::AWSCredentials object.
-    #   - :create_timeout - the time to wait for the instance to boot to ssh (defaults to 600)
-    #   - :start_timeout - the time to wait for the instance to start (defaults to 600)
-    #   - :ssh_timeout - the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
     # id - the ID in the driver_url (fog:PROVIDER:ID)
-    def initialize(compute_options, id=nil)
+    def initialize(driver_url, driver_config, compute_options)
+      super(driver_url, driver_config)
       @compute_options = compute_options
-      @base_bootstrap_options = compute_options.delete(:base_bootstrap_options) || {}
-
-      case compute_options[:provider]
-      when 'AWS'
-        aws_credentials = compute_options.delete(:aws_credentials)
-        if aws_credentials
-          @aws_credentials = aws_credentials
-        else
-          @aws_credentials = ChefMetal::AWSCredentials.new
-          @aws_credentials.load_default
-        end
-        compute_options[:aws_access_key_id] ||= @aws_credentials.default[:access_key_id]
-        compute_options[:aws_secret_access_key] ||= @aws_credentials.default[:secret_access_key]
-        # TODO actually find a key with the proper id
-        # TODO let the user specify credentials and driver profiles that we can use
-        if id && aws_login_info[0] != id
-          raise "Default AWS credentials point at AWS account #{aws_login_info[0]}, but inflating from URL #{id}"
-        end
-      when 'OpenStack'
-        openstack_credentials = compute_options.delete(:openstack_credentials)
-        if openstack_credentials
-          @openstack_credentials = openstack_credentials
-        else
-          @openstack_credentials = ChefMetal::OpenstackCredentials.new
-          @openstack_credentials.load_default
-        end
-
-        compute_options[:openstack_username] ||= @openstack_credentials.default[:openstack_username]
-        compute_options[:openstack_api_key] ||= @openstack_credentials.default[:openstack_api_key]
-        compute_options[:openstack_auth_url] ||= @openstack_credentials.default[:openstack_auth_url]
-        compute_options[:openstack_tenant] ||= @openstack_credentials.default[:openstack_tenant]
-      end
-      @base_bootstrap_options_for = {}
     end
 
     attr_reader :compute_options
-    attr_reader :aws_credentials
-    attr_reader :openstack_credentials
 
-    def current_base_bootstrap_options
-      result = @base_bootstrap_options.dup
-      if key_pairs.size > 0
-        last_pair_name = key_pairs.keys.last
-        last_pair = key_pairs[last_pair_name]
-        result[:key_name] ||= last_pair_name
-        result[:private_key_path] ||= last_pair.private_key_path
-        result[:public_key_path] ||= last_pair.public_key_path
-      end
-      result
+    def provider
+      compute_options[:provider]
     end
 
     # Acquire a machine, generally by provisioning it.  Returns a Machine
     # object pointing at the machine, allowing useful actions like setup,
     # converge, execute, file and directory.
-    #
-    # ## Parameters
-    # action_handler - the action_handler object that is calling this method; this
-    #        is generally a action_handler, but could be anything that can support the
-    #        ChefMetal::ActionHandler interface (i.e., in the case of the test
-    #        kitchen metal driver for acquiring and destroying VMs; see the base
-    #        class for what needs providing).
-    # machine_spec - object representing the node and the machine's current
-    #                location (if any). Location has this format:
-    #                - driver_url: fog:<driver>:<unique_account_info>
-    #                - server_id: the ID of the server so it can be found again
-    # machine_options - options for creating this machine. Has these values:
-    #
-    #           -- driver_url: fog:<relevant_fog_options>
-    #           -- bootstrap_options: hash of options to pass to compute.servers.create
-    #           -- is_windows: true if windows.  TODO detect this from ami?
-    #           -- create_timeout - the time to wait for the instance to boot to ssh (defaults to 600)
-    #           -- start_timeout - the time to wait for the instance to start (defaults to 600)
-    #           -- ssh_timeout - the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
-    #
-    #        Example bootstrap_options for ec2:
-    #          'bootstrap_options' => {
-    #            'image_id' =>'ami-311f2b45',
-    #            'flavor_id' =>'t1.micro',
-    #            'key_name' => 'key-pair-name'
-    #          }
-    #
     def allocate_machine(action_handler, machine_spec, machine_options)
       # If the server does not exist, create it
       create_server(action_handler, machine_spec, machine_options)
@@ -194,32 +221,14 @@ module ChefMetalFog
       end
     end
 
-    def resource_created(machine)
-      @base_bootstrap_options_for[ChefMetal::MachineSpec.id_from(machine.chef_server, machine.name)] = current_base_bootstrap_options
-    end
-
     def compute
       @compute ||= Fog::Compute.new(compute_options)
     end
 
-    def driver_url
-      driver_identifier = case compute_options[:provider]
-        when 'AWS'
-          aws_login_info[0]
-        when 'DigitalOcean'
-          compute_options[:digitalocean_client_id]
-        when 'OpenStack'
-          compute_options[:openstack_auth_url]
-        else
-          '???'
-      end
-      "fog:#{compute_options[:provider]}:#{driver_identifier}"
-    end
-
     # Not meant to be part of public interface
-    def transport_for(server)
+    def transport_for(machine_spec, server)
       # TODO winrm
-      create_ssh_transport(server)
+      create_ssh_transport(machine_spec, server)
     end
 
     # TODO This is not particularly cool, but in the absence of better credentials
@@ -243,13 +252,7 @@ module ChefMetalFog
     end
 
     def option_for(machine_options, key)
-      if machine_options && machine_options[key.to_s]
-        machine_options[key.to_s]
-      elsif compute_options[key]
-        compute_options[key]
-      else
-        DEFAULT_OPTIONS[key]
-      end
+      machine_options[key] || DEFAULT_OPTIONS[key]
     end
 
     def create_server(action_handler, machine_spec, machine_options)
@@ -272,13 +275,13 @@ module ChefMetalFog
       bootstrap_options = bootstrap_options_for(machine_spec, machine_options)
 
       description = [ "creating machine #{machine_spec.name} on #{driver_url}" ]
-      bootstrap_options.each_pair { |key,value| description << "    #{key}: #{value.inspect}" }
+      bootstrap_options.each_pair { |key,value| description << "  #{key}: #{value.inspect}" }
       server = nil
       action_handler.report_progress description
       if action_handler.should_perform_actions
-        creator = case compute_options[:provider]
+        creator = case provider
           when 'AWS'
-            aws_login_info[1]
+            FogDriverAWS.aws_account_info_for(compute_options)[:aws_username]
           when 'OpenStack'
             compute_options[:openstack_username]
         end
@@ -288,10 +291,11 @@ module ChefMetalFog
           'driver_version' => ChefMetalFog::VERSION,
           'server_id' => server.id,
           'creator' => creator,
-          'allocated_at' => Time.now.utc.to_s,
-          'is_windows' => option_for(machine_options, :is_windows),
-          'chef_client_timeout' => option_for(machine_options, :chef_client_timeout)
+          'allocated_at' => Time.now.utc.to_s
         }
+        %w(is_windows chef_client_timeout ssh_username sudo use_private_ip_for_ssh ssh_gateway).each do |key|
+          machine_spec.location[key] = machine_options[key.to_sym] if machine_options[key.to_sym]
+        end
       end
       action_handler.performed_action "machine #{machine_spec.name} created as #{server.id} on #{driver_url}"
       server
@@ -339,7 +343,7 @@ module ChefMetalFog
     end
 
     def wait_for_transport(action_handler, machine_spec, machine_options, server)
-      transport = transport_for(server)
+      transport = transport_for(machine_spec, server)
       if !transport.available?
         if action_handler.should_perform_actions
           action_handler.report_progress "waiting for #{machine_spec.name} (#{server.id} on #{driver_url}) to be connectable (transport up and running) ..."
@@ -396,32 +400,6 @@ module ChefMetalFog
                                 :public_ip => ip)
     end
 
-    # Returns [ Account ID, User ]
-    # Account ID is the 12 digit identifier on your Manage Account page in AWS Console.  It is used as part of all ARNs identifying resources.
-    # User is an identifier like "root" or "user/username" or "federated-user/username"
-    def aws_login_info
-      @aws_login_info ||= begin
-        iam = Fog::AWS::IAM.new(:aws_access_key_id => compute_options[:aws_access_key_id], :aws_secret_access_key => compute_options[:aws_secret_access_key])
-        arn = begin
-          # TODO it would be nice if Fog let you do this normally ...
-          iam.send(:request, {
-            'Action'    => 'GetUser',
-            :parser     => Fog::Parsers::AWS::IAM::GetUser.new
-          }).body['User']['Arn']
-        rescue Fog::AWS::IAM::Error
-          # TODO Someone tell me there is a better way to find out your current
-          # user ID than this!  This is what happens when you use an IAM user
-          # with default privileges.
-          if $!.message =~ /AccessDenied.+(arn:aws:iam::\d+:\S+)/
-            arn = $1
-          else
-            raise
-          end
-        end
-        arn.split(':')[4..5]
-      end
-    end
-
     def symbolize_keys(options)
       options.inject({}) { |result,(key,value)| result[key.to_sym] = value; result }
     end
@@ -435,8 +413,15 @@ module ChefMetalFog
     end
 
     def bootstrap_options_for(machine_spec, machine_options)
-      bootstrap_options = @base_bootstrap_options_for[machine_spec.id] || current_base_bootstrap_options
-      bootstrap_options.merge!(symbolize_keys(machine_options || {}))
+      bootstrap_options = symbolize_keys(machine_options[:bootstrap_options] || {})
+      # TODO take this order dependency out of the running entirely!!!!
+      if key_pairs.size > 0
+        last_pair_name = key_pairs.keys.last
+        last_pair = key_pairs[last_pair_name]
+        bootstrap_options[:key_name] ||= last_pair_name
+        bootstrap_options[:private_key_path] ||= last_pair.private_key_path
+        bootstrap_options[:public_key_path] ||= last_pair.public_key_path
+      end
       tags = {
           'Name' => machine_spec.name,
           'BootstrapChefServer' => machine_spec.chef_server[:chef_server_url],
@@ -453,7 +438,7 @@ module ChefMetalFog
       bootstrap_options.merge!({ :tags => tags })
 
       # Provide reasonable defaults for DigitalOcean
-      if compute_options[:provider] == 'DigitalOcean'
+      if provider == 'DigitalOcean'
         if !bootstrap_options[:image_id]
           bootstrap_options[:image_name] ||= 'CentOS 6.4 x32'
           bootstrap_options[:image_id] = compute.images.select { |image| image.name == bootstrap_options[:image_name] }.first.id
@@ -472,7 +457,7 @@ module ChefMetalFog
         bootstrap_options[:name] = machine_spec.name
       end
 
-      bootstrap_options.merge!(:name => machine_spec.name)
+      bootstrap_options[:name] ||= machine_spec.name
 
       bootstrap_options
     end
@@ -483,20 +468,25 @@ module ChefMetalFog
         raise "Server for node #{machine_spec.name} has not been created!"
       end
 
-      if option_for(machine_spec.location, :is_windows)
-        ChefMetal::Machine::WindowsMachine.new(machine_spec, transport_for(server), convergence_strategy_for(machine_spec))
+      if machine_spec.location['is_windows']
+        ChefMetal::Machine::WindowsMachine.new(machine_spec, transport_for(machine_spec, server), convergence_strategy_for(machine_spec))
       else
-        ChefMetal::Machine::UnixMachine.new(machine_spec, transport_for(server), convergence_strategy_for(machine_spec))
+        ChefMetal::Machine::UnixMachine.new(machine_spec, transport_for(machine_spec, server), convergence_strategy_for(machine_spec))
       end
     end
 
     def convergence_strategy_for(machine_spec)
-      options = {}
-      if option_for(machine_spec.location, :chef_client_timeout)
-        options[:chef_client_timeout] = option_for(machine_spec.location, :chef_client_timeout)
+      if !machine_spec.location
+        return ChefMetal::ConvergenceStrategy::NoConverge.new
       end
 
-      if option_for(machine_spec.location, :is_windows)
+      options = {}
+      if machine_spec.location['chef_client_timeout']
+        options[:chef_client_timeout] = machine_spec.location['chef_client_timeout']
+      end
+      options[:log_level] = driver_config[:log_level]
+
+      if machine_spec.location['is_windows']
         ChefMetal::ConvergenceStrategy::InstallMsi.new(options)
       else
         ChefMetal::ConvergenceStrategy::InstallCached.new(options)
@@ -510,7 +500,7 @@ module ChefMetalFog
 #          :paranoid => true,
         :auth_methods => [ 'publickey' ],
         :keys_only => true,
-        :host_key_alias => "#{server.id}.#{compute_options[:provider]}"
+        :host_key_alias => "#{server.id}.#{provider}"
       }
       if server.respond_to?(:private_key) && server.private_key
         result[:key_data] = [ server.private_key ]
@@ -527,21 +517,21 @@ module ChefMetalFog
       result
     end
 
-    def create_ssh_transport(server)
+    def create_ssh_transport(machine_spec, server)
       ssh_options = ssh_options_for(server)
       # If we're on AWS, the default is to use ubuntu, not root
-      if compute_options[:provider] == 'AWS'
-        username = compute_options[:ssh_username] || 'ubuntu'
+      if provider == 'AWS'
+        username = machine_spec.location[:ssh_username] || 'ubuntu'
       else
-        username = compute_options[:ssh_username] || 'root'
+        username = machine_spec.location[:ssh_username] || 'root'
       end
       options = {}
-      if compute_options[:sudo] || (!compute_options.has_key?(:sudo) && username != 'root')
+      if machine_spec.location[:sudo] || (!machine_spec.location.has_key?(:sudo) && username != 'root')
         options[:prefix] = 'sudo '
       end
 
       remote_host = nil
-      if compute_options[:use_private_ip_for_ssh]
+      if machine_spec.location[:use_private_ip_for_ssh]
         remote_host = server.private_ip_address
       elsif !server.public_ip_address
         Chef::Log.warn("Server has no public ip address.  Using private ip '#{server.private_ip_address}'.  Set driver option 'use_private_ip_for_ssh' => true if this will always be the case ...")
@@ -554,9 +544,52 @@ module ChefMetalFog
 
       #Enable pty by default
       options[:ssh_pty_enable] = true
-      options[:ssh_gateway] = compute_options[:ssh_gateway] if compute_options.key?(:ssh_gateway)
+      options[:ssh_gateway] = machine_spec.location[:ssh_gateway] if machine_spec.location.has_key?(:ssh_gateway)
 
       ChefMetal::Transport::SSH.new(remote_host, username, ssh_options, options)
+    end
+
+    def self.compute_options_for(provider, id, driver_config)
+      compute_options = (driver_config[:compute_options] || {}).to_hash.dup
+
+      # Set provider.
+      compute_options[:provider] = provider
+
+      # Set the identifier from the URL
+      if id
+        case provider
+        when 'AWS'
+          # the identifier is secondary to the credentials for AWS
+        when 'DigitalOcean'
+          compute_options[:digitalocean_client_id] = id
+        when 'OpenStack'
+          compute_options[:openstack_auth_url] = id
+        else
+          raise "unsupported fog provider #{provider}"
+        end
+      end
+
+      # Set auth info from environment
+      case provider
+      when 'AWS'
+        # Grab the profile
+        aws_profile = FogDriverAWS.get_aws_profile(driver_config, compute_options, id)
+        [ :aws_access_key_id, :aws_secret_access_key, :aws_session_token ].each do |key|
+          compute_options[key] = aws_profile[key] if aws_profile[key]
+        end
+      when 'OpenStack'
+        # TODO it is supposed to be unnecessary to load credentials from fog this way;
+        # why are we doing it?
+        # TODO support http://docs.openstack.org/cli-reference/content/cli_openrc.html
+        credential = Fog.credential
+
+        compute_options[:openstack_username] ||= credential[:openstack_username]
+        compute_options[:openstack_api_key] ||= openstack_credentials.default[:openstack_api_key]
+        compute_options[:openstack_auth_url] ||= openstack_credentials.default[:openstack_auth_url]
+        compute_options[:openstack_tenant] ||= openstack_credentials.default[:openstack_tenant]
+      end
+
+      compute_options
     end
   end
 end

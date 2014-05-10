@@ -1,10 +1,7 @@
 require 'chef/provider/lwrp_base'
-require 'chef_metal/chef_provider_action_handler'
 require 'chef_metal_fog/fog_driver'
 
 class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
-
-  include ChefMetal::ChefProviderActionHandler
 
   use_inline_resources
 
