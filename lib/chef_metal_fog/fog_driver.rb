@@ -91,28 +91,17 @@ module ChefMetalFog
     # Passed in a driver_url, and a config in the format of Driver.config.
     def self.from_url(driver_url, config)
       scheme, provider, id = driver_url.split(':', 3)
-      config = compute_options_for(provider, id, config)
-      FogDriver.new(driver_url, config)
+      config, id = compute_options_for(provider, id, config)
+      FogDriver.new("fog:#{provider}:#{id}", config)
     end
 
     # Passed in a config which is *not* merged with driver_url (because we don't
     # know what it is yet) but which has the same keys
     def self.from_provider(provider, config)
       # Figure out the options and merge them into the config
-      config = compute_options_for(provider, nil, config)
+      config, id = compute_options_for(provider, nil, config)
       driver_config = config[:driver_config] || {}
       compute_options = driver_config[:compute_options] || {}
-
-      id = case provider
-        when 'AWS'
-          FogDriverAWS.aws_account_info_for(compute_options)[:aws_account_id]
-        when 'DigitalOcean'
-          compute_options[:digitalocean_client_id]
-        when 'OpenStack'
-          compute_options[:openstack_auth_url]
-        else
-          raise "unsupported fog provider #{provider}"
-        end
 
       driver_url = "fog:#{provider}:#{id}"
 
@@ -251,7 +240,7 @@ module ChefMetalFog
       if action_handler.should_perform_actions
         creator = case provider
           when 'AWS'
-            FogDriverAWS.aws_account_info_for(compute_options)[:aws_username]
+            driver_config[:aws_account_info][:aws_username]
           when 'OpenStack'
             compute_options[:openstack_username]
         end
@@ -537,12 +526,17 @@ module ChefMetalFog
       compute_options = driver_config[:compute_options] || {}
       new_compute_options = {}
       new_compute_options[:provider] = provider
+      new_config = { :driver_config => { :compute_options => new_compute_options }}
 
       # Set the identifier from the URL
       if id
         case provider
         when 'AWS'
-          # the identifier is secondary to the credentials for AWS
+          if id !~ /^\d{12}$/
+            # Assume it is a profile name, and set that.
+            driver_config[:aws_profile] = id
+            id = nil
+          end
         when 'DigitalOcean'
           new_compute_options[:digitalocean_client_id] = id
         when 'OpenStack'
@@ -567,18 +561,25 @@ module ChefMetalFog
         credential = Fog.credential
 
         new_compute_options[:openstack_username] ||= credential[:openstack_username]
-        new_compute_options[:openstack_api_key] ||= openstack_credentials.default[:openstack_api_key]
-        new_compute_options[:openstack_auth_url] ||= openstack_credentials.default[:openstack_auth_url]
-        new_compute_options[:openstack_tenant] ||= openstack_credentials.default[:openstack_tenant]
+        new_compute_options[:openstack_api_key] ||= credential[:openstack_api_key]
+        new_compute_options[:openstack_auth_url] ||= credential[:openstack_auth_url]
+        new_compute_options[:openstack_tenant] ||= credential[:openstack_tenant]
       end
 
-      if new_compute_options.size > 0
-        Cheffish::MergedConfig.new(
-          { :driver_config => { :compute_options => new_compute_options } },
-          config)
-      else
-        config
-      end
+      config = Cheffish::MergedConfig.new(new_config, config)
+
+      id = case provider
+        when 'AWS'
+          account_info = FogDriverAWS.aws_account_info_for(config[:driver_config][:compute_options])
+          new_config[:driver_config][:aws_account_info] = account_info
+          account_info[:aws_account_id]
+        when 'DigitalOcean'
+          compute_options[:digitalocean_client_id]
+        when 'OpenStack'
+          compute_options[:openstack_auth_url]
+        end
+
+      [ config, id ]
     end
 
     def get_default_private_key

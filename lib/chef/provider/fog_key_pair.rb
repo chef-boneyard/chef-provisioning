@@ -16,7 +16,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
   action :delete do
     if current_resource_exists?
       converge_by "delete #{key_description}" do
-        case new_resource.driver.compute_options[:provider]
+        case new_driver.compute_options[:provider]
         when 'DigitalOcean'
           compute.destroy_key_pair(@current_id)
         when 'OpenStack'
@@ -29,7 +29,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
   end
 
   def key_description
-    "#{new_resource.name} on #{new_resource.driver.driver_url}"
+    "#{new_resource.name} on #{new_driver.driver_url}"
   end
 
   def create_key(action)
@@ -51,7 +51,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         ensure_keys(action)
       end
 
-      new_fingerprints = case new_resource.driver.compute_options[:provider]
+      new_fingerprints = case new_driver.compute_options[:provider]
       when 'DigitalOcean'
         [Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)]
       when 'OpenStack'
@@ -76,7 +76,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
       if !new_fingerprints.any? { |f| (f.is_a?(Proc) ? f.call : f) == @current_fingerprint }
         if new_resource.allow_overwrite
           converge_by "update #{key_description} to match local key at #{new_resource.private_key_path}" do
-            case new_resource.driver.compute_options[:provider]
+            case new_driver.compute_options[:provider]
             when 'DigitalOcean'
               compute.create_ssh_key(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
             when 'OpenStack'
@@ -95,7 +95,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
 
       # Create key
       converge_by "create #{key_description} from local key at #{new_resource.private_key_path}" do
-        case new_resource.driver.compute_options[:provider]
+        case new_driver.compute_options[:provider]
         when 'DigitalOcean'
           compute.create_ssh_key(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
         when 'OpenStack'
@@ -105,6 +105,10 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         end
       end
     end
+  end
+
+  def new_driver
+    run_context.chef_metal.driver_for(new_resource.driver)
   end
 
   def ensure_keys(action)
@@ -135,8 +139,8 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
 
   def desired_private_key
     @desired_private_key ||= begin
-        private_key, format = Cheffish::KeyFormatter.decode(IO.read(new_private_key_path))
-        private_key
+      private_key, format = Cheffish::KeyFormatter.decode(IO.read(new_private_key_path))
+      private_key
     end
   end
 
@@ -145,7 +149,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
   end
 
   def compute
-    new_resource.driver.compute
+    new_driver.compute
   end
 
   def current_public_key
@@ -156,9 +160,9 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
     private_key_path = new_resource.private_key_path || "#{new_resource.name}.pem"
     if private_key_path.is_a?(Symbol)
       private_key_path
-    elsif Pathname.new(private_key_path).relative? && new_resource.driver.config[:private_key_write_path]
+    elsif Pathname.new(private_key_path).relative? && new_driver.config[:private_key_write_path]
       @should_create_directory = true
-      ::File.join(new_resource.driver.config[:private_key_write_path], private_key_path)
+      ::File.join(new_driver.config[:private_key_write_path], private_key_path)
     else
       private_key_path
     end
@@ -169,11 +173,11 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
   end
 
   def load_current_resource
-    if !new_resource.driver.kind_of?(ChefMetalFog::FogDriver)
+    if !new_driver.kind_of?(ChefMetalFog::FogDriver)
       raise 'fog_key_pair only works with fog_driver'
     end
     @current_resource = Chef::Resource::FogKeyPair.new(new_resource.name, run_context)
-    case new_resource.driver.provider
+    case new_driver.provider
     when 'DigitalOcean'
       current_key_pair = compute.ssh_keys.select { |key| key.name == new_resource.name }.first
       if current_key_pair
