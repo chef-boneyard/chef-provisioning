@@ -17,7 +17,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   end
 
   action :allocate do
-    new_resource.driver.allocate_machine(action_handler, machine_spec, new_resource.machine_options)
+    new_driver.allocate_machine(action_handler, machine_spec, new_resource.machine_options)
     machine_spec.save(action_handler)
   end
 
@@ -70,6 +70,10 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
     if current_driver
       current_driver.delete_machine(action_handler, machine_spec)
     end
+  end
+
+  def new_driver
+    run_context.chef_metal.driver_for(new_resource.driver)
   end
 
   def current_driver

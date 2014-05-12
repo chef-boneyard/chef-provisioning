@@ -17,18 +17,14 @@ module ChefMetal
     with :machine_batch
 
     def current_driver
-      if @current_driver
-        @current_driver
-      elsif config[:driver]
-        driver_for_url(config[:driver])
-      end
+      @current_driver || config[:driver]
     end
 
     def current_machine_options
       if @current_machine_options
         @current_machine_options
-      elsif config[:drivers] && current_driver && config[:drivers][current_driver.driver_url]
-        MergedConfig.new(config[:drivers][current_driver.driver_url], config)[:machine_options] || {}
+      elsif config[:drivers] && driver_for(current_driver) && config[:drivers][driver_for(current_driver).driver_url]
+        MergedConfig.new(config[:drivers][driver_for(current_driver).driver_url], config)[:machine_options] || {}
       else
         config[:machine_options] || {}
       end
@@ -38,8 +34,20 @@ module ChefMetal
       with_machine_options(Chef::Mixin::DeepMerge.hash_only_merge(current_machine_options, options), &block)
     end
 
+    def driver_for(driver)
+      driver.is_a?(String) ? driver_for_url(driver) : driver
+    end
+
     def driver_for_url(driver_url)
-      drivers[driver_url] ||= ChefMetal.driver_for_url(driver_url, config)
+      drivers[driver_url] ||= begin
+        driver = ChefMetal.driver_for_url(driver_url, config)
+        # Check the canonicalized driver_url from the driver
+        if driver.driver_url != driver_url
+          drivers[driver.driver_url] ||= driver
+        else
+          driver
+        end
+      end
     end
 
     def connect_to_machine(name, chef_server = nil)

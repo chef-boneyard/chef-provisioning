@@ -9,7 +9,6 @@ class Chef::Resource::MachineExecute < Chef::Resource::LWRPBase
   def initialize(*args)
     super
     @chef_server = run_context.cheffish.current_chef_server
-    @driver = run_context.chef_metal.current_driver
   end
 
   actions :run

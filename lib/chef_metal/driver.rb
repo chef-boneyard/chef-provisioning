@@ -40,15 +40,22 @@ module ChefMetal
     #
     # Inflate a driver from a driver URL.
     #
-    # ## Parameters
+    # == Parameters
     # driver_url - the URL to inflate the driver
     # config - a configuration hash.  See "config" for a list of known keys.
     #
-    # ## Returns
+    # == Returns
     # A Driver representing the given driver_url.
     def initialize(driver_url, config)
       @driver_url = driver_url
       @config = config
+    end
+
+    #
+    # Override this on specific driver classes
+    #
+    def self.from_url(driver_url, config)
+      ChefMetal.from_url(driver_url, config)
     end
 
     #
@@ -78,7 +85,9 @@ module ChefMetal
     #   - :client_key: path to key used to talk to chef server
     attr_reader :config
 
-    # driver configuration. Equivalent to config[:driver_config] || {}
+    #
+    # Driver configuration. Equivalent to config[:driver_config] || {}
+    #
     def driver_config
       config[:driver_config] || {}
     end
