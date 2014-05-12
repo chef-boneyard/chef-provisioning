@@ -157,7 +157,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
   end
 
   def new_private_key_path
-    private_key_path = new_resource.private_key_path || "#{new_resource.name}.pem"
+    private_key_path = new_resource.private_key_path || new_resource.name
     if private_key_path.is_a?(Symbol)
       private_key_path
     elsif Pathname.new(private_key_path).relative? && new_driver.config[:private_key_write_path]
