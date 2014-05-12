@@ -75,7 +75,7 @@ module ChefMetal
     attr_reader :driver_url
 
     # A configuration hash.  These keys may be present:
-    #   - :driver_config: a driver-defined object containing driver config.
+    #   - :driver_options: a driver-defined object containing driver config.
     #   - :private_keys: a hash of private keys, with a "name" and a "value".  Values are either strings (paths) or PrivateKey objects.
     #   - :private_key_paths: a list of paths to directories containing private keys.
     #   - :write_private_key_path: the path to which we write new keys by default.
@@ -86,10 +86,10 @@ module ChefMetal
     attr_reader :config
 
     #
-    # Driver configuration. Equivalent to config[:driver_config] || {}
+    # Driver configuration. Equivalent to config[:driver_options] || {}
     #
-    def driver_config
-      config[:driver_config] || {}
+    def driver_options
+      config[:driver_options] || {}
     end
 
     #
