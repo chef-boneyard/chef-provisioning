@@ -100,8 +100,8 @@ module ChefMetalFog
     def self.from_provider(provider, config)
       # Figure out the options and merge them into the config
       config, id = compute_options_for(provider, nil, config)
-      driver_config = config[:driver_config] || {}
-      compute_options = driver_config[:compute_options] || {}
+      driver_options = config[:driver_options] || {}
+      compute_options = driver_options[:compute_options] || {}
 
       driver_url = "fog:#{provider}:#{id}"
 
@@ -113,8 +113,8 @@ module ChefMetalFog
     #
     # ## Parameters
     # driver_url - URL of driver.  "fog:<provider>:<provider_id>"
-    # config - configuration.  :driver_config, :keys, :key_paths and :log_level are used.
-    #   driver_config is a hash with these possible options:
+    # config - configuration.  :driver_options, :keys, :key_paths and :log_level are used.
+    #   driver_options is a hash with these possible options:
     #   - compute_options: the hash of options to Fog::Compute.new.
     #   - aws_config_file: aws config file (default: ~/.aws/config)
     #   - aws_csv_file: aws csv credentials file downloaded from EC2 interface
@@ -126,7 +126,7 @@ module ChefMetalFog
     end
 
     def compute_options
-      driver_config[:compute_options] || {}
+      driver_options[:compute_options] || {}
     end
 
     def provider
@@ -240,7 +240,7 @@ module ChefMetalFog
       if action_handler.should_perform_actions
         creator = case provider
           when 'AWS'
-            driver_config[:aws_account_info][:aws_username]
+            driver_options[:aws_account_info][:aws_username]
           when 'OpenStack'
             compute_options[:openstack_username]
         end
@@ -458,7 +458,7 @@ module ChefMetalFog
       if machine_spec.location['chef_client_timeout']
         options[:chef_client_timeout] = machine_spec.location['chef_client_timeout']
       end
-      options[:log_level] = driver_config[:log_level]
+      options[:log_level] = driver_options[:log_level]
 
       if machine_spec.location['is_windows']
         ChefMetal::ConvergenceStrategy::InstallMsi.new(options)
@@ -522,11 +522,11 @@ module ChefMetalFog
     end
 
     def self.compute_options_for(provider, id, config)
-      driver_config = config[:driver_config] || {}
-      compute_options = driver_config[:compute_options] || {}
+      driver_options = config[:driver_options] || {}
+      compute_options = driver_options[:compute_options] || {}
       new_compute_options = {}
       new_compute_options[:provider] = provider
-      new_config = { :driver_config => { :compute_options => new_compute_options }}
+      new_config = { :driver_options => { :compute_options => new_compute_options }}
 
       # Set the identifier from the URL
       if id
@@ -534,7 +534,7 @@ module ChefMetalFog
         when 'AWS'
           if id !~ /^\d{12}$/
             # Assume it is a profile name, and set that.
-            driver_config[:aws_profile] = id
+            driver_options[:aws_profile] = id
             id = nil
           end
         when 'DigitalOcean'
@@ -550,7 +550,7 @@ module ChefMetalFog
       case provider
       when 'AWS'
         # Grab the profile
-        aws_profile = FogDriverAWS.get_aws_profile(driver_config, compute_options, id)
+        aws_profile = FogDriverAWS.get_aws_profile(driver_options, compute_options, id)
         [ :aws_access_key_id, :aws_secret_access_key, :aws_session_token ].each do |key|
           new_compute_options[key] = aws_profile[key] if aws_profile[key]
         end
@@ -570,8 +570,8 @@ module ChefMetalFog
 
       id = case provider
         when 'AWS'
-          account_info = FogDriverAWS.aws_account_info_for(config[:driver_config][:compute_options])
-          new_config[:driver_config][:aws_account_info] = account_info
+          account_info = FogDriverAWS.aws_account_info_for(config[:driver_options][:compute_options])
+          new_config[:driver_options][:aws_account_info] = account_info
           account_info[:aws_account_id]
         when 'DigitalOcean'
           compute_options[:digitalocean_client_id]

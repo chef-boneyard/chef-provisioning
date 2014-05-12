@@ -4,8 +4,8 @@ require 'fog/aws'
 
 module ChefMetalFog
   module FogDriverAWS
-    def self.get_aws_profile(driver_config, compute_options, aws_account_id)
-      aws_credentials = get_aws_credentials(driver_config)
+    def self.get_aws_profile(driver_options, compute_options, aws_account_id)
+      aws_credentials = get_aws_credentials(driver_options)
 
       # Grab the given profile
       aws_access_key_id = compute_options[:aws_access_key_id] || ENV['AWS_ACCESS_KEY_ID']
@@ -19,12 +19,12 @@ module ChefMetalFog
           }
         end
         Chef::Log.debug("Using AWS profile #{aws_profile[:name]}")
-      elsif driver_config[:aws_profile]
-        aws_profile = aws_credentials[driver_config[:aws_profile]]
+      elsif driver_options[:aws_profile]
+        aws_profile = aws_credentials[driver_options[:aws_profile]]
         if !aws_profile
-          raise "AWS profile #{driver_config[:aws_profile]} does not exist! Perhaps your configuration is incorrect?"
+          raise "AWS profile #{driver_options[:aws_profile]} does not exist! Perhaps your configuration is incorrect?"
         end
-        Chef::Log.info("Using AWS profile #{driver_config[:aws_profile]} ...")
+        Chef::Log.info("Using AWS profile #{driver_options[:aws_profile]} ...")
       else
         aws_profile = aws_credentials.default
         Chef::Log.info("Using default AWS profile ...")
@@ -112,16 +112,16 @@ module ChefMetalFog
       end
     end
 
-    def self.get_aws_credentials(driver_config)
+    def self.get_aws_credentials(driver_options)
       # Grab the list of possible credentials
-      if driver_config[:aws_credentials]
-        aws_credentials = driver_config[:aws_credentials]
+      if driver_options[:aws_credentials]
+        aws_credentials = driver_options[:aws_credentials]
       else
         aws_credentials = AWSCredentials.new
-        if driver_config[:aws_config_file]
-          aws_credentials.load_ini(driver_config.delete(:aws_config_file))
-        elsif driver_config[:aws_csv_file]
-          aws_credentials.load_csv(driver_config.delete(:aws_csv_file))
+        if driver_options[:aws_config_file]
+          aws_credentials.load_ini(driver_options.delete(:aws_config_file))
+        elsif driver_options[:aws_csv_file]
+          aws_credentials.load_csv(driver_options.delete(:aws_csv_file))
         else
           aws_credentials.load_default
         end
