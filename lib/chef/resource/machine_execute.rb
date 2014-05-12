@@ -15,7 +15,7 @@ class Chef::Resource::MachineExecute < Chef::Resource::LWRPBase
   default_action :run
 
   attribute :command, :kind_of => String, :name_attribute => true
-  attribute :machine, :kind_of => [String, ChefMetal::Machine]
+  attribute :machine, :kind_of => String
 
   attribute :chef_server, :kind_of => Hash
   attribute :driver, :kind_of => ChefMetal::Driver
