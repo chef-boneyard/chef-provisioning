@@ -1,5 +1,6 @@
 require 'cheffish/with_pattern'
 require 'chef/mixin/deep_merge'
+require 'cheffish/merged_config'
 
 module ChefMetal
   class ChefRunData
@@ -24,7 +25,7 @@ module ChefMetal
       if @current_machine_options
         @current_machine_options
       elsif config[:drivers] && driver_for(current_driver) && config[:drivers][driver_for(current_driver).driver_url]
-        MergedConfig.new(config[:drivers][driver_for(current_driver).driver_url], config)[:machine_options] || {}
+        Cheffish::MergedConfig.new(config[:drivers][driver_for(current_driver).driver_url], config)[:machine_options] || {}
       else
         config[:machine_options] || {}
       end
