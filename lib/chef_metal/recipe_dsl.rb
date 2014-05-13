@@ -47,18 +47,18 @@ class Chef
 
   class Config
     default(:driver) { ENV['CHEF_DRIVER'] }
-    config_context :drivers do
-      # each key is a driver_url, and each value can have driver, driver_options and machine_options
-      config_strict_mode false
-    end
-    config_context :driver_options do
-      # open ended for whatever the driver wants
-      config_strict_mode false
-    end
-    config_context :machine_options do
-      # open ended for whatever the driver wants
-      config_strict_mode false
-    end
+  #   config_context :drivers do
+  #     # each key is a driver_url, and each value can have driver, driver_options and machine_options
+  #     config_strict_mode false
+  #   end
+  #   config_context :driver_options do
+  #     # open ended for whatever the driver wants
+  #     config_strict_mode false
+  #   end
+  #   config_context :machine_options do
+  #     # open ended for whatever the driver wants
+  #     config_strict_mode false
+  #   end
   end
 
   class RunContext
