@@ -1,6 +1,6 @@
-machine 'mario' do
-  action :delete
-end
-machine 'luigi1' do
-  action :delete
+require 'chef_metal'
+search(:node, 'name:*') do |node|
+  machine node.name do
+    action :delete
+  end
 end

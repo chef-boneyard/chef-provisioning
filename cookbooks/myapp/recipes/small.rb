@@ -1,3 +1,5 @@
+require 'chef_metal'
+
 file '/tmp/blah.txt' do
   content 'woo'
 end
