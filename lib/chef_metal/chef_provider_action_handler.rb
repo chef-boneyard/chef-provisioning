@@ -68,5 +68,9 @@ module ChefMetal
         end
       end
     end
+
+    def host_node
+      "#{provider.run_context.config[:chef_server_url]}/nodes/#{provider.run_context.node['name']}"
+    end
   end
 end

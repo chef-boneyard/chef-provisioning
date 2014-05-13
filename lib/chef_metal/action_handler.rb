@@ -61,5 +61,9 @@ module ChefMetal
         STDOUT
       end
     end
+
+    # A URL identifying the host node. nil if no such node.
+    def host_node
+    end
   end
 end
