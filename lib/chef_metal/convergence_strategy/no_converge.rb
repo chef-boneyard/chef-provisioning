@@ -8,7 +8,7 @@ module ChefMetal
       attr_reader :client_rb_path
       attr_reader :client_pem_path
 
-      def setup_convergence(action_handler, machine, machine_resource)
+      def setup_convergence(action_handler, machine, options)
         machine_spec.save(action_handler)
       end
 

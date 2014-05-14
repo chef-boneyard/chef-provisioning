@@ -28,7 +28,8 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
 
   # Client keys
   # Options to generate private key (size, type, etc.) when the server doesn't have it
-  attribute :private_key_options, :kind_of => String
+  attribute :private_key_options, :kind_of => Hash
+  attribute :allow_overwrite_keys, :kind_of => [TrueClass, FalseClass]
 
   # Optionally pull the public key out to a file
   attribute :public_key_path, :kind_of => String

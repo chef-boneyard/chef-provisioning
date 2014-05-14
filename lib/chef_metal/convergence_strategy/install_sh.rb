@@ -18,7 +18,7 @@ module ChefMetal
       attr_reader :install_sh_url
       attr_reader :install_sh_path
 
-      def setup_convergence(action_handler, machine, machine_resource)
+      def setup_convergence(action_handler, machine, options)
         super
 
         # Install chef-client.  TODO check and update version if not latest / not desired

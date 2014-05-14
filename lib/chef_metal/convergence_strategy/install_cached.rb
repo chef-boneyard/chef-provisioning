@@ -20,7 +20,7 @@ module ChefMetal
         @package_cache_lock = Mutex.new
       end
 
-      def setup_convergence(action_handler, machine, machine_resource)
+      def setup_convergence(action_handler, machine, options)
         super
 
         # Install chef-client.  TODO check and update version if not latest / not desired

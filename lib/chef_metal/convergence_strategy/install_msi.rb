@@ -15,7 +15,7 @@ module ChefMetal
       attr_reader :install_msi_url
       attr_reader :install_msi_path
 
-      def setup_convergence(action_handler, machine, machine_resource)
+      def setup_convergence(action_handler, machine, options)
         system_drive = machine.execute_always('$env:SystemDrive').stdout.strip
         @client_rb_path ||= "#{system_drive}\\chef\\client.rb"
         @client_pem_path ||= "#{system_drive}\\chef\\client.pem"

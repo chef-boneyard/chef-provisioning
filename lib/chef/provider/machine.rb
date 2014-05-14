@@ -29,7 +29,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   action :setup do
     machine = action_ready
     begin
-      machine.setup_convergence(action_handler, new_resource)
+      machine.setup_convergence(action_handler, setup_convergence_options)
       upload_files(machine)
     ensure
       machine.disconnect
@@ -39,7 +39,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   action :converge do
     machine = action_ready
     begin
-      machine.setup_convergence(action_handler, new_resource)
+      machine.setup_convergence(action_handler, setup_convergence_options)
       upload_files(machine)
       # If we were asked to converge, or anything changed, or if a converge has never succeeded, converge.
       if new_resource.converge || (new_resource.converge.nil? && resource_updated?) ||
@@ -48,6 +48,19 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
       end
     ensure
       machine.disconnect
+    end
+  end
+
+  def setup_convergence_options
+    [ :allow_overwrite_keys,
+      :source_key, :source_key_path, :source_key_pass_phrase,
+      :private_key_options,
+      :ohai_hints,
+      :public_key_path, :public_key_format,
+      :admin, :validator
+    ].inject({}) do |result, key|
+      result[key] = new_resource.send(key)
+      result
     end
   end
 
