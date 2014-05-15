@@ -17,14 +17,14 @@ module ChefMetal
   # - ready_machine - get the machine "ready" - wait for it to be booted and
   #                   accessible (for example, accessible via SSH transport).
   # - stop_machine - stop the machine.
-  # - delete_machine - delete the machine.
+  # - destroy_machine - delete the machine.
   # - connect_to_machine - connect to the given machine.
   #
   # Optionally, you can also implement:
   # - allocate_machines - allocate an entire group of machines.
   # - ready_machines - get a group of machines warm and booted.
   # - stop_machines - stop a group of machines.
-  # - delete_machines - delete a group of machines.
+  # - destroy_machines - delete a group of machines.
   #
   # Additionally, you must create a file named `chef_metal/driver_init/<scheme>.rb`,
   # where <scheme> is the name of the scheme you chose for your driver_url. This
@@ -170,8 +170,8 @@ module ChefMetal
     # Delete the given machine (idempotent).  Should destroy the machine,
     # returning things to the state before allocate_machine was called.
     #
-    def delete_machine(action_handler, machine_spec, machine_options)
-      raise "#{self.class} does not implement delete_machine"
+    def destroy_machine(action_handler, machine_spec, machine_options)
+      raise "#{self.class} does not implement destroy_machine"
     end
 
     #
@@ -246,9 +246,9 @@ module ChefMetal
     end
 
     # Delete machines in batch, in parallel if possible.
-    def delete_machines(action_handler, specs_and_options, parallelizer)
+    def destroy_machines(action_handler, specs_and_options, parallelizer)
       parallelizer.parallelize(specs_and_options) do |machine_spec, machine_options|
-        delete_machine(add_prefix(machine_spec, action_handler), machine_spec)
+        destroy_machine(add_prefix(machine_spec, action_handler), machine_spec)
         yield machine_spec if block_given?
       end.to_a
     end

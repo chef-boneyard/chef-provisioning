@@ -55,10 +55,10 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
     end
   end
 
-  action :delete do
+  action :destroy do
     parallel_do(by_current_driver) do |driver_url, machines|
       driver = run_context.chef_metal.driver_for_url(driver_url)
-      driver.delete_machines(action_handler, machines.map { |m| m[:spec] }, parallelizer)
+      driver.destroy_machines(action_handler, machines.map { |m| m[:spec] }, parallelizer)
     end
   end
 

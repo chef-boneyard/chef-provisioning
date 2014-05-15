@@ -9,7 +9,7 @@ with_machine_batch 'blah', :action => :nothing
 machine 'mario' do
   #recipe 'mydb'
   tag 'mydb_master'
-  action [:delete, :converge]
+  action [:destroy, :converge]
 end
 
 machine_file '/etc/blah.conf' do

@@ -1,6 +1,6 @@
 require 'chef_metal'
 search(:node, 'name:*') do |node|
   machine node.name do
-    action :delete
+    action :destroy
   end
 end

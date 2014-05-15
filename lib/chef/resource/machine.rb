@@ -16,7 +16,7 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
     end
   end
 
-  actions :allocate, :ready, :setup, :converge, :converge_only, :delete, :stop
+  actions :allocate, :ready, :setup, :converge, :converge_only, :destroy, :stop
   default_action :converge
 
   # Driver attributes

@@ -66,9 +66,9 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
     end
   end
 
-  action :delete do
+  action :destroy do
     if current_driver
-      current_driver.delete_machine(action_handler, machine_spec, machine_options)
+      current_driver.destroy_machine(action_handler, machine_spec, machine_options)
     end
   end
 
