@@ -197,11 +197,11 @@ module ChefMetal
     #        is generally a driver, but could be anything that can support the
     #        interface (i.e., in the case of the test kitchen metal driver for
     #        acquiring and destroying VMs).
-    # machine_specs - a hash of machine_spec -> machine_options representing the
+    # specs_and_options - a hash of machine_spec -> machine_options representing the
     #                 machines to allocate.
     # parallelizer - an object with a parallelize() method that works like this:
     #
-    #   parallelizer.parallelize(machine_specs) do |machine_spec|
+    #   parallelizer.parallelize(specs_and_options) do |machine_spec|
     #     allocate_machine(action_handler, machine_spec)
     #   end.to_a
     #   # The to_a at the end causes you to wait until the parallelization is done
@@ -216,12 +216,12 @@ module ChefMetal
     # as it completes, and then the function will return when all machines are
     # yielded.
     #
-    #   allocate_machines(action_handler, machine_specs, parallelizer) do |machine_spec|
+    #   allocate_machines(action_handler, specs_and_options, parallelizer) do |machine_spec|
     #     ...
     #   end
     #
-    def allocate_machines(action_handler, machine_specs, parallelizer)
-      parallelizer.parallelize(machine_specs) do |machine_spec, machine_options|
+    def allocate_machines(action_handler, specs_and_options, parallelizer)
+      parallelizer.parallelize(specs_and_options) do |machine_spec, machine_options|
         allocate_machine(add_prefix(machine_spec, action_handler), machine_spec, machine_options)
         yield machine_spec if block_given?
         machine_spec
@@ -229,8 +229,8 @@ module ChefMetal
     end
 
     # Acquire machines in batch, in parallel if possible.
-    def ready_machines(action_handler, machine_specs, parallelizer)
-      parallelizer.parallelize(machine_specs) do |machine_spec, machine_options|
+    def ready_machines(action_handler, specs_and_options, parallelizer)
+      parallelizer.parallelize(specs_and_options) do |machine_spec, machine_options|
         machine = ready_machine(add_prefix(machine_spec, action_handler), machine_spec, machine_options)
         yield machine if block_given?
         machine
@@ -238,16 +238,16 @@ module ChefMetal
     end
 
     # Stop machines in batch, in parallel if possible.
-    def stop_machines(action_handler, machine_specs, parallelizer)
-      parallelizer.parallelize(machine_specs) do |machine_spec, machine_options|
+    def stop_machines(action_handler, specs_and_options, parallelizer)
+      parallelizer.parallelize(specs_and_options) do |machine_spec, machine_options|
         stop_machine(add_prefix(machine_spec, action_handler), machine_spec)
         yield machine_spec if block_given?
       end.to_a
     end
 
     # Delete machines in batch, in parallel if possible.
-    def delete_machines(action_handler, machine_specs, parallelizer)
-      parallelizer.parallelize(machine_specs) do |machine_spec, machine_options|
+    def delete_machines(action_handler, specs_and_options, parallelizer)
+      parallelizer.parallelize(specs_and_options) do |machine_spec, machine_options|
         delete_machine(add_prefix(machine_spec, action_handler), machine_spec)
         yield machine_spec if block_given?
       end.to_a
