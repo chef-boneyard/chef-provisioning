@@ -15,8 +15,8 @@ module ChefMetal
       # Sets up everything necessary for convergence to happen on the machine.
       # The machine_spec MUST be saved as part of this procedure.  Other than that,
       # nothing is guaranteed except that converge() will work when this is done.
-      def setup_convergence(action_handler, machine_resource)
-        convergence_strategy.setup_convergence(action_handler, self, machine_resource)
+      def setup_convergence(action_handler)
+        convergence_strategy.setup_convergence(action_handler, self)
       end
 
       def converge(action_handler)

@@ -17,7 +17,7 @@ module ChefMetal
     # Sets up everything necessary for convergence to happen on the machine.
     # The node MUST be saved as part of this procedure.  Other than that,
     # nothing is guaranteed except that converge() will work when this is done.
-    def setup_convergence(action_handler, machine_resource)
+    def setup_convergence(action_handler)
       raise "setup_convergence not overridden on #{self.class}"
     end
 

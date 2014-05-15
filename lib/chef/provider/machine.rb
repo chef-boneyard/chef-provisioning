@@ -2,7 +2,7 @@ require 'chef/provider/lwrp_base'
 require 'chef/provider/chef_node'
 require 'openssl'
 require 'chef_metal/chef_provider_action_handler'
-require 'chef_metal/machine_spec'
+require 'chef_metal/chef_machine_spec'
 
 class Chef::Provider::Machine < Chef::Provider::LWRPBase
 
@@ -17,19 +17,19 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   end
 
   action :allocate do
-    new_driver.allocate_machine(action_handler, machine_spec, new_resource.machine_options)
+    new_driver.allocate_machine(action_handler, machine_spec, machine_options)
     machine_spec.save(action_handler)
   end
 
   action :ready do
     action_allocate
-    machine = current_driver.ready_machine(action_handler, machine_spec, new_resource.machine_options)
+    machine = current_driver.ready_machine(action_handler, machine_spec, machine_options)
   end
 
   action :setup do
     machine = action_ready
     begin
-      machine.setup_convergence(action_handler, setup_convergence_options)
+      machine.setup_convergence(action_handler)
       upload_files(machine)
     ensure
       machine.disconnect
@@ -39,7 +39,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   action :converge do
     machine = action_ready
     begin
-      machine.setup_convergence(action_handler, setup_convergence_options)
+      machine.setup_convergence(action_handler)
       upload_files(machine)
       # If we were asked to converge, or anything changed, or if a converge has never succeeded, converge.
       if new_resource.converge || (new_resource.converge.nil? && resource_updated?) ||
@@ -51,21 +51,8 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
     end
   end
 
-  def setup_convergence_options
-    [ :allow_overwrite_keys,
-      :source_key, :source_key_path, :source_key_pass_phrase,
-      :private_key_options,
-      :ohai_hints,
-      :public_key_path, :public_key_format,
-      :admin, :validator
-    ].inject({}) do |result, key|
-      result[key] = new_resource.send(key)
-      result
-    end
-  end
-
   action :converge_only do
-    machine = run_context.chef_metal.connect_to_machine(machine_spec)
+    machine = run_context.chef_metal.connect_to_machine(machine_spec, machine_options)
     begin
       machine.converge(action_handler)
     ensure
@@ -75,18 +62,22 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
 
   action :stop do
     if current_driver
-      current_driver.stop_machine(action_handler, machine_spec)
+      current_driver.stop_machine(action_handler, machine_spec, machine_options)
     end
   end
 
   action :delete do
     if current_driver
-      current_driver.delete_machine(action_handler, machine_spec)
+      current_driver.delete_machine(action_handler, machine_spec, machine_options)
     end
   end
 
   def new_driver
     run_context.chef_metal.driver_for(new_resource.driver)
+  end
+
+  def new_driver_config
+    run_context.chef_metal.driver_config_for(new_resource.driver)
   end
 
   def current_driver
@@ -97,12 +88,33 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
 
   attr_reader :machine_spec
 
+  def machine_options
+    configs = []
+    configs << {
+      :convergence_options =>
+        [ :chef_server,
+          :allow_overwrite_keys,
+          :source_key, :source_key_path, :source_key_pass_phrase,
+          :private_key_options,
+          :ohai_hints,
+          :public_key_path, :public_key_format,
+          :admin, :validator
+        ].inject({}) do |result, key|
+          result[key] = new_resource.send(key)
+          result
+        end
+    }
+    configs << new_resource.machine_options if new_resource.machine_options
+    configs << new_driver_config[:machine_options] if new_driver_config[:machine_options]
+    Cheffish::MergedConfig.new(*configs)
+  end
+
   def load_current_resource
     node_driver = Chef::Provider::ChefNode.new(new_resource, run_context)
     node_driver.load_current_resource
     json = node_driver.new_json
     json['normal']['metal'] = node_driver.current_json['normal']['metal']
-    @machine_spec = ChefMetal::MachineSpec.new(json, new_resource.chef_server)
+    @machine_spec = ChefMetal::ChefMachineSpec.new(json, new_resource.chef_server)
   end
 
   def self.upload_files(action_handler, machine, files)

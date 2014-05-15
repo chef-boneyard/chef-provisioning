@@ -1,13 +1,5 @@
 # Include recipe basics so require 'chef_metal' will load everything
 require 'chef_metal/recipe_dsl'
-require 'chef/resource/machine'
-require 'chef/provider/machine'
-require 'chef/resource/machine_batch'
-require 'chef/provider/machine_batch'
-require 'chef/resource/machine_file'
-require 'chef/provider/machine_file'
-require 'chef/resource/machine_execute'
-require 'chef/provider/machine_execute'
 require 'chef/server_api'
 require 'cheffish/basic_chef_client'
 require 'cheffish/merged_config'
@@ -56,7 +48,9 @@ module ChefMetal
   def self.connect_to_machine(machine_spec, config = Chef::Config)
     driver = driver_for_url(machine_spec.driver_url, config)
     if driver
-      driver.connect_to_machine(machine_spec)
+      machine_options = { :convergence_options => { :chef_server => Cheffish.default_chef_server(config) } }
+      machine_options = Cheffish::MergedConfig.new(config[:machine_options], machine_options) if config[:machine_options]
+      driver.connect_to_machine(machine_spec, machine_options)
     else
       nil
     end

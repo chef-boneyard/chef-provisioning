@@ -1,14 +1,13 @@
 module ChefMetal
   class ConvergenceStrategy
+    def initialize(options)
+      @options = options
+    end
+
+    attr_reader :options
+
     # Get the machine ready to converge, but do not converge.
-    # options is a hash of setup options, including:
-    # - :allow_overwrite_keys
-    # - :source_key, :source_key_path, :source_key_pass_phrase
-    # - :private_key_options
-    # - :ohai_hints
-    # - :public_key_path, :public_key_format
-    # - :admin, :validator
-    def setup_convergence(action_handler, machine, options)
+    def setup_convergence(action_handler, machine)
       raise "setup_convergence not overridden on #{self.class}"
     end
 

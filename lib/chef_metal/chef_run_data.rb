@@ -1,6 +1,7 @@
-require 'cheffish/with_pattern'
 require 'chef/mixin/deep_merge'
+require 'cheffish/with_pattern'
 require 'cheffish/merged_config'
+require 'chef_metal/chef_machine_spec'
 
 module ChefMetal
   class ChefRunData
@@ -39,6 +40,10 @@ module ChefMetal
       driver.is_a?(String) ? driver_for_url(driver) : driver
     end
 
+    def driver_config_for(driver)
+      ChefMetal.config_for_url(driver_for(driver).driver_url, config)
+    end
+
     def driver_for_url(driver_url)
       drivers[driver_url] ||= begin
         driver = ChefMetal.driver_for_url(driver_url, config)
@@ -55,7 +60,7 @@ module ChefMetal
       if name.is_a?(MachineSpec)
         machine_spec = name
       else
-        machine_spec = ChefMetal::MachineSpec.get(name, chef_server)
+        machine_spec = ChefMetal::ChefMachineSpec.get(name, chef_server)
       end
       ChefMetal.connect_to_machine(machine_spec, config)
     end

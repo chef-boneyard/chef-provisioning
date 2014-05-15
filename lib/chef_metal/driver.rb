@@ -25,8 +25,6 @@ module ChefMetal
   # - ready_machines - get a group of machines warm and booted.
   # - stop_machines - stop a group of machines.
   # - delete_machines - delete a group of machines.
-  # - resource_created - a hook to tell you when a resource associated with your
-  #                      driver has been created.
   #
   # Additionally, you must create a file named `chef_metal/driver_init/<scheme>.rb`,
   # where <scheme> is the name of the scheme you chose for your driver_url. This
@@ -46,6 +44,7 @@ module ChefMetal
     #
     # == Returns
     # A Driver representing the given driver_url.
+    #
     def initialize(driver_url, config)
       @driver_url = driver_url
       @config = config
@@ -163,7 +162,7 @@ module ChefMetal
     # Machine object pointing at the machine, allowing useful actions like setup,
     # converge, execute, file and directory.
     #
-    def connect_to_machine(machine_spec)
+    def connect_to_machine(machine_spec, machine_options)
       raise "#{self.class} does not implement connect_to_machine"
     end
 
@@ -171,14 +170,14 @@ module ChefMetal
     # Delete the given machine (idempotent).  Should destroy the machine,
     # returning things to the state before allocate_machine was called.
     #
-    def delete_machine(action_handler, machine_spec)
+    def delete_machine(action_handler, machine_spec, machine_options)
       raise "#{self.class} does not implement delete_machine"
     end
 
     #
     # Stop the given machine.
     #
-    def stop_machine(action_handler, machine_spec)
+    def stop_machine(action_handler, machine_spec, machine_options)
       raise "#{self.class} does not implement stop_machine"
     end
 
@@ -240,7 +239,7 @@ module ChefMetal
 
     # Stop machines in batch, in parallel if possible.
     def stop_machines(action_handler, machine_specs, parallelizer)
-      parallelizer.parallelize(machine_specs) do |machine_spec|
+      parallelizer.parallelize(machine_specs) do |machine_spec, machine_options|
         stop_machine(add_prefix(machine_spec, action_handler), machine_spec)
         yield machine_spec if block_given?
       end.to_a
@@ -248,7 +247,7 @@ module ChefMetal
 
     # Delete machines in batch, in parallel if possible.
     def delete_machines(action_handler, machine_specs, parallelizer)
-      parallelizer.parallelize(machine_specs) do |machine_spec|
+      parallelizer.parallelize(machine_specs) do |machine_spec, machine_options|
         delete_machine(add_prefix(machine_spec, action_handler), machine_spec)
         yield machine_spec if block_given?
       end.to_a

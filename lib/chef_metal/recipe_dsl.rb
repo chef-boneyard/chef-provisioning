@@ -1,6 +1,15 @@
 require 'chef_metal/chef_run_data'
 require 'chef/resource_collection'
 
+require 'chef/resource/machine'
+require 'chef/provider/machine'
+require 'chef/resource/machine_batch'
+require 'chef/provider/machine_batch'
+require 'chef/resource/machine_file'
+require 'chef/provider/machine_file'
+require 'chef/resource/machine_execute'
+require 'chef/provider/machine_execute'
+
 class Chef
   module DSL
     module Recipe

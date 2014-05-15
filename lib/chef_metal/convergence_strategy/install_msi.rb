@@ -6,7 +6,7 @@ module ChefMetal
     class InstallMsi < PrecreateChefObjects
       @@install_msi_cache = {}
 
-      def initialize(options = {})
+      def initialize(options)
         @install_msi_url = options[:install_msi_url] || 'http://www.opscode.com/chef/install.msi'
         @install_msi_path = options[:install_msi_path] || "%TEMP%\\#{File.basename(@install_msi_url)}"
         @chef_client_timeout = options.has_key?(:chef_client_timeout) ? options[:chef_client_timeout] : 120*60 # Default: 2 hours
@@ -15,10 +15,10 @@ module ChefMetal
       attr_reader :install_msi_url
       attr_reader :install_msi_path
 
-      def setup_convergence(action_handler, machine, options)
+      def setup_convergence(action_handler, machine)
         system_drive = machine.execute_always('$env:SystemDrive').stdout.strip
-        @client_rb_path ||= "#{system_drive}\\chef\\client.rb"
-        @client_pem_path ||= "#{system_drive}\\chef\\client.pem"
+        options[:client_rb_path] ||= "#{system_drive}\\chef\\client.rb"
+        options[:client_pem_path] ||= "#{system_drive}\\chef\\client.pem"
 
         super
 
