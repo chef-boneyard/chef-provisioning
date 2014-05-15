@@ -179,7 +179,7 @@ module ChefMetalFog
       machine_for(machine_spec, machine_options)
     end
 
-    def delete_machine(action_handler, machine_spec, machine_options)
+    def destroy_machine(action_handler, machine_spec, machine_options)
       server = server_for(machine_spec)
       if server
         action_handler.perform_action "destroy machine #{machine_spec.name} (#{machine_spec.location['server_id']} at #{driver_url})" do
