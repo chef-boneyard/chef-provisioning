@@ -16,6 +16,7 @@ require 'socket'
 require 'etc'
 require 'time'
 require 'cheffish/merged_config'
+require 'chef_metal_fog/recipe_dsl'
 
 module ChefMetalFog
   # Provisions cloud machines with the Fog driver.
@@ -170,15 +171,15 @@ module ChefMetalFog
         end
       end
 
-      machine_for(machine_spec, server)
+      machine_for(machine_spec, machine_options, server)
     end
 
     # Connect to machine without acquiring it
-    def connect_to_machine(machine_spec)
-      machine_for(machine_spec)
+    def connect_to_machine(machine_spec, machine_options)
+      machine_for(machine_spec, machine_options)
     end
 
-    def delete_machine(action_handler, machine_spec)
+    def delete_machine(action_handler, machine_spec, machine_options)
       server = server_for(machine_spec)
       if server
         action_handler.perform_action "destroy machine #{machine_spec.name} (#{machine_spec.location['server_id']} at #{driver_url})" do
@@ -186,10 +187,11 @@ module ChefMetalFog
           machine_spec.location = nil
         end
       end
-      convergence_strategy_for(machine_spec).cleanup_convergence(action_handler, machine_spec)
+      strategy = convergence_strategy_for(machine_spec, machine_options)
+      strategy.cleanup_convergence(action_handler, machine_spec)
     end
 
-    def stop_machine(action_handler, machine_spec)
+    def stop_machine(action_handler, machine_spec, machine_options)
       server = server_for(machine_spec)
       if server
         action_handler.perform_action "stop machine #{machine_spec.name} (#{server.id} at #{driver_url})" do
@@ -224,8 +226,9 @@ module ChefMetalFog
         if server
           if %w(terminated archive).include?(server.state) # Can't come back from that
             Chef::Log.warn "Machine #{machine_spec.name} (#{server.id} on #{driver_url}) is terminated.  Recreating ..."
+          else
+            return server
           end
-          return server
         else
           Chef::Log.warn "Machine #{machine_spec.name} (#{machine_spec.location['server_id']} on #{driver_url}) no longer exists.  Recreating ..."
         end
@@ -398,15 +401,10 @@ module ChefMetalFog
       end
       tags = {
           'Name' => machine_spec.name,
-          'BootstrapChefServer' => machine_spec.chef_server[:chef_server_url],
+          'BootstrapId' => machine_spec.id,
           'BootstrapHost' => Socket.gethostname,
-          'BootstrapUser' => Etc.getlogin,
-          'BootstrapNodeName' => machine_spec.name
+          'BootstrapUser' => Etc.getlogin
       }
-      # TODO add a status endpoint to chef-zero that reports this
-      if machine_spec.chef_server[:options] && machine_spec.chef_server[:options][:data_store]
-        tags['ChefLocalRepository'] = machine_spec.chef_server[:options][:data_store].chef_fs.fs_description
-      end
       # User-defined tags override the ones we set
       tags.merge!(bootstrap_options[:tags]) if bootstrap_options[:tags]
       bootstrap_options.merge!({ :tags => tags })
@@ -436,22 +434,22 @@ module ChefMetalFog
       bootstrap_options
     end
 
-    def machine_for(machine_spec, server = nil)
+    def machine_for(machine_spec, machine_options, server = nil)
       server ||= server_for(machine_spec)
       if !server
         raise "Server for node #{machine_spec.name} has not been created!"
       end
 
       if machine_spec.location['is_windows']
-        ChefMetal::Machine::WindowsMachine.new(machine_spec, transport_for(machine_spec, server), convergence_strategy_for(machine_spec))
+        ChefMetal::Machine::WindowsMachine.new(machine_spec, transport_for(machine_spec, server), convergence_strategy_for(machine_spec, machine_options))
       else
-        ChefMetal::Machine::UnixMachine.new(machine_spec, transport_for(machine_spec, server), convergence_strategy_for(machine_spec))
+        ChefMetal::Machine::UnixMachine.new(machine_spec, transport_for(machine_spec, server), convergence_strategy_for(machine_spec, machine_options))
       end
     end
 
-    def convergence_strategy_for(machine_spec)
+    def convergence_strategy_for(machine_spec, machine_options)
       if !machine_spec.location
-        return ChefMetal::ConvergenceStrategy::NoConverge.new
+        return ChefMetal::ConvergenceStrategy::NoConverge.new(machine_options[:convergence_options])
       end
 
       options = {}
@@ -461,9 +459,9 @@ module ChefMetalFog
       options[:log_level] = driver_options[:log_level]
 
       if machine_spec.location['is_windows']
-        ChefMetal::ConvergenceStrategy::InstallMsi.new(options)
+        ChefMetal::ConvergenceStrategy::InstallMsi.new(machine_options[:convergence_options])
       else
-        ChefMetal::ConvergenceStrategy::InstallCached.new(options)
+        ChefMetal::ConvergenceStrategy::InstallCached.new(machine_options[:convergence_options])
       end
     end
 

@@ -1,4 +1,6 @@
 require 'chef_metal_fog/fog_driver'
+require 'chef/resource/fog_key_pair'
+require 'chef/provider/fog_key_pair'
 
 class Chef
   module DSL
