@@ -240,7 +240,7 @@ module ChefMetal
     # Stop machines in batch, in parallel if possible.
     def stop_machines(action_handler, specs_and_options, parallelizer)
       parallelizer.parallelize(specs_and_options) do |machine_spec, machine_options|
-        stop_machine(add_prefix(machine_spec, action_handler), machine_spec)
+        stop_machine(add_prefix(machine_spec, action_handler), machine_spec, machine_options)
         yield machine_spec if block_given?
       end.to_a
     end
@@ -248,7 +248,7 @@ module ChefMetal
     # Delete machines in batch, in parallel if possible.
     def destroy_machines(action_handler, specs_and_options, parallelizer)
       parallelizer.parallelize(specs_and_options) do |machine_spec, machine_options|
-        destroy_machine(add_prefix(machine_spec, action_handler), machine_spec)
+        destroy_machine(add_prefix(machine_spec, action_handler), machine_spec, machine_options)
         yield machine_spec if block_given?
       end.to_a
     end

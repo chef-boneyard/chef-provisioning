@@ -88,21 +88,28 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
   end
 
   def by_current_driver
-    @by_driver.values.select { |m| m[:spec].driver_url }.group_by { |m| m[:spec].driver_url }
+    result = {}
+    @by_driver.values.each do |ms|
+      ms.each do |m|
+        if m[:spec].driver_url
+          result[m[:spec].driver_url] ||= []
+          result[m[:spec].driver_url] << m
+        end
+      end
+    end
+    result
   end
 
   def load_current_resource
     # Load nodes in parallel
     @by_driver = parallel_do(new_resource.machines) do |machine_resource|
-      if Array(machine_resource.action) == [ :create ]
-        provider = Chef::Provider::Machine.new(machine_resource, machine_resource.run_context)
-        provider.load_current_resource
-        {
-          :resource => machine_resource,
-          :spec => provider.machine_spec
-        }
-      end
-    end.select { |m| !m.nil? }.group_by { |m| m[:resource].driver }
+      provider = Chef::Provider::Machine.new(machine_resource, machine_resource.run_context)
+      provider.load_current_resource
+      {
+        :resource => machine_resource,
+        :spec => provider.machine_spec
+      }
+    end.group_by { |m| m[:resource].driver }
   end
 
 end
