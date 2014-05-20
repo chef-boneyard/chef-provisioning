@@ -12,7 +12,7 @@ module ChefMetal
     attr_reader :action_handler
     attr_reader :prefix
 
-    def_delegators :@action_handler, :should_perform_actions, :updated!, :debug_name, :open_stream, :host_node
+    def_delegators :@action_handler, :should_perform_actions, :updated!, :open_stream, :host_node
 
     def report_progress(description)
       action_handler.report_progress(Array(description).flatten.map { |d| "#{prefix}#{d}" })

@@ -242,10 +242,6 @@ class ChefMetal::Application < Chef::Application
       Chef::RunContext.new(node, {},
         Chef::EventDispatch::Dispatcher.new(Chef::Formatters::Doc.new(STDOUT,STDERR)))
     end
-
-    def debug_name
-      'metal'
-    end
   end
 end
 

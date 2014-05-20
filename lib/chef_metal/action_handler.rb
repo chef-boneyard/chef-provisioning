@@ -47,12 +47,6 @@ module ChefMetal
       performed_action(description)
     end
 
-    # This is the name that will show up in the output, so should be something
-    # like a cookbook or driver name
-    def debug_name
-      raise ActionFailed, "ActionHandler behavior requires a debug_name"
-    end
-
     # Open a stream which can be printed to and closed
     def open_stream(name)
       if block_given?

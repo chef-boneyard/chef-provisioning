@@ -53,10 +53,6 @@ module ChefMetal
       provider.converge_by(description, &block)
     end
 
-    def debug_name
-      provider.cookbook_name
-    end
-
     def open_stream(name, &block)
       if provider.run_context.respond_to?(:open_stream)
         provider.run_context.open_stream({ :name => name }, &block)

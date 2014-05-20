@@ -1,6 +1,5 @@
 require 'chef_metal'
 require 'cheffish'
-require 'cheffish/cheffish_server_api'
 require 'chef_metal/machine_spec'
 
 module ChefMetal
@@ -62,7 +61,7 @@ module ChefMetal
     # Chef API object for the given Chef server
     #
     def chef_api
-      Cheffish::CheffishServerAPI.new(chef_server)
+      Cheffish.server_api_for(chef_server)
     end
   end
 end
