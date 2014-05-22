@@ -1,19 +1,27 @@
 module ChefMetal
   class Machine
-    def initialize(node)
-      @node = node
+    def initialize(machine_spec)
+      @machine_spec = machine_spec
     end
 
-    attr_reader :node
+    attr_reader :machine_spec
+
+    def name
+      machine_spec.name
+    end
+
+    def node
+      machine_spec.node
+    end
 
     # Sets up everything necessary for convergence to happen on the machine.
     # The node MUST be saved as part of this procedure.  Other than that,
     # nothing is guaranteed except that converge() will work when this is done.
-    def setup_convergence(action_handler, machine_resource)
+    def setup_convergence(action_handler)
       raise "setup_convergence not overridden on #{self.class}"
     end
 
-    def converge(action_handler, chef_server)
+    def converge(action_handler)
       raise "converge not overridden on #{self.class}"
     end
 

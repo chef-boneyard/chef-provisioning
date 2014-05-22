@@ -7,9 +7,22 @@ require 'thread'
 module ChefMetal
   class ConvergenceStrategy
     class InstallCached < PrecreateChefObjects
-      def initialize(options = {})
-        @client_rb_path ||= '/etc/chef/client.rb'
-        @client_pem_path ||= '/etc/chef/client.pem'
+      # options is a hash of setup options, including:
+      # - :chef_server
+      # - :allow_overwrite_keys
+      # - :source_key, :source_key_path, :source_key_pass_phrase
+      # - :private_key_options
+      # - :ohai_hints
+      # - :public_key_path, :public_key_format
+      # - :admin, :validator
+      # - :chef_client_timeout
+      # - :log_level
+      # - :client_rb_path, :client_pem_path
+      # - :chef_version, :prerelease, :package_cache_path
+      def initialize(options)
+        super
+        @options[:client_rb_path] ||= '/etc/chef/client.rb'
+        @options[:client_pem_path] ||= '/etc/chef/client.pem'
         @chef_version ||= options[:chef_version]
         @prerelease ||= options[:prerelease]
         @package_cache_path ||= options[:package_cache_path] || "#{ENV['HOME']}/.chef/package_cache"
@@ -20,7 +33,7 @@ module ChefMetal
         @package_cache_lock = Mutex.new
       end
 
-      def setup_convergence(action_handler, machine, machine_resource)
+      def setup_convergence(action_handler, machine)
         super
 
         # Install chef-client.  TODO check and update version if not latest / not desired
@@ -33,12 +46,14 @@ module ChefMetal
         end
       end
 
-      def converge(action_handler, machine, chef_server)
+      def converge(action_handler, machine)
         super
 
         action_handler.open_stream(machine.node['name']) do |stdout|
           action_handler.open_stream(machine.node['name']) do |stderr|
-            machine.execute(action_handler, "chef-client -l #{Chef::Config.log_level.to_s}",
+            command_line = "chef-client"
+            command_line << "-l #{options[:log_level].to_s}" if options[:log_level]
+            machine.execute(action_handler, "chef-client",
               :stream_stdout => stdout,
               :stream_stderr => stderr,
               :timeout => @chef_client_timeout)

@@ -6,7 +6,7 @@ require 'timeout'
 module ChefMetal
   class Transport
     class SSH < ChefMetal::Transport
-      def initialize(host, username, ssh_options, options)
+      def initialize(host, username, ssh_options, options, global_config)
         require 'net/ssh'
         require 'net/scp'
         require 'net/ssh/gateway'
@@ -14,12 +14,14 @@ module ChefMetal
         @username = username
         @ssh_options = ssh_options
         @options = options
+        @config = global_config
       end
 
       attr_reader :host
       attr_reader :username
       attr_reader :ssh_options
       attr_reader :options
+      attr_reader :config
 
       def execute(command, execute_options = {})
         Chef::Log.info("Executing #{options[:prefix]}#{command} on #{username}@#{host}")
@@ -59,8 +61,8 @@ module ChefMetal
         end
 
         Chef::Log.info("Completed #{command} on #{username}@#{host}: exit status #{exitstatus}")
-        Chef::Log.debug("Stdout was:\n#{stdout}") if stdout != '' && !options[:stream] && !options[:stream_stdout] && Chef::Config.log_level != :debug
-        Chef::Log.info("Stderr was:\n#{stderr}") if stderr != '' && !options[:stream] && !options[:stream_stderr] && Chef::Config.log_level != :debug
+        Chef::Log.debug("Stdout was:\n#{stdout}") if stdout != '' && !options[:stream] && !options[:stream_stdout] && config[:log_level] != :debug
+        Chef::Log.info("Stderr was:\n#{stderr}") if stderr != '' && !options[:stream] && !options[:stream_stderr] && config[:log_level] != :debug
         SSHResult.new(command, execute_options, stdout, stderr, exitstatus)
       end
 
@@ -132,8 +134,11 @@ module ChefMetal
         # If you can't pwd within 10 seconds, you can't pwd
         execute('pwd', :timeout => 10)
         true
-      rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, Net::SSH::AuthenticationFailed, Net::SSH::Disconnect, Net::SSH::HostKeyMismatch
-        Chef::Log.debug("#{username}@#{host} unavailable: could not execute 'pwd' on #{host}: #{$!.inspect}")
+      rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, Net::SSH::Disconnect
+        Chef::Log.debug("#{username}@#{host} unavailable: network connection failed or broke: #{$!.inspect}")
+        false
+      rescue Net::SSH::AuthenticationFailed, Net::SSH::HostKeyMismatch
+        Chef::Log.debug("#{username}@#{host} unavailable: SSH authentication error: #{$!.inspect} ")
         false
       end
 

@@ -9,31 +9,27 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
     super
     @chef_environment = run_context.cheffish.current_environment
     @chef_server = run_context.cheffish.current_chef_server
-    @provisioner = run_context.chef_metal.current_provisioner
-    @provisioner_options = run_context.chef_metal.current_provisioner_options
+    @driver = run_context.chef_metal.current_driver
+    @machine_options = run_context.chef_metal.current_machine_options
     if run_context.chef_metal.current_machine_batch
       run_context.chef_metal.current_machine_batch.machines << self
     end
   end
 
-  def after_created
-    # Notify the provisioner of this machine's creation
-    @provisioner.resource_created(self)
-  end
+  actions :allocate, :ready, :setup, :converge, :converge_only, :destroy, :stop
+  default_action :converge
 
-  actions :create, :delete, :stop, :converge, :nothing
-  default_action :create
-
-  # Provisioner attributes
-  attribute :provisioner
-  attribute :provisioner_options
+  # Driver attributes
+  attribute :driver
+  attribute :machine_options
 
   # Node attributes
   Cheffish.node_attributes(self)
 
   # Client keys
   # Options to generate private key (size, type, etc.) when the server doesn't have it
-  attribute :private_key_options, :kind_of => String
+  attribute :private_key_options, :kind_of => Hash
+  attribute :allow_overwrite_keys, :kind_of => [TrueClass, FalseClass]
 
   # Optionally pull the public key out to a file
   attribute :public_key_path, :kind_of => String
@@ -88,8 +84,8 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
     end
   end
 
-  def add_provisioner_options(options)
-    @provisioner_options = Chef::Mixin::DeepMerge.hash_only_merge(@provisioner_options, options)
+  def add_machine_options(options)
+    @machine_options = Chef::Mixin::DeepMerge.hash_only_merge(@machine_options, options)
   end
 
   # chef client version and omnibus

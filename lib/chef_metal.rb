@@ -1,15 +1,8 @@
 # Include recipe basics so require 'chef_metal' will load everything
 require 'chef_metal/recipe_dsl'
-require 'chef/resource/machine'
-require 'chef/provider/machine'
-require 'chef/resource/machine_batch'
-require 'chef/provider/machine_batch'
-require 'chef/resource/machine_file'
-require 'chef/provider/machine_file'
-require 'chef/resource/machine_execute'
-require 'chef/provider/machine_execute'
 require 'chef/server_api'
 require 'cheffish/basic_chef_client'
+require 'cheffish/merged_config'
 
 module ChefMetal
   def self.inline_resource(action_handler, &block)
@@ -26,35 +19,40 @@ module ChefMetal
 
     def resource_update_applied(resource, action, update)
       prefix = action_handler.should_perform_actions ? "" : "Would "
-      update = Array(update).map { |u| "#{prefix}#{u}"}
+      update = Array(update).flatten.map { |u| "#{prefix}#{u}"}
       action_handler.performed_action(update)
     end
   end
 
-
-  # Helpers for provisioner inflation
-  @@registered_provisioner_classes = {}
-  def self.add_registered_provisioner_class(name, provisioner)
-    @@registered_provisioner_classes[name] = provisioner
+  # Helpers for driver inflation
+  @@registered_driver_classes = {}
+  def self.register_driver_class(name, driver)
+    @@registered_driver_classes[name] = driver
   end
 
-  def self.provisioner_for_node(node)
-    provisioner_url = node['normal']['provisioner_output']['provisioner_url']
-    cluster_type = provisioner_url.split(':', 2)[0]
-    require "chef_metal/provisioner_init/#{cluster_type}_init"
-    provisioner_class = @@registered_provisioner_classes[cluster_type]
-    provisioner_class.inflate(node)
-  end
-
-  def self.connect_to_machine(name)
-    rest = Chef::ServerAPI.new()
-    node = rest.get("/nodes/#{name}")
-    provisioner_output = node['normal']['provisioner_output']
-    if !provisioner_output
-      raise "Node #{name} was not provisioned with Metal."
+  def self.config_for_url(driver_url, config = Chef::Config)
+    if config && config[:drivers] && config[:drivers][driver_url]
+      config = Cheffish::MergedConfig.new(config[:drivers][driver_url], config)
     end
-    provisioner = provisioner_for_node(node)
-    machine = provisioner.connect_to_machine(node)
-    [ machine, provisioner ]
+    config || {}
+  end
+
+  def self.driver_for_url(driver_url, config = Chef::Config)
+    cluster_type = driver_url.split(':', 2)[0]
+    require "chef_metal/driver_init/#{cluster_type}"
+    driver_class = @@registered_driver_classes[cluster_type]
+    config = config_for_url(driver_url, config)
+    driver_class.from_url(driver_url, config || {})
+  end
+
+  def self.connect_to_machine(machine_spec, config = Chef::Config)
+    driver = driver_for_url(machine_spec.driver_url, config)
+    if driver
+      machine_options = { :convergence_options => { :chef_server => Cheffish.default_chef_server(config) } }
+      machine_options = Cheffish::MergedConfig.new(config[:machine_options], machine_options) if config[:machine_options]
+      driver.connect_to_machine(machine_spec, machine_options)
+    else
+      nil
+    end
   end
 end

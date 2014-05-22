@@ -6,18 +6,19 @@ module ChefMetal
     class InstallSh < PrecreateChefObjects
       @@install_sh_cache = {}
 
-      def initialize(options = {})
+      def initialize(options)
+        super
         @install_sh_url = options[:install_sh_url] || 'http://www.opscode.com/chef/install.sh'
         @install_sh_path = options[:install_sh_path] || '/tmp/chef-install.sh'
-        @client_rb_path ||= '/etc/chef/client.rb'
-        @client_pem_path ||= '/etc/chef/client.pem'
+        @options[:client_rb_path] ||= '/etc/chef/client.rb'
+        @options[:client_pem_path] ||= '/etc/chef/client.pem'
         @chef_client_timeout = options.has_key?(:chef_client_timeout) ? options[:chef_client_timeout] : 120*60 # Default: 2 hours
       end
 
       attr_reader :install_sh_url
       attr_reader :install_sh_path
 
-      def setup_convergence(action_handler, machine, machine_resource)
+      def setup_convergence(action_handler, machine)
         super
 
         # Install chef-client.  TODO check and update version if not latest / not desired
@@ -29,10 +30,19 @@ module ChefMetal
         end
       end
 
-      def converge(action_handler, machine, chef_server)
+      def converge(action_handler, machine)
         super
-        
-        machine.execute(action_handler, "chef-client -l #{Chef::Config.log_level.to_s}", :stream => true, :timeout => @chef_client_timeout)
+
+        action_handler.open_stream(machine.node['name']) do |stdout|
+          action_handler.open_stream(machine.node['name']) do |stderr|
+            command_line = "chef-client"
+            command_line << "-l #{options[:log_level].to_s}" if options[:log_level]
+            machine.execute(action_handler, command_line,
+              :stream_stdout => stdout,
+              :stream_stderr => stderr,
+              :timeout => @chef_client_timeout)
+          end
+        end
       end
     end
   end

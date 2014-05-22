@@ -6,7 +6,7 @@ module ChefMetal
     class InstallMsi < PrecreateChefObjects
       @@install_msi_cache = {}
 
-      def initialize(options = {})
+      def initialize(options)
         @install_msi_url = options[:install_msi_url] || 'http://www.opscode.com/chef/install.msi'
         @install_msi_path = options[:install_msi_path] || "%TEMP%\\#{File.basename(@install_msi_url)}"
         @chef_client_timeout = options.has_key?(:chef_client_timeout) ? options[:chef_client_timeout] : 120*60 # Default: 2 hours
@@ -15,10 +15,10 @@ module ChefMetal
       attr_reader :install_msi_url
       attr_reader :install_msi_path
 
-      def setup_convergence(action_handler, machine, machine_resource)
+      def setup_convergence(action_handler, machine)
         system_drive = machine.execute_always('$env:SystemDrive').stdout.strip
-        @client_rb_path ||= "#{system_drive}\\chef\\client.rb"
-        @client_pem_path ||= "#{system_drive}\\chef\\client.pem"
+        options[:client_rb_path] ||= "#{system_drive}\\chef\\client.rb"
+        options[:client_pem_path] ||= "#{system_drive}\\chef\\client.pem"
 
         super
 
@@ -33,11 +33,18 @@ module ChefMetal
         end
       end
 
-      def converge(action_handler, machine, chef_server)
+      def converge(action_handler, machine)
         super
-        
+
         # TODO For some reason I get a 500 back if I don't do -l debug
-        machine.execute(action_handler, "chef-client -l debug", :stream => true, :timeout => @chef_client_timeout)
+        action_handler.open_stream(machine.node['name']) do |stdout|
+          action_handler.open_stream(machine.node['name']) do |stderr|
+            machine.execute(action_handler, "chef-client -l debug",
+              :stream_stdout => stdout,
+              :stream_stderr => stderr,
+              :timeout => @chef_client_timeout)
+          end
+        end
       end
     end
   end

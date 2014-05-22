@@ -1,5 +1,5 @@
 vagrant_box 'opscode-windows-6.1' do
-  provisioner_options({
+  machine_options({
     'vagrant_options' => {
       'vm.guest' => :windows,
       'windows.halt_timeout' => 25,

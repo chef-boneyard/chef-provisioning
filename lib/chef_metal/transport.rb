@@ -47,6 +47,11 @@ module ChefMetal
       raise "available? not overridden on #{self.class}"
     end
 
+    # Config hash, including :log_level and :logger as keys
+    def config
+      raise "config not overridden on #{self.class}"
+    end
+
     protected
 
     # Helper to implement stdout/stderr streaming in execute
@@ -57,14 +62,14 @@ module ChefMetal
         if stdout_chunk
           if options[:stream_stdout]
             options[:stream_stdout].print stdout_chunk
-          elsif options[:stream] || Chef::Config.log_level == :debug
+          elsif options[:stream] || config[:log_level] == :debug
             STDOUT.print stdout_chunk
           end
         end
         if stderr_chunk
           if options[:stream_stderr]
             options[:stream_stderr].print stderr_chunk
-          elsif options[:stream] || Chef::Config.log_level == :debug
+          elsif options[:stream] || config[:log_level] == :debug
             STDERR.print stderr_chunk
           end
         end

@@ -3,8 +3,8 @@ require 'chef_metal/machine'
 module ChefMetal
   class Machine
     class BasicMachine < Machine
-      def initialize(node, transport, convergence_strategy)
-        super(node)
+      def initialize(machine_spec, transport, convergence_strategy)
+        super(machine_spec)
         @transport = transport
         @convergence_strategy = convergence_strategy
       end
@@ -13,18 +13,18 @@ module ChefMetal
       attr_reader :convergence_strategy
 
       # Sets up everything necessary for convergence to happen on the machine.
-      # The node MUST be saved as part of this procedure.  Other than that,
+      # The machine_spec MUST be saved as part of this procedure.  Other than that,
       # nothing is guaranteed except that converge() will work when this is done.
-      def setup_convergence(action_handler, machine_resource)
-        convergence_strategy.setup_convergence(action_handler, self, machine_resource)
+      def setup_convergence(action_handler)
+        convergence_strategy.setup_convergence(action_handler, self)
       end
 
-      def converge(action_handler, chef_server)
-        convergence_strategy.converge(action_handler, self, chef_server)
+      def converge(action_handler)
+        convergence_strategy.converge(action_handler, self)
       end
 
       def execute(action_handler, command, options = {})
-        action_handler.perform_action "run '#{command}' on #{node['name']}" do
+        action_handler.perform_action "run '#{command}' on #{machine_spec.name}" do
           result = transport.execute(command, options)
           result.error!
           result
@@ -41,7 +41,7 @@ module ChefMetal
 
       def download_file(action_handler, path, local_path)
         if files_different?(path, local_path)
-          action_handler.perform_action "download file #{path} on #{node['name']} to #{local_path}" do
+          action_handler.perform_action "download file #{path} on #{machine_spec.name} to #{local_path}" do
             transport.download_file(path, local_path)
           end
         end
@@ -52,7 +52,7 @@ module ChefMetal
           if options[:ensure_dir]
             create_dir(action_handler, dirname_on_machine(path))
           end
-          action_handler.perform_action "write file #{path} on #{node['name']}" do
+          action_handler.perform_action "write file #{path} on #{machine_spec.name}" do
             transport.write_file(path, content)
           end
         end
@@ -63,7 +63,7 @@ module ChefMetal
           if options[:ensure_dir]
             create_dir(action_handler, dirname_on_machine(path))
           end
-          action_handler.perform_action "upload file #{local_path} to #{path} on #{node['name']}" do
+          action_handler.perform_action "upload file #{local_path} to #{path} on #{machine_spec.name}" do
             transport.upload_file(local_path, path)
           end
         end

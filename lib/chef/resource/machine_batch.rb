@@ -11,7 +11,7 @@ class Chef::Resource::MachineBatch < Chef::Resource::LWRPBase
 
   # TODO there is a useful action sequence where one does an ohai on all machines,
   # waits for that to complete, save the nodes, and THEN converges.
-  actions :acquire, :setup, :converge, :stop, :delete
+  actions :acquire, :setup, :converge, :stop, :destroy
   default_action :converge
 
   attribute :machines, :kind_of => [ Array ]

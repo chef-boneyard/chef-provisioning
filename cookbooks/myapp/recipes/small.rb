@@ -1,3 +1,5 @@
+require 'chef_metal'
+
 file '/tmp/blah.txt' do
   content 'woo'
 end
@@ -7,7 +9,7 @@ with_machine_batch 'blah', :action => :nothing
 machine 'mario' do
   #recipe 'mydb'
   tag 'mydb_master'
-  action [:delete, :create]
+  action [:destroy, :converge]
 end
 
 machine_file '/etc/blah.conf' do
@@ -29,6 +31,6 @@ num_webservers = 1
     file '/etc/woo4.txt', :content => 'WOOOOOOO'
     #recipe 'apache'
     #recipe 'mywebapp'
-    action [ :create, :stop ]
+    action [ :converge, :stop ]
   end
 end

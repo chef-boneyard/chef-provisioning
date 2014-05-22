@@ -1,15 +1,24 @@
 require 'chef_metal/chef_run_data'
 require 'chef/resource_collection'
 
+require 'chef/resource/machine'
+require 'chef/provider/machine'
+require 'chef/resource/machine_batch'
+require 'chef/provider/machine_batch'
+require 'chef/resource/machine_file'
+require 'chef/provider/machine_file'
+require 'chef/resource/machine_execute'
+require 'chef/provider/machine_execute'
+
 class Chef
   module DSL
     module Recipe
-      def with_provisioner(provisioner, &block)
-        run_context.chef_metal.with_provisioner(provisioner, &block)
+      def with_driver(driver, &block)
+        run_context.chef_metal.with_driver(driver, &block)
       end
 
-      def with_provisioner_options(provisioner_options, &block)
-        run_context.chef_metal.with_provisioner_options(provisioner_options, &block)
+      def with_machine_options(machine_options, &block)
+        run_context.chef_metal.with_machine_options(machine_options, &block)
       end
 
       def with_machine_batch(the_machine_batch, options = {}, &block)
@@ -26,12 +35,12 @@ class Chef
         run_context.chef_metal.with_machine_batch(the_machine_batch, &block)
       end
 
-      def current_provisioner_options
-        run_context.chef_metal.current_provisioner_options
+      def current_machine_options
+        run_context.chef_metal.current_machine_options
       end
 
-      def add_provisioner_options(options, &block)
-        run_context.chef_metal.add_provisioner_options(options, &block)
+      def add_machine_options(options, &block)
+        run_context.chef_metal.add_machine_options(options, &block)
       end
 
       # When the machine resource is first declared, create a machine_batch (if there
@@ -45,9 +54,25 @@ class Chef
     end
   end
 
+  class Config
+    default(:driver) { ENV['CHEF_DRIVER'] }
+  #   config_context :drivers do
+  #     # each key is a driver_url, and each value can have driver, driver_options and machine_options
+  #     config_strict_mode false
+  #   end
+  #   config_context :driver_options do
+  #     # open ended for whatever the driver wants
+  #     config_strict_mode false
+  #   end
+  #   config_context :machine_options do
+  #     # open ended for whatever the driver wants
+  #     config_strict_mode false
+  #   end
+  end
+
   class RunContext
     def chef_metal
-      @chef_metal ||= ChefMetal::ChefRunData.new
+      @chef_metal ||= ChefMetal::ChefRunData.new(config)
     end
   end
 end
