@@ -1,10 +1,7 @@
 require 'chef/provider/lwrp_base'
-require 'chef_metal/provider_action_handler'
-require 'chef_metal_fog/fog_provisioner'
+require 'chef_metal_fog/fog_driver'
 
 class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
-
-  include ChefMetal::ProviderActionHandler
 
   use_inline_resources
 
@@ -19,7 +16,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
   action :delete do
     if current_resource_exists?
       converge_by "delete #{key_description}" do
-        case new_resource.provisioner.compute_options[:provider]
+        case new_driver.compute_options[:provider]
         when 'DigitalOcean'
           compute.destroy_key_pair(@current_id)
         when 'OpenStack'
@@ -32,23 +29,29 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
   end
 
   def key_description
-    "#{new_resource.name} on #{new_resource.provisioner.provisioner_url}"
+    "#{new_resource.name} on #{new_driver.driver_url}"
   end
 
   def create_key(action)
+    if @should_create_directory
+      Cheffish.inline_resource(self, action) do
+        directory run_context.config[:private_key_write_path]
+      end
+    end
+
     if current_resource_exists?
       # If the public keys are different, update the server public key
       if !current_resource.private_key_path
         if new_resource.allow_overwrite
           ensure_keys(action)
         else
-          raise "#{key_description} already exists on the server, but the private key #{new_resource.private_key_path} does not exist!"
+          raise "#{key_description} already exists on the server, but the private key #{new_private_key_path} does not exist!"
         end
       else
         ensure_keys(action)
       end
 
-      new_fingerprints = case new_resource.provisioner.compute_options[:provider]
+      new_fingerprints = case new_driver.compute_options[:provider]
       when 'DigitalOcean'
         [Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)]
       when 'OpenStack'
@@ -73,7 +76,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
       if !new_fingerprints.any? { |f| (f.is_a?(Proc) ? f.call : f) == @current_fingerprint }
         if new_resource.allow_overwrite
           converge_by "update #{key_description} to match local key at #{new_resource.private_key_path}" do
-            case new_resource.provisioner.compute_options[:provider]
+            case new_driver.compute_options[:provider]
             when 'DigitalOcean'
               compute.create_ssh_key(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
             when 'OpenStack'
@@ -92,7 +95,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
 
       # Create key
       converge_by "create #{key_description} from local key at #{new_resource.private_key_path}" do
-        case new_resource.provisioner.compute_options[:provider]
+        case new_driver.compute_options[:provider]
         when 'DigitalOcean'
           compute.create_ssh_key(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
         when 'OpenStack'
@@ -104,10 +107,15 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
     end
   end
 
+  def new_driver
+    run_context.chef_metal.driver_for(new_resource.driver)
+  end
+
   def ensure_keys(action)
     resource = new_resource
+    private_key_path = new_private_key_path
     Cheffish.inline_resource(self, action) do
-      private_key resource.private_key_path do
+      private_key private_key_path do
         public_key_path resource.public_key_path
         if resource.private_key_options
           resource.private_key_options.each_pair do |key,value|
@@ -131,8 +139,8 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
 
   def desired_private_key
     @desired_private_key ||= begin
-        private_key, format = Cheffish::KeyFormatter.decode(IO.read(new_resource.private_key_path))
-        private_key
+      private_key, format = Cheffish::KeyFormatter.decode(IO.read(new_private_key_path))
+      private_key
     end
   end
 
@@ -141,19 +149,35 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
   end
 
   def compute
-    new_resource.provisioner.compute
+    new_driver.compute
   end
 
   def current_public_key
     current_resource.source_key
   end
 
+  def new_private_key_path
+    private_key_path = new_resource.private_key_path || new_resource.name
+    if private_key_path.is_a?(Symbol)
+      private_key_path
+    elsif Pathname.new(private_key_path).relative? && new_driver.config[:private_key_write_path]
+      @should_create_directory = true
+      ::File.join(new_driver.config[:private_key_write_path], private_key_path)
+    else
+      private_key_path
+    end
+  end
+
+  def new_public_key_path
+    new_resource.public_key_path
+  end
+
   def load_current_resource
-    if !new_resource.provisioner.kind_of?(ChefMetalFog::FogProvisioner)
-      raise 'ec2_key_pair only works with fog_provisioner'
+    if !new_driver.kind_of?(ChefMetalFog::FogDriver)
+      raise 'fog_key_pair only works with fog_driver'
     end
     @current_resource = Chef::Resource::FogKeyPair.new(new_resource.name, run_context)
-    case new_resource.provisioner.compute_options[:provider]
+    case new_driver.provider
     when 'DigitalOcean'
       current_key_pair = compute.ssh_keys.select { |key| key.name == new_resource.name }.first
       if current_key_pair
@@ -179,11 +203,11 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
       end
     end
 
-    if new_resource.private_key_path && ::File.exist?(new_resource.private_key_path)
-      current_resource.private_key_path new_resource.private_key_path
+    if new_private_key_path && ::File.exist?(new_private_key_path)
+      current_resource.private_key_path new_private_key_path
     end
-    if new_resource.public_key_path && ::File.exist?(new_resource.public_key_path)
-      current_resource.public_key_path new_resource.public_key_path
+    if new_public_key_path && ::File.exist?(new_public_key_path)
+      current_resource.public_key_path new_public_key_path
     end
   end
 end
