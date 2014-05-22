@@ -29,7 +29,8 @@ module ChefMetal
   # Additionally, you must create a file named `chef_metal/driver_init/<scheme>.rb`,
   # where <scheme> is the name of the scheme you chose for your driver_url. This
   # file, when required, must call ChefMetal.add_registered_driver(<scheme>, <class>).
-  # The given <class>.from_url(url) will be called with a driver_url.
+  # The given <class>.from_url(url, config) will be called with a driver_url and
+  # configuration.
   #
   # All of these methods must be idempotent - if the work is already done, they
   # just don't do anything.

@@ -20,26 +20,30 @@ I'll talk a little bit about the user-level changes here, but you can read about
 We've simplified the use of metal, in such a way that configuration is now shared.  Here is a very simple use of Metal.
 
 - Install chef-metal:
-  ```
-  gem install chef-metal
-  ```
-- Put your AWS credentials in `~/.aws/config` a la [http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#d0e726](this tutorial)
-  ```
-
-  ```
+```ruby
+gem install chef-metal
+```
+- Put your AWS credentials in `~/.aws/config` a la [http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#d0e726](this tutorial).  It should look like this:
+```
+[default]
+aws_access_key_id=...
+aws_secret_access_key=...
+```
 - Make a simple recipe that creates two machines:
-  ```
-  require 'chef_metal'
-  machine 'web'
-  machine 'db'
-  ```
+```
+require 'chef_metal'
+machine 'web'
+machine 'db'
+```
 - Run the chef-client:
-  ```
-  export CHEF_DRIVER=fog:AWS
-  chef-client -z blah.rb
-  ```
+```
+export CHEF_DRIVER=fog:AWS
+chef-client -z blah.rb
+```
 
 Wallah!  Two EC2 machines!
+
+(If you want to experiment, the AWS free tier will more than cover such experimentation, as long as you remember to take the machines down, which we will cover shortly.)
 
 ## The Metal command line
 
@@ -54,35 +58,35 @@ metal destroy db web
 Drivers are uniquely identifiable by their URL.  A driver URL consists of a scheme and then driver-specific stuff. You can specify driver URL several ways:
 
 - In a recipe using with_driver:
-  ```ruby
-  with_driver 'fog:AWS:jkeiser' # the "jkeiser" profile from
-  machine 'web' do
-    recipe 'apache'
-  end
-  machine 'db' do
-    recipe 'mysql'
-  end
-  ```
+```ruby
+with_driver 'fog:AWS:jkeiser' # the "jkeiser" profile from
+machine 'web' do
+  recipe 'apache'
+end
+machine 'db' do
+  recipe 'mysql'
+end
+```
 - In a recipe directly on the machine:
-  ```ruby
-  machine 'web' do
-    driver 'vagrant:~/machinetest' # Vagrantfiles in the given directory
-    recipe 'apache'
-  end
-  machine 'db' do
-    driver 'fog:AWS:default'
-    recipe 'apache'
-  end
-  ```
+```ruby
+machine 'web' do
+  driver 'vagrant:~/machinetest' # Vagrantfiles in the given directory
+  recipe 'apache'
+end
+machine 'db' do
+  driver 'fog:AWS:default'
+  recipe 'apache'
+end
+```
 - In configuration (`knife.rb`):
-  ```ruby
-  driver 'fog:AWS' # default profile
-  ```
+```ruby
+driver 'fog:AWS' # default profile
+```
 - In an environmental variable:
-  ```
-  export CHEF_DRIVER=vagrant # stores things in <chef config dir>/vms
-  chef-client -z cluster.rb
-  ```
+```
+export CHEF_DRIVER=vagrant # stores things in <chef config dir>/vms
+chef-client -z cluster.rb
+```
 
 Different machines may have different drivers.
 
@@ -100,70 +104,70 @@ You can use these too, they just usually aren't as easy as the shorthands.
 Drivers usually need some credentials.  Rather than specify these in your recipe (bad mojo), these need to be specified outside:
 
 - In Chef config (`knife.rb`):
-  ```ruby
-  driver 'fog:AWS:123123124124'
-  driver_options :aws_access_key_id => '...', :aws_secret_access_key => '...'
-  ```
+```ruby
+driver 'fog:AWS:123123124124'
+driver_options :aws_access_key_id => '...', :aws_secret_access_key => '...'
+```
 - In a global Chef file for whenever you use that driver:
-  ```ruby
-  drivers {
-    'fog:AWS:123123124124' => {
-      :driver_options => {
-        :aws_access_key_id => '...',
-        :aws_secret_access_key => '...'
-      }
+```ruby
+drivers {
+  'fog:AWS:123123124124' => {
+    :driver_options => {
+      :aws_access_key_id => '...',
+      :aws_secret_access_key => '...'
     }
   }
-  ```
-  ```
-  export CHEF_DRIVER=fog:AWS:123123124124
-  chef-client -z cluster.rb
-  ```
+}
+```
+```
+export CHEF_DRIVER=fog:AWS:123123124124
+chef-client -z cluster.rb
+```
 
 ## Machine options
 
 Absolutely everything that is not credentials should be specified in machine_options.  machine_options can be added in several places:
 
 - In recipes with with_machine_options:
-  ```ruby
-  with_driver 'vagrant'
-  with_machine_options :vagrant_options => { 'vm.box' => 'precise64' }
+```ruby
+with_driver 'vagrant'
+with_machine_options :vagrant_options => { 'vm.box' => 'precise64' }
+machine 'web' do
+  recipe 'apache'
+end
+machine 'db' do
+  recipe 'mysql'
+end
+```
+- In recipes on machine definitions:
+```ruby
+with_driver 'vagrant' do
   machine 'web' do
+    machine_options :vagrant_options => { 'vm.box' => 'centos6' }
     recipe 'apache'
   end
   machine 'db' do
+    machine_options :vagrant_options => { 'vm.box' => 'precise64' }
     recipe 'mysql'
   end
-  ```
-- In recipes on machine definitions:
-  ```ruby
-  with_driver 'vagrant' do
-    machine 'web' do
-      machine_options :vagrant_options => { 'vm.box' => 'centos6' }
-      recipe 'apache'
-    end
-    machine 'db' do
-      machine_options :vagrant_options => { 'vm.box' => 'precise64' }
-      recipe 'mysql'
-    end
-  end
-  ```
+end
+```
 - In Chef config (`knife.rb`):
-  ```ruby
-  machine_options :vagrant_options => { 'vm.box' => 'centos6' }
-  ```
+```ruby
+machine_options :vagrant_options => { 'vm.box' => 'centos6' }
+```
 - In Chef config associated with specific drivers:
-  ```ruby
-  drivers {
-    'vagrant:/Users/jkeiser/vms' => {
-      :machine_options => {
-        :vagrant_options => {
-          'vm.box' => 'precise64'
-        }
+```ruby
+drivers {
+  'vagrant:/Users/jkeiser/vms' => {
+    :machine_options => {
+      :vagrant_options => {
+        'vm.box' => 'precise64'
       }
     }
   }
-  ```
+}
+```
 
 Machine options are *additive*.  If you specify `'vm.box' => 'precise64'` in Chef config, and then specify `'vm.ram' => '8G'` on the machine resource, the vagrant options for that will include *both* sets of option.
 
