@@ -16,11 +16,8 @@ module ChefMetal
     #
     # Get a MachineSpec from the chef server.
     #
-    def self.get(name, chef_server)
-      if !chef_server
-        raise "No chef server passed to ChefMachineSpec.get(name)"
-      end
-      chef_api = Cheffish::CheffishServerAPI.new(chef_server)
+    def self.get(name, chef_server = Cheffish.default_chef_server)
+      chef_api = Cheffish.chef_server_api(chef_server)
       ChefMachineSpec.new(chef_api.get("/nodes/#{name}"), chef_server)
     end
 
