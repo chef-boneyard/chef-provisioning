@@ -524,7 +524,7 @@ module ChefMetalFog
       new_config = { :driver_options => { :compute_options => new_compute_options }}
 
       # Set the identifier from the URL
-      if id
+      if id && id != ''
         case provider
         when 'AWS'
           if id !~ /^\d{12}$/
@@ -539,6 +539,8 @@ module ChefMetalFog
         else
           raise "unsupported fog provider #{provider}"
         end
+      elsif provider == 'AWS'
+        id = 'default'
       end
 
       # Set auth info from environment
