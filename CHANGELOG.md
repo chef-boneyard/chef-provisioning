@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.beta (5/23/2014)
+
+- Major refactor for readability
+- Adjust to new chef-metal interface
+
 ## 0.4 (5/1/2014)
 
 - Work with new Cheffish 0.4 inline_resource
