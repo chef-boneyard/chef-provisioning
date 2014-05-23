@@ -1,5 +1,9 @@
 # Chef Metal Changelog
 
+## 0.11.beta (5/23/2014)
+
+- New Driver interface (see docs/ and blogs/ directories for documentation)
+
 ## 0.10.2 (5/2/2014)
 
 - Fix crash with add_provisioner_options when provisioner_options is not yet set
