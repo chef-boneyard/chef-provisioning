@@ -6,10 +6,10 @@ module ChefMetal
     class InstallMsi < PrecreateChefObjects
       @@install_msi_cache = {}
 
-      def initialize(options)
-        @install_msi_url = options[:install_msi_url] || 'http://www.opscode.com/chef/install.msi'
-        @install_msi_path = options[:install_msi_path] || "%TEMP%\\#{File.basename(@install_msi_url)}"
-        @chef_client_timeout = options.has_key?(:chef_client_timeout) ? options[:chef_client_timeout] : 120*60 # Default: 2 hours
+      def initialize(convergence_options, config)
+        @install_msi_url = convergence_options[:install_msi_url] || 'http://www.opscode.com/chef/install.msi'
+        @install_msi_path = convergence_options[:install_msi_path] || "%TEMP%\\#{File.basename(@install_msi_url)}"
+        @chef_client_timeout = convergence_options.has_key?(:chef_client_timeout) ? convergence_options[:chef_client_timeout] : 120*60 # Default: 2 hours
       end
 
       attr_reader :install_msi_url
@@ -17,8 +17,8 @@ module ChefMetal
 
       def setup_convergence(action_handler, machine)
         system_drive = machine.execute_always('$env:SystemDrive').stdout.strip
-        options[:client_rb_path] ||= "#{system_drive}\\chef\\client.rb"
-        options[:client_pem_path] ||= "#{system_drive}\\chef\\client.pem"
+        convergence_options[:client_rb_path] ||= "#{system_drive}\\chef\\client.rb"
+        convergence_options[:client_pem_path] ||= "#{system_drive}\\chef\\client.pem"
 
         super
 

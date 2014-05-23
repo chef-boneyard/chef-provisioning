@@ -1,10 +1,14 @@
 module ChefMetal
   class ConvergenceStrategy
-    def initialize(options)
-      @options = options
+    # convergence_options - a freeform hash of options to the converger.
+    # config - a Chef::Config-like object with global config like :log_level
+    def initialize(convergence_options, config)
+      @convergence_options = convergence_options || {}
+      @config = config
     end
 
-    attr_reader :options
+    attr_reader :convergence_options
+    attr_reader :config
 
     # Get the machine ready to converge, but do not converge.
     def setup_convergence(action_handler, machine)

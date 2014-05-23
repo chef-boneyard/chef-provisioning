@@ -7,7 +7,7 @@ require 'thread'
 module ChefMetal
   class ConvergenceStrategy
     class InstallCached < PrecreateChefObjects
-      # options is a hash of setup options, including:
+      # convergence_options is a hash of setup convergence_options, including:
       # - :chef_server
       # - :allow_overwrite_keys
       # - :source_key, :source_key_path, :source_key_pass_phrase
@@ -16,19 +16,18 @@ module ChefMetal
       # - :public_key_path, :public_key_format
       # - :admin, :validator
       # - :chef_client_timeout
-      # - :log_level
       # - :client_rb_path, :client_pem_path
       # - :chef_version, :prerelease, :package_cache_path
-      def initialize(options)
+      def initialize(convergence_options, config)
         super
-        @options[:client_rb_path] ||= '/etc/chef/client.rb'
-        @options[:client_pem_path] ||= '/etc/chef/client.pem'
-        @chef_version ||= options[:chef_version]
-        @prerelease ||= options[:prerelease]
-        @package_cache_path ||= options[:package_cache_path] || "#{ENV['HOME']}/.chef/package_cache"
+        @convergence_options[:client_rb_path] ||= '/etc/chef/client.rb'
+        @convergence_options[:client_pem_path] ||= '/etc/chef/client.pem'
+        @chef_version ||= convergence_options[:chef_version]
+        @prerelease ||= convergence_options[:prerelease]
+        @package_cache_path ||= convergence_options[:package_cache_path] || "#{ENV['HOME']}/.chef/package_cache"
         @package_cache = {}
         @tmp_dir = '/tmp'
-        @chef_client_timeout = options.has_key?(:chef_client_timeout) ? options[:chef_client_timeout] : 120*60 # Default: 2 hours
+        @chef_client_timeout = convergence_options.has_key?(:chef_client_timeout) ? convergence_options[:chef_client_timeout] : 120*60 # Default: 2 hours
         FileUtils.mkdir_p(@package_cache_path)
         @package_cache_lock = Mutex.new
       end
@@ -52,7 +51,7 @@ module ChefMetal
         action_handler.open_stream(machine.node['name']) do |stdout|
           action_handler.open_stream(machine.node['name']) do |stderr|
             command_line = "chef-client"
-            command_line << "-l #{options[:log_level].to_s}" if options[:log_level]
+            command_line << "-l #{config[:log_level].to_s}" if config[:log_level]
             machine.execute(action_handler, "chef-client",
               :stream_stdout => stdout,
               :stream_stderr => stderr,
