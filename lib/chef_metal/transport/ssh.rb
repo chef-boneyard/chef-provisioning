@@ -2,14 +2,14 @@ require 'chef_metal/transport'
 require 'uri'
 require 'socket'
 require 'timeout'
+require 'net/ssh'
+require 'net/scp'
+require 'net/ssh/gateway'
 
 module ChefMetal
   class Transport
     class SSH < ChefMetal::Transport
       def initialize(host, username, ssh_options, options, global_config)
-        require 'net/ssh'
-        require 'net/scp'
-        require 'net/ssh/gateway'
         @host = host
         @username = username
         @ssh_options = ssh_options
@@ -161,6 +161,7 @@ module ChefMetal
           begin
             Net::SSH::Gateway.new(gw_host, gw_user)
           rescue Errno::ETIMEDOUT
+            Chef::Log.debug("Timed out connecting to gateway: #{$!}")
             raise InitialConnectTimeout.new($!)
           end
         end
@@ -176,6 +177,7 @@ module ChefMetal
             else Net::SSH.start(host, username, ssh_start_opts)
             end
           rescue Timeout::Error
+            Chef::Log.debug("Timed out connecting to SSH: #{$!}")
             raise InitialConnectTimeout.new($!)
           end
         end
