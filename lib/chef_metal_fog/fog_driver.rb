@@ -55,7 +55,7 @@ module ChefMetalFog
   # - server_id: the ID of the server so it can be found again
   # - created_at: timestamp server was created
   # - started_at: timestamp server was last started
-  # - is_windows, chef_client_timeout, ssh_username, sudo, use_private_ip_for_ssh: copied from machine_options
+  # - is_windows, ssh_username, sudo, use_private_ip_for_ssh: copied from machine_options
   #
   # ## Machine options
   #
@@ -63,13 +63,15 @@ module ChefMetalFog
   #
   # - bootstrap_options: hash of options to pass to compute.servers.create
   # - is_windows: true if windows.  TODO detect this from ami?
-  # - create_timeout - the time to wait for the instance to boot to ssh (defaults to 600)
-  # - start_timeout - the time to wait for the instance to start (defaults to 600)
-  # - ssh_timeout - the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
-  # - chef_client_timeout - the time to wait for chef-client to finish
-  # - ssh_username - username to use for ssh
-  # - sudo - true to prefix all commands with "sudo"
-  # - use_private_ip_for_ssh - hint to use private ip when available
+  # - create_timeout: the time to wait for the instance to boot to ssh (defaults to 600)
+  # - start_timeout: the time to wait for the instance to start (defaults to 600)
+  # - ssh_timeout: the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
+  # - ssh_username: username to use for ssh
+  # - sudo: true to prefix all commands with "sudo"
+  # - use_private_ip_for_ssh: hint to use private ip when available
+  # - convergence_options: hash of options for the convergence strategy
+  #   - chef_client_timeout: the time to wait for chef-client to finish
+  #   - chef_server - the chef server to point convergence at
   #
   # Example bootstrap_options for ec2:
   #
@@ -84,8 +86,8 @@ module ChefMetalFog
     include Chef::Mixin::ShellOut
 
     DEFAULT_OPTIONS = {
-      :create_timeout => 600,
-      :start_timeout => 600,
+      :create_timeout => 180,
+      :start_timeout => 180,
       :ssh_timeout => 20
     }
 
@@ -158,14 +160,14 @@ module ChefMetalFog
         wait_for_transport(action_handler, machine_spec, machine_options, server)
       rescue Fog::Errors::TimeoutError
         # Only ever reboot once, and only if it's been less than 10 minutes since we stopped waiting
-        if machine.location['started_at'] || remaining_wait_time(machine_spec, machine_options) < -(10*60)
+        if machine_spec.location['started_at'] || remaining_wait_time(machine_spec, machine_options) < -(10*60)
           raise
         else
           # Sometimes (on EC2) the machine comes up but gets stuck or has
           # some other problem.  If this is the case, we restart the server
           # to unstick it.  Reboot covers a multitude of sins.
           Chef::Log.warn "Machine #{machine_spec.name} (#{server.id} on #{driver_url}) was started but SSH did not come up.  Rebooting machine in an attempt to unstick it ..."
-          restart_server(action_handler, machine_spec, machine_options, server)
+          restart_server(action_handler, machine_spec, server)
           wait_until_ready(action_handler, machine_spec, machine_options, server)
           wait_for_transport(action_handler, machine_spec, machine_options, server)
         end
@@ -256,7 +258,7 @@ module ChefMetalFog
           'allocated_at' => Time.now.utc.to_s
         }
         machine_spec.location['key_name'] = bootstrap_options[:key_name] if bootstrap_options[:key_name]
-        %w(is_windows chef_client_timeout ssh_username sudo use_private_ip_for_ssh ssh_gateway).each do |key|
+        %w(is_windows ssh_username sudo use_private_ip_for_ssh ssh_gateway).each do |key|
           machine_spec.location[key] = machine_options[key.to_sym] if machine_options[key.to_sym]
         end
       end
@@ -448,20 +450,15 @@ module ChefMetalFog
     end
 
     def convergence_strategy_for(machine_spec, machine_options)
+      # Defaults
       if !machine_spec.location
-        return ChefMetal::ConvergenceStrategy::NoConverge.new(machine_options[:convergence_options])
+        return ChefMetal::ConvergenceStrategy::NoConverge.new(machine_options[:convergence_options], config)
       end
-
-      options = {}
-      if machine_spec.location['chef_client_timeout']
-        options[:chef_client_timeout] = machine_spec.location['chef_client_timeout']
-      end
-      options[:log_level] = driver_options[:log_level]
 
       if machine_spec.location['is_windows']
-        ChefMetal::ConvergenceStrategy::InstallMsi.new(machine_options[:convergence_options])
+        ChefMetal::ConvergenceStrategy::InstallMsi.new(machine_options[:convergence_options], config)
       else
-        ChefMetal::ConvergenceStrategy::InstallCached.new(machine_options[:convergence_options])
+        ChefMetal::ConvergenceStrategy::InstallCached.new(machine_options[:convergence_options], config)
       end
     end
 
