@@ -25,6 +25,10 @@ module ChefMetal
       raise "converge not overridden on #{self.class}"
     end
 
+    def cleanup_convergence(action_handler)
+      raise "cleanup_convergence not overridden on #{self.class}"
+    end
+
     def execute(action_handler, command, options = {})
       raise "execute not overridden on #{self.class}"
     end

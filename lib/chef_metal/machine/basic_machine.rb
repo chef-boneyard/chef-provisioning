@@ -12,15 +12,16 @@ module ChefMetal
       attr_reader :transport
       attr_reader :convergence_strategy
 
-      # Sets up everything necessary for convergence to happen on the machine.
-      # The machine_spec MUST be saved as part of this procedure.  Other than that,
-      # nothing is guaranteed except that converge() will work when this is done.
       def setup_convergence(action_handler)
         convergence_strategy.setup_convergence(action_handler, self)
       end
 
       def converge(action_handler)
         convergence_strategy.converge(action_handler, self)
+      end
+
+      def cleanup_convergence(action_handler)
+        convergence_strategy.cleanup_convergence(action_handler, machine_spec)
       end
 
       def execute(action_handler, command, options = {})
