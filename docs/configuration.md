@@ -25,8 +25,8 @@ chef-metal drivers are generally named chef-metal-<drivername>.  To install, jus
 To specify *where* the machine should be (AWS, Vagrant, etc.), you need a *driver*. There are several drivers out there, including:
 
 - Fog (which connects with AWS EC2, OpenStack, DigitalOcean and SoftLayer)
-- IBM VSphere
-- Vagrant (VirtualBox and VMWare Fusion)
+- VMware VSphere
+- Vagrant (VirtualBox and VMware Fusion)
 - LXC
 - Docker
 - Raw SSH (with a list of already-provisioned servers)
