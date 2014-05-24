@@ -229,7 +229,7 @@ module ChefMetal
       end.to_a
     end
 
-    # Acquire machines in batch, in parallel if possible.
+    # Ready machines in batch, in parallel if possible.
     def ready_machines(action_handler, specs_and_options, parallelizer)
       parallelizer.parallelize(specs_and_options) do |machine_spec, machine_options|
         machine = ready_machine(add_prefix(machine_spec, action_handler), machine_spec, machine_options)
