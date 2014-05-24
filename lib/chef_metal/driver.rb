@@ -259,5 +259,9 @@ module ChefMetal
     def add_prefix(machine_spec, action_handler)
       AddPrefixActionHandler.new(action_handler, "[#{machine_spec.name}] ")
     end
+
+    def get_private_key(name)
+      Cheffish.get_private_key(name, config)
+    end
   end
 end
