@@ -17,9 +17,9 @@ Gem::Specification.new do |s|
   s.add_dependency 'net-scp', '~> 1.0'
   s.add_dependency 'net-ssh-gateway', '~> 1.2.0'
   s.add_dependency 'inifile', '~> 2.0'
-  s.add_dependency 'cheffish', '~> 0.4'
-  s.add_dependency 'chef-metal-fog', '~> 0.4'
-  s.add_dependency 'chef-metal-vagrant', '~> 0.3'
+  s.add_dependency 'cheffish', '0.5.beta'
+  s.add_dependency 'chef-metal-fog', '0.5.beta'
+  s.add_dependency 'chef-metal-vagrant', '0.4.beta'
 #  s.add_dependency 'ruby-lxc'
 
   s.add_development_dependency 'rspec'
