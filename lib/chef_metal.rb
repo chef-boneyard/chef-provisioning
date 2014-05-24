@@ -30,14 +30,18 @@ module ChefMetal
     @@registered_driver_classes[name] = driver
   end
 
-  def self.config_for_url(driver_url, config = Chef::Config)
+  def self.config_for_url(driver_url, config = Cheffish.profiled_config)
     if config && config[:drivers] && config[:drivers][driver_url]
       config = Cheffish::MergedConfig.new(config[:drivers][driver_url], config)
     end
     config || {}
   end
 
-  def self.driver_for_url(driver_url, config = Chef::Config)
+  def self.default_driver(config = Cheffish.profiled_config)
+    driver_for_url(config[:driver], config)
+  end
+
+  def self.driver_for_url(driver_url, config = Cheffish.profiled_config)
     cluster_type = driver_url.split(':', 2)[0]
     require "chef_metal/driver_init/#{cluster_type}"
     driver_class = @@registered_driver_classes[cluster_type]
@@ -45,7 +49,7 @@ module ChefMetal
     driver_class.from_url(driver_url, config || {})
   end
 
-  def self.connect_to_machine(machine_spec, config = Chef::Config)
+  def self.connect_to_machine(machine_spec, config = Cheffish.profiled_config)
     driver = driver_for_url(machine_spec.driver_url, config)
     if driver
       machine_options = { :convergence_options => { :chef_server => Cheffish.default_chef_server(config) } }
