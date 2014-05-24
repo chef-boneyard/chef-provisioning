@@ -112,31 +112,7 @@ You'll notice the service is passed a private key for bootstrap.  This is the bo
 
 The issue one has here is, the user needs to be able to pass you these keys.  chef-metal introduces configuration variables `:private_keys` and `:private_key_paths` to allow the user to tell us about his keys.  We then refer to the keys by name (rather than path) in drivers, and look them up from configuration.
 
-Here is what the get_private_key method looks like:
-
-```ruby
-  def get_private_key(name)
-    if config[:private_keys] && config[:private_keys][name]
-      if config[:private_keys][name].is_a?(String)
-        IO.read(config[:private_keys][name])
-      else
-        config[:private_keys][name].to_pem
-      end
-    elsif config[:private_key_paths]
-      config[:private_key_paths].each do |private_key_path|
-        Dir.entries(private_key_path).each do |key|
-          ext = File.extname(key)
-          if ext == '' || ext == '.pem'
-            key_name = key[0..-(ext.length+1)]
-            if key_name == name
-              return IO.read("#{private_key_path}/#{key}")
-            end
-          end
-        end
-      end
-    end
-  end
-```
+You can call the `get_private_key(name)` method from the Driver base class to get a private key by name.
 
 ## ready_machine
 

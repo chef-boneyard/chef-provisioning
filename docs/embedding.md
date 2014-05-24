@@ -13,7 +13,8 @@ The fundamental bit of Metal is the configuration, passed in to.  This is a hash
   :machine_options => { <options here> }
   :chef_server_url => 'https://api.opscode.com/organizations/myorg'
   :node_name => 'jkeiser', # Client or username to connect to Chef server
-  :client_key => '/Users/jkeiser/.chef/keys/jkeiser.pem'
+  :client_key => '/Users/jkeiser/.chef/keys/jkeiser.pem',
+  :log_level => :debug
 }
 ```
 
@@ -79,8 +80,6 @@ end
 
 MachineSpec has a save() method that saves the machine location data (like its instance ID or Vagrantfile) to persistent storage for later retrieval. For chef-client, this location is a Chef node. For other applications, you may prefer to store this sort of persistent data elsewhere (test-kitchen has its own server state storage). To do that, you will override `MachineSpec` and implement the `save` method (as well as create a method to instantiate YourMachineSpec by loading it back in).
 
-In many Chef-centric cases,
-
 If you are OK with just storing the nodes in the Chef server, then you can just use the `ChefMachineSpec` to take care of saving and loading:
 
 ```ruby
@@ -115,16 +114,16 @@ end
 To create a machine, you do this:
 
 ```ruby
-machine_options = ChefMetal.config_for_url(driver.driver_url, chef_config)[:machine_options]
-ChefMetal.allocate_machine(action_handler, machine_spec, machine_options)
-ChefMetal.ready_machine(action_handler, machine_spec, machine_options)
+machine_options = driver.config[:machine_options]
+driver.allocate_machine(action_handler, machine_spec, machine_options)
+driver.ready_machine(action_handler, machine_spec, machine_options)
 ```
 
 ### Creating multiple machines in parallel
 
 ```ruby
 driver = ChefMetal.driver_for_url(chef_config[:driver], chef_config)
-machine_options = ChefMetal.config_for_url(driver.driver_url, chef_config)[:machine_options]
+machine_options = driver.config[:machine_options]
 specs_and_options = {}
 machine_specs.each do |machine_spec|
   specs_and_options[machine_spec] = machine_options
