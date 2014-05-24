@@ -6,14 +6,14 @@ When you need to access a new PXE or cloud service, you need to write a new Driv
 
 The Driver interface is a set of 4 objects that allow provisioning programs to communicate with drivers.  There are several key objects in the Driver interface:
 
-- `Driver`: Represents a "machine warehouse"--an AWS account, a set of vagrant machines, a PXE machine registry. You cam ask it for new machines, power machines on and off, and get rid of machines you are no longer using.
-- `Machine`: Represents a ready, connectable machine.  The machine interface lets you run commands, upload and download files, and converge recipes.  This returned by Driver methods that create and connect to machines.
+- `Driver`: Represents a "machine warehouse"--an AWS account, a set of vagrant machines, a PXE machine registry. You can ask it for new machines, power machines on and off, and get rid of machines you are no longer using.
+- `Machine`: Represents a ready, connectable machine.  The machine interface lets you run commands, upload and download files, and converge recipes.  This is returned by Driver methods that create and connect to machines.
 - `MachineSpec`: Represents the saved information about a Machine.  Drivers use this to save information about how to locate and manipulate individual machines (like the AWS instance ID, PXE MAC address, or Vagrantfile location).
 - `ActionHandler`: this is how Metal communicates back to the host provisioning program (like the machine resource, test-kitchen, or knife/metal command line). It primarily uses it to report actions it performs and progress, so that the host can print pretty output informing the user.
 
 ## Picking a URL scheme
 
-Every driver instance must be identified uniquely by a URL.  This generally describes *where* the list of servers lives.  For cloud providers this will generally be an account or a server. For VMs an containers it will either be a directory or global to the machine.
+Every driver instance must be identified uniquely by a URL.  This generally describes *where* the list of servers lives.  For cloud providers this will generally be an account or a server. For VMs and containers it will either be a directory or global to the machine.
 
 Example URLs from real drivers:
 
@@ -27,7 +27,7 @@ vagrant                     # implies <chef config dir>/vms
 ```
 
 The bit before the colon--the scheme--is the identifier for your driver gem.
-Some of these URLs are canonical and some are not.  When you create a driver with one of these URLs, the driver_url on the resulting driver *must* be the canonical URL.  For example, ChefMetal.driver_for_url("fog:AWS").driver_url would equal "fog:AWS:12312412312" (or whatever your account is).  This is important because the cannical URL will be stored in the URL and may be used by different people on different workstations with different profile names.
+Some of these URLs are canonical and some are not.  When you create a driver with one of these URLs, the driver_url on the resulting driver *must* be the canonical URL.  For example, ChefMetal.driver_for_url("fog:AWS").driver_url would equal "fog:AWS:12312412312" (or whatever your account is).  This is important because the canonical URL will be stored in the URL and may be used by different people on different workstations with different profile names.
 
 ## from_url
 
