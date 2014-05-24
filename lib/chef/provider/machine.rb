@@ -24,12 +24,14 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   action :ready do
     action_allocate
     machine = current_driver.ready_machine(action_handler, machine_spec, machine_options)
+    machine_spec.save(action_handler)
   end
 
   action :setup do
     machine = action_ready
     begin
       machine.setup_convergence(action_handler)
+      machine_spec.save(action_handler)
       upload_files(machine)
     ensure
       machine.disconnect
@@ -40,6 +42,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
     machine = action_ready
     begin
       machine.setup_convergence(action_handler)
+      machine_spec.save(action_handler)
       upload_files(machine)
       # If we were asked to converge, or anything changed, or if a converge has never succeeded, converge.
       if new_resource.converge || (new_resource.converge.nil? && resource_updated?) ||
