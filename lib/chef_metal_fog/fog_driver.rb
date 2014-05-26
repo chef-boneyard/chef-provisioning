@@ -539,6 +539,15 @@ module ChefMetalFog
           new_compute_options[:digitalocean_client_id] = id
         when 'OpenStack'
           new_compute_options[:openstack_auth_url] = id
+        when 'CloudStack'
+          if id =~ /(https?):\/\/(.*?):(\d+)(.*)/ then
+            new_compute_options[:cloudstack_scheme] = $1
+            new_compute_options[:cloudstack_host] = $2
+            new_compute_options[:cloudstack_port] = $3
+            new_compute_options[:cloudstack_path] = $4
+          else
+            raise "invalid url #{id}"
+          end
         else
           raise "unsupported fog provider #{provider}"
         end
@@ -562,6 +571,9 @@ module ChefMetalFog
         new_compute_options[:openstack_api_key] ||= credential[:openstack_api_key]
         new_compute_options[:openstack_auth_url] ||= credential[:openstack_auth_url]
         new_compute_options[:openstack_tenant] ||= credential[:openstack_tenant]
+      when 'CloudStack'
+        new_compute_options[:cloudstack_api_key] ||= driver_options[:cloudstack_api_key]
+        new_compute_options[:cloudstack_secret_access_key] ||= driver_options[:cloudstack_secret_access_key]
       end
 
       config = Cheffish::MergedConfig.new(new_config, config)
@@ -575,6 +587,13 @@ module ChefMetalFog
           compute_options[:digitalocean_client_id]
         when 'OpenStack'
           compute_options[:openstack_auth_url]
+        when 'CloudStack'
+          host   = compute_options[:cloudstack_host]
+          path   = compute_options[:cloudstack_path]    || '/client/api'
+          port   = compute_options[:cloudstack_port]    || 443
+          scheme = compute_options[:cloudstack_scheme]  || 'https'
+
+          "#{@scheme}://#{@host}:#{@port}#{@path}"
         end
 
       [ config, id ]
