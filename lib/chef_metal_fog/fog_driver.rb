@@ -158,7 +158,7 @@ module ChefMetalFog
         wait_for_transport(action_handler, machine_spec, machine_options, server)
       rescue Fog::Errors::TimeoutError
         # Only ever reboot once, and only if it's been less than 10 minutes since we stopped waiting
-        if machine.location['started_at'] || remaining_wait_time(machine_spec, machine_options) < -(10*60)
+        if machine_spec.location['started_at'] || remaining_wait_time(machine_spec, machine_options) < -(10*60)
           raise
         else
           # Sometimes (on EC2) the machine comes up but gets stuck or has
