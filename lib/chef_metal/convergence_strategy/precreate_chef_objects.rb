@@ -156,7 +156,7 @@ module ChefMetal
       # Grant the client permissions to the node
       # This procedure assumes that the client name and node name are the same
       def grant_client_node_permissions(chef_server, node_name, perms)
-        rest = Chef::REST.new(chef_server[:chef_server_url])
+        rest = Cheffish::CheffishServerAPI.new(chef_server)
         node_perms = rest.get("/nodes/#{node_name}/_acl")
         perms.each do |p|
           node_perms[p]['actors'] << node_name unless node_perms[p]['actors'].include?(node_name)
