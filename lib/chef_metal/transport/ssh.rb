@@ -159,7 +159,7 @@ module ChefMetal
 
           Chef::Log.debug("Opening SSH gateway to #{gw_user}@#{gw_host} with options #{ssh_start_opts.inspect}")
           begin
-            Net::SSH::Gateway.new(gw_host, gw_user)
+            Net::SSH::Gateway.new(gw_host, gw_user, ssh_start_opts)
           rescue Errno::ETIMEDOUT
             Chef::Log.debug("Timed out connecting to gateway: #{$!}")
             raise InitialConnectTimeout.new($!)
