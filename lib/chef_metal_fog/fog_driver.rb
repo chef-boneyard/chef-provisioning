@@ -540,11 +540,11 @@ module ChefMetalFog
         when 'OpenStack'
           new_compute_options[:openstack_auth_url] = id
         when 'CloudStack'
-          if id =~ /(https?):\/\/(.*?):(\d+)(.*)/ then
-            new_compute_options[:cloudstack_scheme] = $1
-            new_compute_options[:cloudstack_host] = $2
-            new_compute_options[:cloudstack_port] = $3
-            new_compute_options[:cloudstack_path] = $4
+          if id =~ /(https?):\/\/(.*?):(\d+)(.*)/
+            new_compute_options[:cloudstack_scheme] = driver_options[:cloudstack_scheme] = $1
+            new_compute_options[:cloudstack_host]   = driver_options[:cloudstack_host] = $2
+            new_compute_options[:cloudstack_port]   = driver_options[:cloudstack_port] = $3
+            new_compute_options[:cloudstack_path]   = driver_options[:cloudstack_path] = $4
           else
             raise "invalid url #{id}"
           end
@@ -588,12 +588,12 @@ module ChefMetalFog
         when 'OpenStack'
           compute_options[:openstack_auth_url]
         when 'CloudStack'
-          host   = compute_options[:cloudstack_host]
-          path   = compute_options[:cloudstack_path]    || '/client/api'
-          port   = compute_options[:cloudstack_port]    || 443
-          scheme = compute_options[:cloudstack_scheme]  || 'https'
+          host   = driver_options[:cloudstack_host]
+          path   = driver_options[:cloudstack_path]    || '/client/api'
+          port   = driver_options[:cloudstack_port]    || 443
+          scheme = driver_options[:cloudstack_scheme]  || 'https'
 
-          "#{@scheme}://#{@host}:#{@port}#{@path}"
+          "#{scheme}://#{host}:#{port}#{path}"
         end
 
       [ config, id ]
