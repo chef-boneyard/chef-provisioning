@@ -51,11 +51,11 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         ensure_keys(action)
       end
 
-      new_fingerprints = case new_driver.compute_options[:provider]
+      case new_driver.compute_options[:provider]
       when 'DigitalOcean'
-        [Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)]
+        new_fingerprints = [Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)]
       when 'OpenStack'
-        [Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)]
+        new_fingerprints = [Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)]
       else
         # “The nice thing about standards is that you have so many to
         # choose from.” - Andrew S. Tanenbaum
@@ -68,12 +68,14 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         #
         # So compute both possible AWS fingerprints and check if either of
         # them matches.
-        [Cheffish::KeyFormatter.encode(desired_key, :format => :fingerprint),
-         lambda { Cheffish::KeyFormatter.encode(desired_private_key,
-                                       :format => :pkcs8sha1fingerprint) }]
+        new_fingerprints = [Cheffish::KeyFormatter.encode(desired_key, :format => :fingerprint)]
+        if RUBY_VERSION.to_f < 2.0
+          new_fingerprints << lambda { Cheffish::KeyFormatter.encode(desired_private_key,
+                                         :format => :pkcs8sha1fingerprint) }
+        end
       end
 
-      if !new_fingerprints.any? { |f| (f.is_a?(Proc) ? f.call : f) == @current_fingerprint }
+      if !new_fingerprints.any? { |f| f == @current_fingerprint }
         if new_resource.allow_overwrite
           converge_by "update #{key_description} to match local key at #{new_resource.private_key_path}" do
             case new_driver.compute_options[:provider]
