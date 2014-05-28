@@ -19,9 +19,11 @@ module ChefMetal
       # - :client_rb_path, :client_pem_path
       # - :chef_version, :prerelease, :package_cache_path
       def initialize(convergence_options, config)
-        super
-        @convergence_options[:client_rb_path] ||= '/etc/chef/client.rb'
-        @convergence_options[:client_pem_path] ||= '/etc/chef/client.pem'
+        convergence_options = Cheffish::MergedConfig.new(convergence_options, {
+          :client_rb_path => '/etc/chef/client.rb',
+          :client_pem_path => '/etc/chef/client.pem'
+        })
+        super(convergence_options, config)
         @chef_version ||= convergence_options[:chef_version]
         @prerelease ||= convergence_options[:prerelease]
         @package_cache_path ||= convergence_options[:package_cache_path] || "#{ENV['HOME']}/.chef/package_cache"
@@ -31,6 +33,9 @@ module ChefMetal
         FileUtils.mkdir_p(@package_cache_path)
         @package_cache_lock = Mutex.new
       end
+
+      attr_reader :client_rb_path
+      attr_reader :client_pem_path
 
       def setup_convergence(action_handler, machine)
         super
@@ -51,8 +56,8 @@ module ChefMetal
         action_handler.open_stream(machine.node['name']) do |stdout|
           action_handler.open_stream(machine.node['name']) do |stderr|
             command_line = "chef-client"
-            command_line << "-l #{config[:log_level].to_s}" if config[:log_level]
-            machine.execute(action_handler, "chef-client",
+            command_line << " -l #{config[:log_level].to_s}" if config[:log_level]
+            machine.execute(action_handler, command_line,
               :stream_stdout => stdout,
               :stream_stderr => stderr,
               :timeout => @chef_client_timeout)

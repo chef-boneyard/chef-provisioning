@@ -7,11 +7,13 @@ module ChefMetal
       @@install_sh_cache = {}
 
       def initialize(convergence_options, config)
-        super
+        convergence_options = Cheffish::MergedConfig.new(convergence_options, {
+          :client_rb_path => '/etc/chef/client.rb',
+          :client_pem_path => '/etc/chef/client.pem'
+        })
+        super(convergence_options, config)
         @install_sh_url = convergence_options[:install_sh_url] || 'http://www.opscode.com/chef/install.sh'
         @install_sh_path = convergence_options[:install_sh_path] || '/tmp/chef-install.sh'
-        @convergence_options[:client_rb_path] ||= '/etc/chef/client.rb'
-        @convergence_options[:client_pem_path] ||= '/etc/chef/client.pem'
         @chef_client_timeout = convergence_options.has_key?(:chef_client_timeout) ? convergence_options[:chef_client_timeout] : 120*60 # Default: 2 hours
       end
 
@@ -36,7 +38,7 @@ module ChefMetal
         action_handler.open_stream(machine.node['name']) do |stdout|
           action_handler.open_stream(machine.node['name']) do |stderr|
             command_line = "chef-client"
-            command_line << "-l #{config[:log_level].to_s}" if config[:log_level]
+            command_line << " -l #{config[:log_level].to_s}" if config[:log_level]
             machine.execute(action_handler, command_line,
               :stream_stdout => stdout,
               :stream_stderr => stderr,
