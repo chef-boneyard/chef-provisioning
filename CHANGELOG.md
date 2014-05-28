@@ -1,5 +1,9 @@
 # Chef Metal Changelog
 
+## 0.11.beta.2 (5/27/2014)
+
+- Bring in cheffish-0.5.beta.2
+
 ## 0.11.beta (5/23/2014)
 
 - New Driver interface (see docs/ and blogs/ directories for documentation)
