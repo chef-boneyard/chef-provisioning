@@ -491,9 +491,9 @@ module ChefMetalFog
       ssh_options = ssh_options_for(machine_spec, server)
       # If we're on AWS, the default is to use ubuntu, not root
       if provider == 'AWS'
-        username = machine_spec.location[:ssh_username] || 'ubuntu'
+        username = machine_spec.location['ssh_username'] || 'ubuntu'
       else
-        username = machine_spec.location[:ssh_username] || 'root'
+        username = machine_spec.location['ssh_username'] || 'root'
       end
       options = {}
       if machine_spec.location[:sudo] || (!machine_spec.location.has_key?(:sudo) && username != 'root')
@@ -501,7 +501,7 @@ module ChefMetalFog
       end
 
       remote_host = nil
-      if machine_spec.location[:use_private_ip_for_ssh]
+      if machine_spec.location['use_private_ip_for_ssh']
         remote_host = server.private_ip_address
       elsif !server.public_ip_address
         Chef::Log.warn("Server has no public ip address.  Using private ip '#{server.private_ip_address}'.  Set driver option 'use_private_ip_for_ssh' => true if this will always be the case ...")
