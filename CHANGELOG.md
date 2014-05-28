@@ -1,5 +1,10 @@
 # Chef Metal Changelog
 
+## 0.11.beta.5 (5/28/2014)
+
+- fix issue setting Hosted Chef ACLs on nodes
+- fix single-machine converge crash
+
 ## 0.11.beta.2 (5/27/2014)
 
 - Bring in cheffish-0.5.beta.2
