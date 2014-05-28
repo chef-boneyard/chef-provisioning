@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.beta.2 (5/27/2014)
+
+- Fix PKCS8 crash on Ruby 2.0+
+- Fix ability to update fog_key_pair
+
 ## 0.5.beta (5/23/2014)
 
 - Major refactor for readability
