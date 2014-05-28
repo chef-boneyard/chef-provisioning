@@ -366,7 +366,10 @@ module ChefMetalFog
     end
 
     def symbolize_keys(options)
-      options.inject({}) { |result,(key,value)| result[key.to_sym] = value; result }
+      options.inject({}) do |result,(key,value)|
+        result[key.to_sym] = value
+        result
+      end
     end
 
     def server_for(machine_spec)
@@ -540,7 +543,7 @@ module ChefMetalFog
           raise "unsupported fog provider #{provider}"
         end
       elsif provider == 'AWS'
-        id = 'default'
+        driver_options[:aws_profile] = 'default'
       end
 
       # Set auth info from environment
@@ -577,46 +580,6 @@ module ChefMetalFog
         end
 
       [ config, id ]
-    end
-
-    def get_default_private_key
-      if config[:private_keys] && config[:private_keys].size > 0
-        get_private_key(config[:private_keys].keys.first)
-      else
-        config[:private_key_paths].each do |private_key_path|
-          Dir.entries(private_key_path).each do |key|
-            ext = File.extname(key)
-            if ext == '' || ext == '.pem'
-              key_name = key[0..-(ext.length+1)]
-              if key_name == name
-                return IO.read("#{private_key_path}/#{key}")
-              end
-            end
-          end
-        end
-      end
-    end
-
-    def get_private_key(name)
-      if config[:private_keys] && config[:private_keys][name]
-        if config[:private_keys][name].is_a?(String)
-          IO.read(config[:private_keys][name])
-        else
-          config[:private_keys][name].to_pem
-        end
-      elsif config[:private_key_paths]
-        config[:private_key_paths].each do |private_key_path|
-          Dir.entries(private_key_path).each do |key|
-            ext = File.extname(key)
-            if ext == '' || ext == '.pem'
-              key_name = key[0..-(ext.length+1)]
-              if key_name == name
-                return IO.read("#{private_key_path}/#{key}")
-              end
-            end
-          end
-        end
-      end
     end
   end
 end
