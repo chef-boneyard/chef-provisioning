@@ -25,6 +25,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
     action_allocate
     machine = current_driver.ready_machine(action_handler, machine_spec, machine_options)
     machine_spec.save(action_handler)
+    machine
   end
 
   action :setup do
