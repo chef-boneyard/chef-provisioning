@@ -29,6 +29,7 @@ module ChefMetalFog
   #   fog:AWS:<account_id>
   #   fog:OpenStack:https://identityHost:portNumber/v2.0
   #   fog:DigitalOcean:<client id>
+  #   fog:Rackspace:https://identity.api.rackspacecloud.com/v2.0
   #
   # Identifier is generally something uniquely identifying the account.  If multiple
   # users can access the account, the identifier should be the same for all of
@@ -248,6 +249,8 @@ module ChefMetalFog
             driver_options[:aws_account_info][:aws_username]
           when 'OpenStack'
             compute_options[:openstack_username]
+          when 'Rackspace'
+            compute_options[:rackspace_username]
         end
         server = compute.servers.create(bootstrap_options)
         machine_spec.location = {
@@ -539,6 +542,8 @@ module ChefMetalFog
           new_compute_options[:digitalocean_client_id] = id
         when 'OpenStack'
           new_compute_options[:openstack_auth_url] = id
+        when 'Rackspace'
+          new_compute_options[:rackspace_auth_url] = id
         else
           raise "unsupported fog provider #{provider}"
         end
@@ -564,6 +569,15 @@ module ChefMetalFog
         new_compute_options[:openstack_api_key] ||= credential[:openstack_api_key]
         new_compute_options[:openstack_auth_url] ||= credential[:openstack_auth_url]
         new_compute_options[:openstack_tenant] ||= credential[:openstack_tenant]
+      when 'Rackspace'
+        credential = Fog.credential
+
+        new_compute_options[:rackspace_username] ||= credential[:rackspace_username]
+        new_compute_options[:rackspace_api_key] ||= credential[:rackspace_api_key]
+        new_compute_options[:rackspace_auth_url] ||= credential[:rackspace_auth_url]
+        new_compute_options[:rackspace_region] ||= credential[:rackspace_region]
+        new_compute_options[:rackspace_endpoint] ||= credential[:rackspace_endpoint]
+        new_compute_options[:rackspace_compute_url] ||= credential[:rackspace_compute_url]
       end
 
       config = Cheffish::MergedConfig.new(new_config, config)
@@ -577,6 +591,8 @@ module ChefMetalFog
           compute_options[:digitalocean_client_id]
         when 'OpenStack'
           compute_options[:openstack_auth_url]
+        when 'Rackspace'
+          compute_options[:rackspace_auth_url]
         end
 
       [ config, id ]
