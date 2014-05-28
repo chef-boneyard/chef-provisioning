@@ -149,18 +149,22 @@ module ChefMetal
 
         # If using enterprise/hosted chef, fix acls
         if chef_server[:chef_server_url] =~ /\/+organizations\/.+/
-          grant_client_node_permissions(chef_server, machine.name, ["read", "update"])
+          grant_client_node_permissions(action_handler, chef_server, machine.name, ["read", "update"])
         end
       end
 
       # Grant the client permissions to the node
       # This procedure assumes that the client name and node name are the same
-      def grant_client_node_permissions(chef_server, node_name, perms)
-        rest = Chef::REST.new(chef_server[:chef_server_url])
-        node_perms = rest.get("/nodes/#{node_name}/_acl")
+      def grant_client_node_permissions(action_handler, chef_server, node_name, perms)
+        api = Cheffish.chef_server_api(chef_server)
+        node_perms = api.get("/nodes/#{node_name}/_acl")
         perms.each do |p|
-          node_perms[p]['actors'] << node_name unless node_perms[p]['actors'].include?(node_name)
-          rest.put("/nodes/#{node_name}/_acl/#{p}", p => node_perms[p])
+          if !node_perms[p]['actors'].include?(node_name)
+            action_handler.perform_action "Add #{node_name} to client #{p} ACLs" do
+              node_perms[p]['actors'] << node_name
+              api.put("/nodes/#{node_name}/_acl/#{p}", p => node_perms[p])
+            end
+          end
         end
       end
 
