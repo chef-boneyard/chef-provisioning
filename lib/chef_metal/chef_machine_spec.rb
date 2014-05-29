@@ -14,11 +14,25 @@ module ChefMetal
     end
 
     #
-    # Get a MachineSpec from the chef server.
+    # Get a MachineSpec from the chef server.  If the node does not exist on the
+    # server, it returns nil.
     #
     def self.get(name, chef_server = Cheffish.default_chef_server)
       chef_api = Cheffish.chef_server_api(chef_server)
-      ChefMachineSpec.new(chef_api.get("/nodes/#{name}"), chef_server)
+      begin
+        ChefMachineSpec.new(chef_api.get("/nodes/#{name}"), chef_server)
+      rescue Net::HTTPServerException => e
+        if e.response.code == '404'
+          nil
+        else
+          raise
+        end
+      end
+    end
+
+    # Creates a new empty MachineSpec with the given name.
+    def self.empty(name, chef_server = Cheffish.default_chef_server)
+      ChefMachineSpec.new({ 'name' => name, 'normal' => {} }, chef_server)
     end
 
     #

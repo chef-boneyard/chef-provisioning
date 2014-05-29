@@ -3,6 +3,8 @@ require 'chef/provider/lwrp_base'
 require 'chef/provider/machine'
 require 'chef_metal/chef_provider_action_handler'
 require 'chef_metal/add_prefix_action_handler'
+require 'chef_metal/machine_spec'
+require 'chef_metal/chef_machine_spec'
 
 class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
 
@@ -34,19 +36,19 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
 
   action :setup do
     with_ready_machines do |m|
-      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{m[:resource].name}] ")
+      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
       machine[:machine].setup_convergence(prefixed_handler)
       m[:spec].save(action_handler)
-      Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:resource].files)
+      Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:files])
     end
   end
 
   action :converge do
     with_ready_machines do |m|
-      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{m[:resource].name}] ")
+      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
       m[:machine].setup_convergence(prefixed_handler)
       m[:spec].save(action_handler)
-      Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:resource].files)
+      Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:files])
       m[:machine].converge(prefixed_handler)
       m[:spec].save(action_handler)
     end
@@ -100,8 +102,8 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
   def by_new_driver
     result = {}
     @machines.each do |m|
-      if m[:resource].driver
-        driver = run_context.chef_metal.driver_for(m[:resource].driver)
+      if m[:desired_driver]
+        driver = run_context.chef_metal.driver_for(m[:desired_driver])
         result[driver] ||= {}
         result[driver][m[:spec]] = m[:options]
       end
@@ -123,15 +125,50 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
 
   def load_current_resource
     # Load nodes in parallel
-    @machines = parallel_do(new_resource.machines) do |machine_resource|
-      provider = Chef::Provider::Machine.new(machine_resource, machine_resource.run_context)
-      provider.load_current_resource
-      {
-        :resource => machine_resource,
-        :spec => provider.machine_spec,
-        :options => provider.machine_options
-      }
-    end.to_a
+    @machines = parallel_do(new_resource.machines) do |machine|
+      if machine.is_a?(Chef::Resource::Machine)
+        machine_resource = machine
+        provider = Chef::Provider::Machine.new(machine_resource, machine_resource.run_context)
+        provider.load_current_resource
+        {
+          :spec => provider.machine_spec,
+          :desired_driver => machine_resource.driver,
+          :files => machine_resource.files,
+          :options => provider.machine_options
+        }
+      elsif machine.is_a?(ChefMetal::MachineSpec)
+        machine_spec = machine
+        {
+          :spec => machine_spec,
+          :desired_driver => new_resource.driver,
+          :files => new_resource.files,
+          :options => new_machine_options
+        }
+      else
+        name = machine
+        machine_spec = ChefMetal::ChefMachineSpec.get(name, new_resource.chef_server) ||
+                       ChefMetal::ChefMachineSpec.empty(name, new_resource.chef_server)
+        {
+          :spec => machine_spec,
+          :desired_driver => new_resource.driver,
+          :files => new_resource.files,
+          :options => new_machine_options
+        }
+      end
+    end.select { |m| !m.nil? }.to_a
+  end
+
+  def new_machine_options
+    @new_machine_options ||= begin
+      result = { :convergence_options => { :chef_server => new_resource.chef_server } }
+      result = Chef::Mixin::DeepMerge.hash_only_merge(result, new_config[:machine_options]) if new_config[:machine_options]
+      result = Chef::Mixin::DeepMerge.hash_only_merge(result, new_resource.machine_options)
+      result
+    end
+  end
+
+  def new_config
+    @new_config ||= run_context.chef_metal.driver_config_for(new_resource.driver)
   end
 
 end

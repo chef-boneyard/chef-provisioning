@@ -1,6 +1,7 @@
 require 'chef/resource/lwrp_base'
 require 'cheffish'
 require 'chef_metal'
+require 'cheffish/merged_config'
 
 class Chef::Resource::Machine < Chef::Resource::LWRPBase
   self.resource_name = 'machine'
@@ -82,7 +83,7 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
   end
 
   def add_machine_options(options)
-    @machine_options = Chef::Mixin::DeepMerge.hash_only_merge(@machine_options, options)
+    @machine_options = Cheffish::MergedConfig.new(options, @machine_options)
   end
 
   # chef client version and omnibus
