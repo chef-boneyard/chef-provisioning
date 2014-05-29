@@ -1,5 +1,24 @@
 # Chef Metal Changelog
 
+## 0.11.beta.6 (5/28/2014)
+
+- Fix machine_batch defaults to be significantly less stupid
+- Remove with_machine_batch
+- Allow this:
+  ```ruby
+  machine_batch do
+    machine 'a'
+    machine 'b'
+  end
+  ```
+- Allow this:
+  ```ruby
+  machine_batch do
+    machines 'a', 'b', 'c'
+    action :destroy
+  end
+- fix SSH gateway code to honor any options given (@marcusn)
+
 ## 0.11.beta.5 (5/28/2014)
 
 - fix issue setting Hosted Chef ACLs on nodes
