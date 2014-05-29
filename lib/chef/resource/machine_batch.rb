@@ -6,15 +6,16 @@ class Chef::Resource::MachineBatch < Chef::Resource::LWRPBase
   def initialize(*args)
     super
     @machines = []
-    @chef_server = run_context.cheffish.current_chef_server
   end
 
-  # TODO there is a useful action sequence where one does an ohai on all machines,
-  # waits for that to complete, save the nodes, and THEN converges.
-  actions :acquire, :setup, :converge, :stop, :destroy
+  actions :allocate, :ready, :setup, :converge, :converge_only, :destroy, :stop
   default_action :converge
 
   attribute :machines, :kind_of => [ Array ]
   attribute :max_simultaneous, :kind_of => [ Integer ]
-  attribute :chef_server
+  attribute :from_recipe
+
+  def machine(name, &block)
+    machines << from_recipe.build_resource(:machine, name, caller[0], &block)
+  end
 end

@@ -21,20 +21,6 @@ class Chef
         run_context.chef_metal.with_machine_options(machine_options, &block)
       end
 
-      def with_machine_batch(the_machine_batch, options = {}, &block)
-        if the_machine_batch.is_a?(String)
-          the_machine_batch = machine_batch the_machine_batch do
-            if options[:action]
-              action options[:action]
-            end
-            if options[:max_simultaneous]
-              max_simultaneous options[:max_simultaneous]
-            end
-          end
-        end
-        run_context.chef_metal.with_machine_batch(the_machine_batch, &block)
-      end
-
       def current_machine_options
         run_context.chef_metal.current_machine_options
       end
@@ -43,19 +29,76 @@ class Chef
         run_context.chef_metal.add_machine_options(options, &block)
       end
 
+      NOT_PASSED = Object.new
+
+      def auto_batch_machines(value = NOT_PASSED)
+        if value == NOT_PASSED
+          run_context.chef_metal.auto_batch_machines
+        else
+          run_context.chef_metal.auto_batch_machines = value
+        end
+      end
+
+      def machine_batch_default_name
+        if @machine_batch_index
+          @machine_batch_index += 1
+          "default#{@machine_batch_index}"
+        else
+          @machine_batch_index = 0
+          "default"
+        end
+      end
+
+      def machine_batch(name = nil, &block)
+        name ||= machine_batch_default_name
+        recipe = self
+        declare_resource(:machine_batch, name, caller[0]) do
+          from_recipe recipe
+          instance_eval(&block)
+        end
+      end
+
       # When the machine resource is first declared, create a machine_batch (if there
       # isn't one already)
       def machine(name, &block)
-        if !run_context.chef_metal.current_machine_batch
-          run_context.chef_metal.with_machine_batch declare_resource(:machine_batch, 'default', caller[0])
+        resource = build_resource(:machine, name, caller[0], &block)
+
+        # Grab the previous resource so we can decide whether to batch this or make it its own resource.
+        previous_index = run_context.resource_collection.previous_index
+        previous = previous_index >= 0 ? run_context.resource_collection[previous_index] : nil
+        if run_context.chef_metal.auto_batch_machines &&
+           previous &&
+           Array(resource.action).size == 1 &&
+           Array(previous.action) == Array(resource.action)
+
+          # Handle batching similar machines (with similar actions)
+          if previous.is_a?(Chef::Resource::MachineBatch)
+            # If we see a machine declared after a previous machine_batch with the same action, add it to the batch.
+            previous.machines << resource
+          elsif previous.is_a?(Chef::Resource::Machine)
+            # If we see two machines in a row with the same action, batch them.
+            _self = self
+            batch = build_resource(:machine_batch, machine_batch_default_name) do
+              action resource.action
+              machines [ previous, resource ]
+            end
+            batch.from_recipe self
+            run_context.resource_collection[previous_index] = batch
+          else
+            run_context.resource_collection.insert(resource)
+          end
+
+        else
+          run_context.resource_collection.insert(resource)
         end
-        declare_resource(:machine, name, caller[0], &block)
+        resource
       end
     end
   end
 
   class Config
     default(:driver) { ENV['CHEF_DRIVER'] }
+    default(:auto_batch_machines) { true }
   #   config_context :drivers do
   #     # each key is a driver_url, and each value can have driver, driver_options and machine_options
   #     config_strict_mode false
@@ -73,6 +116,12 @@ class Chef
   class RunContext
     def chef_metal
       @chef_metal ||= ChefMetal::ChefRunData.new(config)
+    end
+  end
+
+  class ResourceCollection
+    def previous_index
+      @insert_after_idx ? @insert_after_idx : @resources.length - 1
     end
   end
 end

@@ -11,9 +11,6 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
     @chef_server = run_context.cheffish.current_chef_server
     @driver = run_context.chef_metal.current_driver
     @machine_options = run_context.chef_metal.current_machine_options
-    if run_context.chef_metal.current_machine_batch
-      run_context.chef_metal.current_machine_batch.machines << self
-    end
   end
 
   actions :allocate, :ready, :setup, :converge, :converge_only, :destroy, :stop

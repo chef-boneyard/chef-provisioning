@@ -52,15 +52,22 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
     end
   end
 
-  action :stop do
-    parallel_do(by_current_driver) do |driver, specs_and_options|
-      driver.stop_machines(action_handler, specs_and_options, parallelizer)
+  action :converge_only do
+    parallel_do(@machines) do |m|
+      machine = run_context.chef_metal.connect_to_machine(m[:spec])
+      machine.converge(action_handler)
     end
   end
 
   action :destroy do
     parallel_do(by_current_driver) do |driver, specs_and_options|
       driver.destroy_machines(action_handler, specs_and_options, parallelizer)
+    end
+  end
+
+  action :stop do
+    parallel_do(by_current_driver) do |driver, specs_and_options|
+      driver.stop_machines(action_handler, specs_and_options, parallelizer)
     end
   end
 
