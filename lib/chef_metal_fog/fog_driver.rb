@@ -129,7 +129,10 @@ module ChefMetalFog
     end
 
     def compute_options
-      driver_options[:compute_options] || {}
+      compute_options_merged = driver_options[:compute_options] || {}
+
+      # Convert to hash, since fog library uses delete method which doesn't exist in merged config
+      Hash[compute_options_merged.keys.map { |k| [k,compute_options_merged[k]] }]
     end
 
     def provider
@@ -540,14 +543,11 @@ module ChefMetalFog
         when 'OpenStack'
           new_compute_options[:openstack_auth_url] = id
         when 'CloudStack'
-          if id =~ /(https?):\/\/(.*?):(\d+)(.*)/
-            new_compute_options[:cloudstack_scheme] = driver_options[:cloudstack_scheme] = $1
-            new_compute_options[:cloudstack_host]   = driver_options[:cloudstack_host] = $2
-            new_compute_options[:cloudstack_port]   = driver_options[:cloudstack_port] = $3
-            new_compute_options[:cloudstack_path]   = driver_options[:cloudstack_path] = $4
-          else
-            raise "invalid url #{id}"
-          end
+          cloudstack_uri = URI.parse(id)
+          new_compute_options[:cloudstack_scheme] = cloudstack_uri.scheme
+          new_compute_options[:cloudstack_host]   = cloudstack_uri.host
+          new_compute_options[:cloudstack_port]   = cloudstack_uri.port
+          new_compute_options[:cloudstack_path]   = cloudstack_uri.path
         else
           raise "unsupported fog provider #{provider}"
         end
@@ -573,9 +573,6 @@ module ChefMetalFog
         new_compute_options[:openstack_api_key] ||= credential[:openstack_api_key]
         new_compute_options[:openstack_auth_url] ||= credential[:openstack_auth_url]
         new_compute_options[:openstack_tenant] ||= credential[:openstack_tenant]
-      when 'CloudStack'
-        new_compute_options[:cloudstack_api_key] ||= driver_options[:cloudstack_api_key]
-        new_compute_options[:cloudstack_secret_access_key] ||= driver_options[:cloudstack_secret_access_key]
       end
 
       config = Cheffish::MergedConfig.new(new_config, config)
@@ -586,16 +583,16 @@ module ChefMetalFog
           new_config[:driver_options][:aws_account_info] = account_info
           account_info[:aws_account_id]
         when 'DigitalOcean'
-          compute_options[:digitalocean_client_id]
+          config[:driver_options][:compute_options][:digitalocean_client_id]
         when 'OpenStack'
-          compute_options[:openstack_auth_url]
+          config[:driver_options][:compute_options][:openstack_auth_url]
         when 'CloudStack'
-          host   = driver_options[:cloudstack_host]
-          path   = driver_options[:cloudstack_path]    || '/client/api'
-          port   = driver_options[:cloudstack_port]    || 443
-          scheme = driver_options[:cloudstack_scheme]  || 'https'
+          host   = config[:driver_options][:compute_options][:cloudstack_host]
+          path   = config[:driver_options][:compute_options][:cloudstack_path]    || '/client/api'
+          port   = config[:driver_options][:compute_options][:cloudstack_port]    || 443
+          scheme = config[:driver_options][:compute_options][:cloudstack_scheme]  || 'https'
 
-          "#{scheme}://#{host}:#{port}#{path}"
+          URI.scheme_list[scheme.upcase].build(:host => host, :port => port, :path => path).to_s
         end
 
       [ config, id ]
