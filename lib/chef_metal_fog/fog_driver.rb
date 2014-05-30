@@ -55,7 +55,7 @@ module ChefMetalFog
   # - server_id: the ID of the server so it can be found again
   # - created_at: timestamp server was created
   # - started_at: timestamp server was last started
-  # - is_windows, chef_client_timeout, ssh_username, sudo, use_private_ip_for_ssh: copied from machine_options
+  # - is_windows, ssh_username, sudo, use_private_ip_for_ssh: copied from machine_options
   #
   # ## Machine options
   #
@@ -63,13 +63,15 @@ module ChefMetalFog
   #
   # - bootstrap_options: hash of options to pass to compute.servers.create
   # - is_windows: true if windows.  TODO detect this from ami?
-  # - create_timeout - the time to wait for the instance to boot to ssh (defaults to 600)
-  # - start_timeout - the time to wait for the instance to start (defaults to 600)
-  # - ssh_timeout - the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
-  # - chef_client_timeout - the time to wait for chef-client to finish
-  # - ssh_username - username to use for ssh
-  # - sudo - true to prefix all commands with "sudo"
-  # - use_private_ip_for_ssh - hint to use private ip when available
+  # - create_timeout: the time to wait for the instance to boot to ssh (defaults to 600)
+  # - start_timeout: the time to wait for the instance to start (defaults to 600)
+  # - ssh_timeout: the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
+  # - ssh_username: username to use for ssh
+  # - sudo: true to prefix all commands with "sudo"
+  # - use_private_ip_for_ssh: hint to use private ip when available
+  # - convergence_options: hash of options for the convergence strategy
+  #   - chef_client_timeout: the time to wait for chef-client to finish
+  #   - chef_server - the chef server to point convergence at
   #
   # Example bootstrap_options for ec2:
   #
@@ -84,8 +86,8 @@ module ChefMetalFog
     include Chef::Mixin::ShellOut
 
     DEFAULT_OPTIONS = {
-      :create_timeout => 600,
-      :start_timeout => 600,
+      :create_timeout => 180,
+      :start_timeout => 180,
       :ssh_timeout => 20
     }
 
@@ -158,14 +160,14 @@ module ChefMetalFog
         wait_for_transport(action_handler, machine_spec, machine_options, server)
       rescue Fog::Errors::TimeoutError
         # Only ever reboot once, and only if it's been less than 10 minutes since we stopped waiting
-        if machine.location['started_at'] || remaining_wait_time(machine_spec, machine_options) < -(10*60)
+        if machine_spec.location['started_at'] || remaining_wait_time(machine_spec, machine_options) < -(10*60)
           raise
         else
           # Sometimes (on EC2) the machine comes up but gets stuck or has
           # some other problem.  If this is the case, we restart the server
           # to unstick it.  Reboot covers a multitude of sins.
           Chef::Log.warn "Machine #{machine_spec.name} (#{server.id} on #{driver_url}) was started but SSH did not come up.  Rebooting machine in an attempt to unstick it ..."
-          restart_server(action_handler, machine_spec, machine_options, server)
+          restart_server(action_handler, machine_spec, server)
           wait_until_ready(action_handler, machine_spec, machine_options, server)
           wait_for_transport(action_handler, machine_spec, machine_options, server)
         end
@@ -256,7 +258,7 @@ module ChefMetalFog
           'allocated_at' => Time.now.utc.to_s
         }
         machine_spec.location['key_name'] = bootstrap_options[:key_name] if bootstrap_options[:key_name]
-        %w(is_windows chef_client_timeout ssh_username sudo use_private_ip_for_ssh ssh_gateway).each do |key|
+        %w(is_windows ssh_username sudo use_private_ip_for_ssh ssh_gateway).each do |key|
           machine_spec.location[key] = machine_options[key.to_sym] if machine_options[key.to_sym]
         end
       end
@@ -364,7 +366,10 @@ module ChefMetalFog
     end
 
     def symbolize_keys(options)
-      options.inject({}) { |result,(key,value)| result[key.to_sym] = value; result }
+      options.inject({}) do |result,(key,value)|
+        result[key.to_sym] = value
+        result
+      end
     end
 
     def server_for(machine_spec)
@@ -448,20 +453,15 @@ module ChefMetalFog
     end
 
     def convergence_strategy_for(machine_spec, machine_options)
+      # Defaults
       if !machine_spec.location
-        return ChefMetal::ConvergenceStrategy::NoConverge.new(machine_options[:convergence_options])
+        return ChefMetal::ConvergenceStrategy::NoConverge.new(machine_options[:convergence_options], config)
       end
-
-      options = {}
-      if machine_spec.location['chef_client_timeout']
-        options[:chef_client_timeout] = machine_spec.location['chef_client_timeout']
-      end
-      options[:log_level] = driver_options[:log_level]
 
       if machine_spec.location['is_windows']
-        ChefMetal::ConvergenceStrategy::InstallMsi.new(machine_options[:convergence_options])
+        ChefMetal::ConvergenceStrategy::InstallMsi.new(machine_options[:convergence_options], config)
       else
-        ChefMetal::ConvergenceStrategy::InstallCached.new(machine_options[:convergence_options])
+        ChefMetal::ConvergenceStrategy::InstallCached.new(machine_options[:convergence_options], config)
       end
     end
 
@@ -491,9 +491,9 @@ module ChefMetalFog
       ssh_options = ssh_options_for(machine_spec, server)
       # If we're on AWS, the default is to use ubuntu, not root
       if provider == 'AWS'
-        username = machine_spec.location[:ssh_username] || 'ubuntu'
+        username = machine_spec.location['ssh_username'] || 'ubuntu'
       else
-        username = machine_spec.location[:ssh_username] || 'root'
+        username = machine_spec.location['ssh_username'] || 'root'
       end
       options = {}
       if machine_spec.location[:sudo] || (!machine_spec.location.has_key?(:sudo) && username != 'root')
@@ -501,7 +501,7 @@ module ChefMetalFog
       end
 
       remote_host = nil
-      if machine_spec.location[:use_private_ip_for_ssh]
+      if machine_spec.location['use_private_ip_for_ssh']
         remote_host = server.private_ip_address
       elsif !server.public_ip_address
         Chef::Log.warn("Server has no public ip address.  Using private ip '#{server.private_ip_address}'.  Set driver option 'use_private_ip_for_ssh' => true if this will always be the case ...")
@@ -514,7 +514,7 @@ module ChefMetalFog
 
       #Enable pty by default
       options[:ssh_pty_enable] = true
-      options[:ssh_gateway] = machine_spec.location[:ssh_gateway] if machine_spec.location.has_key?(:ssh_gateway)
+      options[:ssh_gateway] = machine_spec.location['ssh_gateway'] if machine_spec.location.has_key?('ssh_gateway')
 
       ChefMetal::Transport::SSH.new(remote_host, username, ssh_options, options, config)
     end
@@ -527,7 +527,7 @@ module ChefMetalFog
       new_config = { :driver_options => { :compute_options => new_compute_options }}
 
       # Set the identifier from the URL
-      if id
+      if id && id != ''
         case provider
         when 'AWS'
           if id !~ /^\d{12}$/
@@ -551,6 +551,8 @@ module ChefMetalFog
         else
           raise "unsupported fog provider #{provider}"
         end
+      elsif provider == 'AWS'
+        driver_options[:aws_profile] = 'default'
       end
 
       # Set auth info from environment
@@ -597,46 +599,6 @@ module ChefMetalFog
         end
 
       [ config, id ]
-    end
-
-    def get_default_private_key
-      if config[:private_keys] && config[:private_keys].size > 0
-        get_private_key(config[:private_keys].keys.first)
-      else
-        config[:private_key_paths].each do |private_key_path|
-          Dir.entries(private_key_path).each do |key|
-            ext = File.extname(key)
-            if ext == '' || ext == '.pem'
-              key_name = key[0..-(ext.length+1)]
-              if key_name == name
-                return IO.read("#{private_key_path}/#{key}")
-              end
-            end
-          end
-        end
-      end
-    end
-
-    def get_private_key(name)
-      if config[:private_keys] && config[:private_keys][name]
-        if config[:private_keys][name].is_a?(String)
-          IO.read(config[:private_keys][name])
-        else
-          config[:private_keys][name].to_pem
-        end
-      elsif config[:private_key_paths]
-        config[:private_key_paths].each do |private_key_path|
-          Dir.entries(private_key_path).each do |key|
-            ext = File.extname(key)
-            if ext == '' || ext == '.pem'
-              key_name = key[0..-(ext.length+1)]
-              if key_name == name
-                return IO.read("#{private_key_path}/#{key}")
-              end
-            end
-          end
-        end
-      end
     end
   end
 end

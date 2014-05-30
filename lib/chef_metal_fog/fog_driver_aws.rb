@@ -74,6 +74,7 @@ module ChefMetalFog
       else
         raise "No AWS profile leads to account ##{aws_account_id}.  Do you need to add profiles to ~/.aws/config?"
       end
+      aws_profile
     end
 
     def self.aws_account_info_for(aws_profile)
