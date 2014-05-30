@@ -125,8 +125,9 @@ module ChefMetal
             Chef::Log.debug("Closing SSH session on #{username}@#{host}")
             @session.close
           rescue
+          ensure
+            @session = nil
           end
-          @session = nil
         end
       end
 
@@ -136,36 +137,15 @@ module ChefMetal
         true
       rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, Net::SSH::Disconnect
         Chef::Log.debug("#{username}@#{host} unavailable: network connection failed or broke: #{$!.inspect}")
+        disconnect
         false
       rescue Net::SSH::AuthenticationFailed, Net::SSH::HostKeyMismatch
         Chef::Log.debug("#{username}@#{host} unavailable: SSH authentication error: #{$!.inspect} ")
+        disconnect
         false
       end
 
       protected
-
-      def gateway?
-        options.key?(:ssh_gateway) and ! options[:ssh_gateway].nil?
-      end
-
-      def gateway
-        @gateway ||= begin
-          gw_host, gw_user = options[:ssh_gateway].split('@').reverse
-          gw_host, gw_port = gw_host.split(':')
-          gw_user = ssh_options[:ssh_username] unless gw_user
-
-          ssh_start_opts = { timeout:10 }.merge(ssh_options)
-          ssh_start_opts[:port] = gw_port || 22
-
-          Chef::Log.debug("Opening SSH gateway to #{gw_user}@#{gw_host} with options #{ssh_start_opts.inspect}")
-          begin
-            Net::SSH::Gateway.new(gw_host, gw_user, ssh_start_opts)
-          rescue Errno::ETIMEDOUT
-            Chef::Log.debug("Timed out connecting to gateway: #{$!}")
-            raise InitialConnectTimeout.new($!)
-          end
-        end
-      end
 
       def session
         @session ||= begin
@@ -229,6 +209,29 @@ module ChefMetal
         end
 
         attr_reader :original_error
+      end
+
+      private
+
+      def gateway?
+        options.key?(:ssh_gateway) and ! options[:ssh_gateway].nil?
+      end
+
+      def gateway
+        gw_host, gw_user = options[:ssh_gateway].split('@').reverse
+        gw_host, gw_port = gw_host.split(':')
+        gw_user = ssh_options[:ssh_username] unless gw_user
+
+        ssh_start_opts = { timeout:10 }.merge(ssh_options)
+        ssh_start_opts[:port] = gw_port || 22
+
+        Chef::Log.debug("Opening SSH gateway to #{gw_user}@#{gw_host} with options #{ssh_start_opts.inspect}")
+        begin
+          Net::SSH::Gateway.new(gw_host, gw_user, ssh_start_opts)
+        rescue Errno::ETIMEDOUT
+          Chef::Log.debug("Timed out connecting to gateway: #{$!}")
+          raise InitialConnectTimeout.new($!)
+        end
       end
     end
   end
