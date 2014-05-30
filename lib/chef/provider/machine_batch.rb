@@ -106,6 +106,15 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
       if m[:desired_driver]
         drivers[m[:desired_driver]] ||= run_context.chef_metal.driver_for(m[:desired_driver])
         driver = drivers[m[:desired_driver]]
+        # Check whether the current driver is same or different; we disallow
+        # moving a machine from one place to another.
+        if m[:spec].driver_url
+          drivers[m[:spec].driver_url] ||= run_context.chef_metal.driver_for(m[:spec].driver_url)
+          current_driver = drivers[m[:spec].driver_url]
+          if driver.driver_url != current_driver.driver_url
+            raise "Cannot move '#{m[:spec].name}' from #{current_driver.driver_url} to #{driver.driver_url}: machine moving is not supported.  Destroy and recreate."
+          end
+        end
         result[driver] ||= {}
         result[driver][m[:spec]] = m[:machine_options].call(driver)
       end
