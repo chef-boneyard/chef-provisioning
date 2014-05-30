@@ -48,9 +48,7 @@ module ChefMetal
     #
     # Merge in any driver-specific config
     #
-    puts "Checking for #{driver_url}"
     if config[:drivers] && config[:drivers][driver_url]
-      puts "Got it!"
       config = Cheffish::MergedConfig.new(config[:drivers][driver_url], config)
     end
 
@@ -64,9 +62,7 @@ module ChefMetal
     # Merge in config from the canonicalized URL if it is different
     #
     if canonicalized_url != driver_url
-      puts "Checking for #{canonicalized_url}"
       if config[:drivers] && config[:drivers][canonicalized_url]
-        puts "Got it!"
         config = Cheffish::MergedConfig.new(config[:drivers][canonicalized_url], config)
       end
     end
