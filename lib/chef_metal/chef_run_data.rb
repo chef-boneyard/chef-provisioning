@@ -37,7 +37,7 @@ module ChefMetal
       if @current_machine_options
         @current_machine_options
       else
-        driver_config_for(current_driver)[:machine_options] || {}
+        driver_for(current_driver).config[:machine_options] || {}
       end
     end
 
@@ -49,9 +49,7 @@ module ChefMetal
       driver.is_a?(String) ? driver_for_url(driver) : driver
     end
 
-    def driver_config_for(driver)
-      ChefMetal.config_for_url(driver_for(driver).driver_url, config)
-    end
+    private
 
     def driver_for_url(driver_url)
       drivers[driver_url] ||= begin

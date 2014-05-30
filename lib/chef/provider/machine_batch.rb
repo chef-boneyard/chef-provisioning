@@ -101,11 +101,13 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
 
   def by_new_driver
     result = {}
+    drivers = {}
     @machines.each do |m|
       if m[:desired_driver]
-        driver = run_context.chef_metal.driver_for(m[:desired_driver])
+        drivers[m[:desired_driver]] ||= run_context.chef_metal.driver_for(m[:desired_driver])
+        driver = drivers[m[:desired_driver]]
         result[driver] ||= {}
-        result[driver][m[:spec]] = m[:options]
+        result[driver][m[:spec]] = m[:machine_options].call(driver)
       end
     end
     result
@@ -113,11 +115,13 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
 
   def by_current_driver
     result = {}
+    drivers = {}
     @machines.each do |m|
       if m[:spec].driver_url
-        driver = run_context.chef_metal.driver_for_url(m[:spec].driver_url)
+        drivers[m[:spec].driver_url] ||= run_context.chef_metal.driver_for(m[:spec].driver_url)
+        driver = drivers[m[:spec].driver_url]
         result[driver] ||= {}
-        result[driver][m[:spec]] = m[:options]
+        result[driver][m[:spec]] = m[:machine_options].call(driver)
       end
     end
     result
@@ -134,7 +138,7 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
           :spec => provider.machine_spec,
           :desired_driver => machine_resource.driver,
           :files => machine_resource.files,
-          :options => provider.machine_options
+          :machine_options => proc { |driver| provider.machine_options(driver) }
         }
       elsif machine.is_a?(ChefMetal::MachineSpec)
         machine_spec = machine
@@ -142,7 +146,7 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
           :spec => machine_spec,
           :desired_driver => new_resource.driver,
           :files => new_resource.files,
-          :options => new_machine_options
+          :machine_options => proc { |driver| machine_options(driver) }
         }
       else
         name = machine
@@ -152,23 +156,17 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
           :spec => machine_spec,
           :desired_driver => new_resource.driver,
           :files => new_resource.files,
-          :options => new_machine_options
+          :machine_options => proc { |driver| machine_options(driver) }
         }
       end
-    end.select { |m| !m.nil? }.to_a
+    end.to_a
   end
 
-  def new_machine_options
-    @new_machine_options ||= begin
-      result = { :convergence_options => { :chef_server => new_resource.chef_server } }
-      result = Chef::Mixin::DeepMerge.hash_only_merge(result, new_config[:machine_options]) if new_config[:machine_options]
-      result = Chef::Mixin::DeepMerge.hash_only_merge(result, new_resource.machine_options)
-      result
-    end
+  def machine_options(driver)
+    result = { :convergence_options => { :chef_server => new_resource.chef_server } }
+    result = Chef::Mixin::DeepMerge.hash_only_merge(result, run_context.chef_metal.config[:machine_options]) if run_context.chef_metal.config[:machine_options]
+    result = Chef::Mixin::DeepMerge.hash_only_merge(result, driver.config[:machine_options]) if driver.config && driver.config[:machine_options]
+    result = Chef::Mixin::DeepMerge.hash_only_merge(result, new_resource.machine_options)
+    result
   end
-
-  def new_config
-    @new_config ||= run_context.chef_metal.driver_config_for(new_resource.driver)
-  end
-
 end

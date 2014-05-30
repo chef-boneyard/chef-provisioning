@@ -30,23 +30,48 @@ module ChefMetal
     @@registered_driver_classes[name] = driver
   end
 
-  def self.config_for_url(driver_url, config = Cheffish.profiled_config)
-    if config && config[:drivers] && config[:drivers][driver_url]
-      config = Cheffish::MergedConfig.new(config[:drivers][driver_url], config)
-    end
-    config || {}
-  end
-
   def self.default_driver(config = Cheffish.profiled_config)
     driver_for_url(config[:driver], config)
   end
 
-  def self.driver_for_url(driver_url, config = Cheffish.profiled_config)
-    cluster_type = driver_url.split(':', 2)[0]
-    require "chef_metal/driver_init/#{cluster_type}"
-    driver_class = @@registered_driver_classes[cluster_type]
-    config = config_for_url(driver_url, config)
-    driver_class.from_url(driver_url, config || {})
+  def self.driver_for_url(driver_url, config = Cheffish.profiled_config, allow_different_config = false)
+    #
+    # Create and cache the driver
+    #
+    #
+    # Figure out the driver class
+    #
+    scheme = driver_url.split(':', 2)[0]
+    require "chef_metal/driver_init/#{scheme}"
+    driver_class = @@registered_driver_classes[scheme]
+
+    #
+    # Merge in any driver-specific config
+    #
+    puts "Checking for #{driver_url}"
+    if config[:drivers] && config[:drivers][driver_url]
+      puts "Got it!"
+      config = Cheffish::MergedConfig.new(config[:drivers][driver_url], config)
+    end
+
+    #
+    # Canonicalize the URL
+    #
+    canonicalized_url, canonicalized_config = driver_class.canonicalize_url(driver_url, config)
+    config = canonicalized_config if canonicalized_config
+
+    #
+    # Merge in config from the canonicalized URL if it is different
+    #
+    if canonicalized_url != driver_url
+      puts "Checking for #{canonicalized_url}"
+      if config[:drivers] && config[:drivers][canonicalized_url]
+        puts "Got it!"
+        config = Cheffish::MergedConfig.new(config[:drivers][canonicalized_url], config)
+      end
+    end
+
+    driver_class.from_url(canonicalized_url, config)
   end
 
   def self.connect_to_machine(machine_spec, config = Cheffish.profiled_config)

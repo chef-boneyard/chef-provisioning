@@ -17,13 +17,13 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   end
 
   action :allocate do
-    new_driver.allocate_machine(action_handler, machine_spec, machine_options)
+    new_driver.allocate_machine(action_handler, machine_spec, new_machine_options)
     machine_spec.save(action_handler)
   end
 
   action :ready do
     action_allocate
-    machine = current_driver.ready_machine(action_handler, machine_spec, machine_options)
+    machine = current_driver.ready_machine(action_handler, machine_spec, current_machine_options)
     machine_spec.save(action_handler)
     machine
   end
@@ -56,7 +56,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   end
 
   action :converge_only do
-    machine = run_context.chef_metal.connect_to_machine(machine_spec, machine_options)
+    machine = run_context.chef_metal.connect_to_machine(machine_spec, current_machine_options)
     begin
       machine.converge(action_handler)
     ensure
@@ -66,33 +66,39 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
 
   action :stop do
     if current_driver
-      current_driver.stop_machine(action_handler, machine_spec, machine_options)
+      current_driver.stop_machine(action_handler, machine_spec, current_machine_options)
     end
   end
 
   action :destroy do
     if current_driver
-      current_driver.destroy_machine(action_handler, machine_spec, machine_options)
-    end
-  end
-
-  def new_driver
-    run_context.chef_metal.driver_for(new_resource.driver)
-  end
-
-  def new_driver_config
-    run_context.chef_metal.driver_config_for(new_resource.driver)
-  end
-
-  def current_driver
-    if machine_spec.driver_url
-      run_context.chef_metal.driver_for_url(machine_spec.driver_url)
+      current_driver.destroy_machine(action_handler, machine_spec, current_machine_options)
     end
   end
 
   attr_reader :machine_spec
 
-  def machine_options
+  def new_driver
+    run_context.chef_metal.driver_for(new_resource.driver)
+  end
+
+  def current_driver
+    if machine_spec.driver_url
+      run_context.chef_metal.driver_for(machine_spec.driver_url)
+    end
+  end
+
+  def new_machine_options
+    machine_options(new_driver)
+  end
+
+  def current_machine_options
+    if current_driver
+      machine_options(current_driver)
+    end
+  end
+
+  def machine_options(driver)
     configs = []
     configs << {
       :convergence_options =>
@@ -109,7 +115,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
         end
     }
     configs << new_resource.machine_options if new_resource.machine_options
-    configs << new_driver_config[:machine_options] if new_driver_config[:machine_options]
+    configs << driver.config[:machine_options] if driver.config[:machine_options]
     Cheffish::MergedConfig.new(*configs)
   end
 
