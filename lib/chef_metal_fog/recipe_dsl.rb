@@ -18,6 +18,11 @@ class Chef
       def with_fog_openstack_driver(driver_options = nil, &block)
         with_fog_driver('OpenStack', driver_options, &block)
       end
+
+      def with_fog_rackspace_driver(driver_options = nil, &block)
+        with_fog_driver('Rackspace', driver_options, &block)
+      end
+      
     end
   end
 end

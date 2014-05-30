@@ -19,7 +19,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         case new_driver.compute_options[:provider]
         when 'DigitalOcean'
           compute.destroy_key_pair(@current_id)
-        when 'OpenStack'
+        when 'OpenStack', 'Rackspace'
           compute.key_pairs.destroy(@current_id)
         else
           compute.key_pairs.delete(new_resource.name)
@@ -54,7 +54,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
       case new_driver.compute_options[:provider]
       when 'DigitalOcean'
         new_fingerprints = [Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)]
-      when 'OpenStack'
+      when 'OpenStack', 'Rackspace'
         new_fingerprints = [Cheffish::KeyFormatter.encode(desired_key, :format => :openssh)]
       else
         # “The nice thing about standards is that you have so many to
@@ -81,7 +81,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
             case new_driver.compute_options[:provider]
             when 'DigitalOcean'
               compute.create_ssh_key(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
-            when 'OpenStack'
+            when 'OpenStack', 'Rackspace'
               compute.create_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
             else
               compute.key_pairs.get(new_resource.name).destroy
@@ -101,7 +101,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         case new_driver.compute_options[:provider]
         when 'DigitalOcean'
           compute.create_ssh_key(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
-        when 'OpenStack'
+        when 'OpenStack', 'Rackspace'
           compute.create_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
         else
           compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
@@ -189,7 +189,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
       else
         current_resource.action :delete
       end
-    when 'OpenStack'
+    when 'OpenStack', 'Rackspace'
       current_key_pair = compute.key_pairs.get(new_resource.name)
       if current_key_pair
         @current_id = current_key_pair.name
