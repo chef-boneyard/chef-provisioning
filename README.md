@@ -5,6 +5,10 @@ This library solves the problem of repeatably creating machines and infrastructu
 
 Currently, chef-metal supports vagrant, Unixes/ssh, and Windows/winrm with real chef-servers or with automagical chef-zero tunneling.  Fog and Docker support (to cover EC2 and LXC) are next up.  Further out, we'd like to extend support to image factories (using the machine resource to produce images) and PXE support.
 
+A NOTE: the upcoming 0.11 has multiple changes and this document is not yet up to date with respect to them.  For guides to writing drivers, embedding drivers and configuring Chef Metal, start here:
+
+[Chef Metal, Configuration and Drivers](https://github.com/opscode/chef-metal/blob/master/docs/blogs/2012-05-22-new-driver-interface.html.markdown#chef-metal-configuration-and-drivers)
+
 Try It Out
 ----------
 
