@@ -93,9 +93,13 @@ module ChefMetalFog
 
     # Passed in a driver_url, and a config in the format of Driver.config.
     def self.from_url(driver_url, config)
+      FogDriver.new(driver_url, config)
+    end
+
+    def self.canonicalize_url(driver_url, config)
       scheme, provider, id = driver_url.split(':', 3)
       config, id = compute_options_for(provider, id, config)
-      FogDriver.new("fog:#{provider}:#{id}", config)
+      [ "fog:#{provider}:#{id}", config ]
     end
 
     # Passed in a config which is *not* merged with driver_url (because we don't
