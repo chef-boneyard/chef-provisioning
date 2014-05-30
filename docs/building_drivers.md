@@ -62,7 +62,7 @@ As you can see in the previous example, driver_config is where credential inform
 
 ```ruby
 driver 'mydriver:http://the_ultimate_server.com:8080'
-driver_config :username => 'me', :password => 'mypassword'
+driver_options :username => 'me', :password => 'mypassword'
 ```
 
 This is the standard place for users to put credentials.  It is a freeform hash, so you should document what keys you expect users to put there to help you connect.
