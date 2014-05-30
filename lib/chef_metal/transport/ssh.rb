@@ -136,9 +136,13 @@ module ChefMetal
         true
       rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, Net::SSH::Disconnect
         Chef::Log.debug("#{username}@#{host} unavailable: network connection failed or broke: #{$!.inspect}")
+        @session = nil
+        @gateway = nil
         false
       rescue Net::SSH::AuthenticationFailed, Net::SSH::HostKeyMismatch
         Chef::Log.debug("#{username}@#{host} unavailable: SSH authentication error: #{$!.inspect} ")
+        @session = nil
+        @gateway = nil
         false
       end
 
