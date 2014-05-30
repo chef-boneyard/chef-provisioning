@@ -134,10 +134,7 @@ module ChefMetalFog
     end
 
     def compute_options
-      compute_options_merged = driver_options[:compute_options] || {}
-
-      # Convert to hash, since fog library uses delete method which doesn't exist in merged config
-      Hash[compute_options_merged.keys.map { |k| [k,compute_options_merged[k]] }]
+      driver_options[:compute_options].to_hash || {}
     end
 
     def provider
