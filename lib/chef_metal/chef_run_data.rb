@@ -13,9 +13,17 @@ module ChefMetal
 
     attr_reader :config
     attr_reader :drivers
+    attr_reader :current_driver
 
-    with :driver
     with :machine_options
+
+    def with_driver(driver, options = nil, &block)
+      if drivers[driver] && options
+        raise "Driver #{driver} has already been created, options #{options} would be ignored!"
+      end
+      @current_driver = driver
+      @current_driver_options = options
+    end
 
     def auto_batch_machines
       if !@auto_batch_machines.nil?
@@ -53,9 +61,18 @@ module ChefMetal
 
     def driver_for_url(driver_url)
       drivers[driver_url] ||= begin
-        driver = ChefMetal.driver_for_url(driver_url, config)
+        if driver_url == @current_driver && @current_driver_options
+          # Use the driver options if available
+          merged_config = Cheffish::MergedConfig.new({ :driver_options => @current_driver_options }, config)
+          driver = ChefMetal.driver_for_url(driver_url, merged_config)
+        else
+          driver = ChefMetal.driver_for_url(driver_url, config)
+        end
         # Check the canonicalized driver_url from the driver
         if driver.driver_url != driver_url
+          if drivers[driver.driver_url] && @current_driver_options
+            raise "Canonical driver #{driver.driver_url} for #{driver_url} has already been created!  Current options #{@current_driver_options} would be ignored."
+          end
           drivers[driver.driver_url] ||= driver
         else
           driver

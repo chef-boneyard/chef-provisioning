@@ -13,8 +13,8 @@ require 'chef/provider/machine_execute'
 class Chef
   module DSL
     module Recipe
-      def with_driver(driver, &block)
-        run_context.chef_metal.with_driver(driver, &block)
+      def with_driver(driver, options = nil, &block)
+        run_context.chef_metal.with_driver(driver, options, &block)
       end
 
       def with_machine_options(machine_options, &block)
