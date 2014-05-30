@@ -85,9 +85,11 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   end
 
   def current_driver
-    if machine_spec.driver_url
-      run_context.chef_metal.driver_for_url(machine_spec.driver_url)
-    end
+    run_context.chef_metal.current_driver || (
+      if machine_spec.driver_url
+        run_context.chef_metal.driver_for_url(machine_spec.driver_url)
+      end
+    )
   end
 
   attr_reader :machine_spec
