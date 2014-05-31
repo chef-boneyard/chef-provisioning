@@ -14,7 +14,7 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
 
   # We override this because we want to hide @from_recipe
   def to_text
-    ivars = instance_variables.map { |ivar| ivar.to_sym } - HIDDEN_IVARS - [ :@from_recipe ]
+    ivars = instance_variables.map { |ivar| ivar.to_sym } - HIDDEN_IVARS - [ :@from_recipe, :@machines ]
     text = "# Declared in #{@source_line}\n\n"
     text << self.class.dsl_name + "(\"#{name}\") do\n"
     ivars.each do |ivar|
@@ -23,6 +23,16 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
         text << "  #{ivar.to_s.sub(/^@/,'')} #{value_string}\n"
       end
     end
+    machine_names = @machines.map do |m|
+      if m.is_a?(ChefMetal::MachineSpec)
+        m.name
+      elsif m.is_a?(Chef::Resource::Machine)
+        m.name
+      else
+        m
+      end
+    end
+    text << "  machines #{machine_names.inspect}"
     [@not_if, @only_if].flatten.each do |conditional|
       text << "  #{conditional.to_text}\n"
     end
