@@ -60,9 +60,10 @@ CHEF_DRIVER=fog:AWS:default chef-client -z my_cluster.rb
 
 Driver options contain the credentials and necessary information to connect to the driver.
 
-To specify driver_options, you can
+To specify driver_options, you can put this in knife.rb:
 
 ```ruby
+# In knife.rb
 driver 'fog:AWS:default'
 driver_options {
   :aws_profile => 'jkeiser_work'
@@ -72,6 +73,7 @@ driver_options {
 If you alternate between many drivers, you can also set options that are "glued" to a specific driver by putting this in your Chef config:
 
 ```ruby
+# In knife.rb
 drivers {
   'fog:AWS:123445315112' => {
     :driver_options => {
@@ -90,7 +92,8 @@ There will be easier ways to specify this as Chef profiles and configuration evo
 Machine options can be specified in Chef configuration or in recipes.  In Chef config, it looks like this:
 
 ```ruby
-driver 'vagrant:'
+# In knife.rb
+driver 'vagrant'
 # This will apply to all machines that don't override it
 machine_options :vagrant_options => {
   :bootstrap_options => {
@@ -102,7 +105,8 @@ machine_options :vagrant_options => {
 And with the `with_machine_options` directive to affect multiple machines:
 
 ```ruby
-with_driver 'vagrant:'
+# In recipe
+with_driver 'vagrant'
 
 with_machine_options :vagrant_options => {
   'vm.box' => 'precise64'
@@ -119,6 +123,7 @@ end
 Or directly on the machines:
 
 ```ruby
+# In recipe
 machine 'webserver' do
   driver 'vagrant:'
   machine_options :vagrant_options => {
@@ -135,6 +140,7 @@ NOTE: with_machine_options can also take a do block that will apply to all machi
 As before, you can even attach options to specific drivers (defaults for specific drivers and accounts can be useful):
 
 ```ruby
+# In knife.rb
 drivers {
   'fog:AWS:123445315112' => {
     :driver_options => {
@@ -163,6 +169,7 @@ You can set the `CHEF_PROFILE` environment variable to identify the profile you 
 In Chef config:
 
 ```ruby
+# In knife.rb
 profiles {
   'default' => {
   }
