@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.beta.3 (5/30/2014)
+
+- Much better support for regions and AWS environment variables
+- @hhoover Rackspace support!
+- @marcusn numerous bugfixes
+- @marcusn CloudStack support!
+
 ## 0.5.beta.2 (5/27/2014)
 
 - Fix PKCS8 crash on Ruby 2.0+
