@@ -557,8 +557,6 @@ module ChefMetalFog
         else
           raise "unsupported fog provider #{provider}"
         end
-      elsif provider == 'AWS'
-        driver_options[:aws_profile] = 'default'
       end
 
       # Set auth info from environment

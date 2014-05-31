@@ -8,6 +8,8 @@ module ChefMetalFog
       @credentials = {}
     end
 
+    include Enumerable
+
     def default
       @credentials[ENV['AWS_DEFAULT_PROFILE'] || 'default'] || @credentials.first[1]
     end
@@ -51,7 +53,7 @@ module ChefMetalFog
     end
 
     def load_default
-      load_ini('~/.aws/config')
+      load_ini(ENV['AWS_CONFIG_FILE'] || File.expand_path('~/.aws/config'))
     end
 
     def self.method_missing(name, *args, &block)

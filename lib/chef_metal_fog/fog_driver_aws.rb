@@ -7,30 +7,39 @@ module ChefMetalFog
     def self.get_aws_profile(driver_options, compute_options, aws_account_id)
       aws_credentials = get_aws_credentials(driver_options)
 
-      # Grab the given profile
-      aws_access_key_id = compute_options[:aws_access_key_id] || ENV['AWS_ACCESS_KEY_ID']
-      if aws_access_key_id
-        aws_profile = aws_credentials.select { |profile| profile[:aws_access_key_id] == aws_access_key_id }.first
-        if !aws_profile
-          aws_profile = {
-            :aws_access_key_id => aws_access_key_id,
-            :aws_secret_access_key => compute_options[:aws_secret_access_key] || ENV['AWS_SECRET_ACCESS_KEY'],
-            :aws_security_token => compute_options[:aws_security_token] || ENV['AWS_SECURITY_TOKEN']
-          }
-        end
-        Chef::Log.debug("Using AWS profile #{aws_profile[:name]}")
+      # Order of operations:
+      # driver_options[:aws_access_key_id] / driver_options[:aws_secret_access_key] / driver_options[:aws_security_token]
+      # driver_options[:aws_profile]
+      # ENV['AWS_ACCESS_KEY_ID'] / ENV['AWS_SECRET_ACCESS_KEY'] / ENV['AWS_SECURITY_TOKEN']
+      # ENV['AWS_PROFILE']
+      # ENV['DEFAULT_PROFILE']
+      # 'default'
+      aws_profile = if driver_options[:aws_access_key_id]
+        Chef::Log.debug("Using AWS driver access key options")
+        aws_profile = {
+          :aws_access_key_id => driver_options[:aws_access_key_id],
+          :aws_secret_access_key => driver_options[:aws_secret_access_key],
+          :aws_security_token => driver_options[:aws_security_token]
+        }
       elsif driver_options[:aws_profile]
-        aws_profile = aws_credentials[driver_options[:aws_profile]]
-        if !aws_profile
-          raise "AWS profile #{driver_options[:aws_profile]} does not exist! Perhaps your configuration is incorrect?"
-        end
-        Chef::Log.info("Using AWS profile #{driver_options[:aws_profile]} ...")
+        Chef::Log.debug("Using AWS profile #{driver_options[:aws_profile]}")
+        aws_credentials[driver_options[:aws_profile]]
+      elsif ENV['AWS_ACCESS_KEY_ID']
+        Chef::Log.debug("Using AWS environment variable access keys")
+        {
+          :aws_access_key_id => ENV['AWS_ACCESS_KEY_ID'],
+          :aws_secret_access_key => ENV['AWS_SECRET_ACCESS_KEY'],
+          :aws_security_token => ENV['AWS_SECURITY_TOKEN']
+        }
+      elsif ENV['AWS_PROFILE']
+        Chef::Log.debug("Using AWS profile #{ENV['AWS_PROFILE']} from AWS_PROFILE environment variable")
+        aws_credentials[ENV['AWS_PROFILE']]
       else
-        aws_profile = aws_credentials.default
-        Chef::Log.info("Using default AWS profile ...")
+        Chef::Log.debug("Using AWS default profile")
+        aws_credentials.default
       end
 
-      # Merge in account info
+      # Merge in account info for profile
       if aws_profile
         aws_profile = aws_profile.merge(aws_account_info_for(aws_profile))
       end
@@ -46,8 +55,7 @@ module ChefMetalFog
       end
 
       # Set region
-      region = compute_options[:region] || ENV['AWS_DEFAULT_REGION']
-      aws_profile[:region] = region if region
+      aws_profile[:region] = compute_options[:region] || ENV['AWS_DEFAULT_REGION']
       aws_profile.delete_if { |key, value| value.nil? }
       aws_profile
     end
