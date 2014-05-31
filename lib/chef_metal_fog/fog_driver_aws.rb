@@ -4,7 +4,7 @@ require 'fog/aws'
 
 module ChefMetalFog
   module FogDriverAWS
-    def self.get_aws_profile(driver_options, compute_options, aws_account_id)
+    def self.get_aws_profile(driver_options, aws_account_id)
       aws_credentials = get_aws_credentials(driver_options)
 
       # Order of operations:
@@ -16,7 +16,7 @@ module ChefMetalFog
       # 'default'
       aws_profile = if driver_options[:aws_access_key_id]
         Chef::Log.debug("Using AWS driver access key options")
-        aws_profile = {
+        {
           :aws_access_key_id => driver_options[:aws_access_key_id],
           :aws_secret_access_key => driver_options[:aws_secret_access_key],
           :aws_security_token => driver_options[:aws_security_token]
@@ -55,7 +55,7 @@ module ChefMetalFog
       end
 
       # Set region
-      aws_profile[:region] = compute_options[:region] || ENV['AWS_DEFAULT_REGION']
+      aws_profile[:region] ||= ENV['AWS_DEFAULT_REGION']
       aws_profile.delete_if { |key, value| value.nil? }
       aws_profile
     end

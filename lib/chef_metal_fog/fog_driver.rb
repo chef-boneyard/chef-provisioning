@@ -563,8 +563,8 @@ module ChefMetalFog
       case provider
       when 'AWS'
         # Grab the profile
-        aws_profile = FogDriverAWS.get_aws_profile(driver_options, compute_options, id)
-        [ :aws_access_key_id, :aws_secret_access_key, :aws_session_token ].each do |key|
+        aws_profile = FogDriverAWS.get_aws_profile(driver_options, id)
+        [ :aws_access_key_id, :aws_secret_access_key, :aws_session_token, :region ].each do |key|
           new_compute_options[key] = aws_profile[key] if aws_profile[key]
         end
       when 'OpenStack'
