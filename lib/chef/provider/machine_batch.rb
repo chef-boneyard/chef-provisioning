@@ -12,6 +12,23 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
     @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
   end
 
+  # We override this because we want to hide @from_recipe
+  def to_text
+    ivars = instance_variables.map { |ivar| ivar.to_sym } - HIDDEN_IVARS - [ :@from_recipe ]
+    text = "# Declared in #{@source_line}\n\n"
+    text << self.class.dsl_name + "(\"#{name}\") do\n"
+    ivars.each do |ivar|
+      if (value = instance_variable_get(ivar)) && !(value.respond_to?(:empty?) && value.empty?)
+        value_string = value.respond_to?(:to_text) ? value.to_text : value.inspect
+        text << "  #{ivar.to_s.sub(/^@/,'')} #{value_string}\n"
+      end
+    end
+    [@not_if, @only_if].flatten.each do |conditional|
+      text << "  #{conditional.to_text}\n"
+    end
+    text << "end\n"
+  end
+
   use_inline_resources
 
   def whyrun_supported?
