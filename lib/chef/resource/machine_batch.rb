@@ -42,7 +42,8 @@ class Chef::Resource::MachineBatch < Chef::Resource::LWRPBase
     @machine_options = Chef::Mixin::DeepMerge.hash_only_merge(@machine_options, options)
   end
 
-  # We override this because we want to hide @from_recipe
+  # We override this because we want to hide @from_recipe and shorten @machines
+  # in error output.
   def to_text
     ivars = instance_variables.map { |ivar| ivar.to_sym } - HIDDEN_IVARS - [ :@from_recipe, :@machines ]
     text = "# Declared in #{@source_line}\n\n"

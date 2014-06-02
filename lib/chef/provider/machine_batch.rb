@@ -25,7 +25,8 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
   action :allocate do
     by_new_driver.each do |driver, specs_and_options|
       driver.allocate_machines(action_handler, specs_and_options, parallelizer) do |machine_spec|
-        machine_spec.save(action_handler)
+        prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{machine_spec.name}] ")
+        machine_spec.save(prefixed_handler)
       end
     end
   end
@@ -38,7 +39,7 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
     with_ready_machines do |m|
       prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
       machine[:machine].setup_convergence(prefixed_handler)
-      m[:spec].save(action_handler)
+      m[:spec].save(prefixed_handler)
       Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:files])
     end
   end
@@ -50,14 +51,15 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
       m[:spec].save(action_handler)
       Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:files])
       m[:machine].converge(prefixed_handler)
-      m[:spec].save(action_handler)
+      m[:spec].save(prefixed_handler)
     end
   end
 
   action :converge_only do
     parallel_do(@machines) do |m|
+      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
       machine = run_context.chef_metal.connect_to_machine(m[:spec])
-      machine.converge(action_handler)
+      machine.converge(prefixed_handler)
     end
   end
 
