@@ -41,4 +41,31 @@ class Chef::Resource::MachineBatch < Chef::Resource::LWRPBase
   def add_machine_options(options)
     @machine_options = Chef::Mixin::DeepMerge.hash_only_merge(@machine_options, options)
   end
+
+  # We override this because we want to hide @from_recipe
+  def to_text
+    ivars = instance_variables.map { |ivar| ivar.to_sym } - HIDDEN_IVARS - [ :@from_recipe, :@machines ]
+    text = "# Declared in #{@source_line}\n\n"
+    text << self.class.dsl_name + "(\"#{name}\") do\n"
+    ivars.each do |ivar|
+      if (value = instance_variable_get(ivar)) && !(value.respond_to?(:empty?) && value.empty?)
+        value_string = value.respond_to?(:to_text) ? value.to_text : value.inspect
+        text << "  #{ivar.to_s.sub(/^@/,'')} #{value_string}\n"
+      end
+    end
+    machine_names = @machines.map do |m|
+      if m.is_a?(ChefMetal::MachineSpec)
+        m.name
+      elsif m.is_a?(Chef::Resource::Machine)
+        m.name
+      else
+        m
+      end
+    end
+    text << "  machines #{machine_names.inspect}\n"
+    [@not_if, @only_if].flatten.each do |conditional|
+      text << "  #{conditional.to_text}\n"
+    end
+    text << "end\n"
+  end
 end
