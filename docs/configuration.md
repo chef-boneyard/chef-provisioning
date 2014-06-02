@@ -191,7 +191,7 @@ profiles {
   },
   'staging' => {
     :driver => 'fog:AWS:staging',
-    :driver_options => {
+    :machine_options => {
       :bootstrap_options => {
         :flavor_id => 'm1.small'
       }
