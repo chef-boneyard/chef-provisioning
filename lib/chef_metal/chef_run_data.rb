@@ -44,8 +44,10 @@ module ChefMetal
     def current_machine_options
       if @current_machine_options
         @current_machine_options
-      else
+      elsif current_driver
         driver_for(current_driver).config[:machine_options] || {}
+      else
+        {}
       end
     end
 
