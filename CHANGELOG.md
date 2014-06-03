@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.beta.5 (6/3/2014)
+
+- fix crash
+
 ## 0.5.beta.4 (6/3/2014)
 
 - Make region part of fog:AWS URL
