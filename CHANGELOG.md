@@ -1,4 +1,9 @@
 # Chef Metal Changelog
+## 0.11.beta.10 (6/3/2014)
+
+- get rid of annoying SSL headers
+- fix crash when no current driver is set
+
 ## 0.11.beta.9 (6/3/2014)
 
 - fix machine_batch error report to be less verbose
