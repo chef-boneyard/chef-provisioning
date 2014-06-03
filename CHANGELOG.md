@@ -1,8 +1,10 @@
 # Chef Metal Changelog
+## 0.11.beta.8 (5/30/2014)
+
+- fix machine_batch error report to be less verbose
 
 ## 0.11.beta.7 (5/30/2014)
 
-- fix machine_batch error report to be less verbose
 - allow options to be set from with_driver
 - fail when machine is being moved from driver to driver
 - support knife.rb config for non-canonical URLs
