@@ -1,5 +1,5 @@
 # Chef Metal Changelog
-## 0.11.beta.8 (5/30/2014)
+## 0.11.beta.9 (6/3/2014)
 
 - fix machine_batch error report to be less verbose
 
