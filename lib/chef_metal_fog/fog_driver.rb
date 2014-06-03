@@ -466,7 +466,7 @@ module ChefMetalFog
       if machine_spec.location['is_windows']
         ChefMetal::Machine::WindowsMachine.new(machine_spec, transport_for(machine_spec, machine_options, server), convergence_strategy_for(machine_spec, machine_options))
       else
-        ChefMetal::Machine::UnixMachine.new(machine_spec, transport_for(machine_spec, machine_optins, server), convergence_strategy_for(machine_spec, machine_options))
+        ChefMetal::Machine::UnixMachine.new(machine_spec, transport_for(machine_spec, machine_options, server), convergence_strategy_for(machine_spec, machine_options))
       end
     end
 
@@ -546,6 +546,7 @@ module ChefMetalFog
       new_compute_options = {}
       new_compute_options[:provider] = provider
       new_config = { :driver_options => { :compute_options => new_compute_options }}
+      config = Cheffish::MergedConfig.new(new_config, config)
 
       # Get data from the identifier in the URL
       if id && id != ''
@@ -609,8 +610,6 @@ module ChefMetalFog
         new_compute_options[:rackspace_endpoint] ||= credential[:rackspace_endpoint]
         new_compute_options[:rackspace_compute_url] ||= credential[:rackspace_compute_url]
       end
-
-      config = Cheffish::MergedConfig.new(new_config, config)
 
       id = case provider
         when 'AWS'
