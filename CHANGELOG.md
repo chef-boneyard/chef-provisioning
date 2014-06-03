@@ -1,24 +1,16 @@
 # Chef Metal Changelog
-## 0.11.beta.10 (6/3/2014)
 
-- get rid of annoying SSL headers
-- fix crash when no current driver is set
+## 0.11 (6/3/2014)
 
-## 0.11.beta.9 (6/3/2014)
-
+- New Driver interface (see docs/ and blogs/ directories for documentation)
+- New configuration (see docs/ and blogs/)
+- get rid of annoying SSL warning (note: this turns off SSL verification, which was the default anyway)
 - fix machine_batch error report to be less verbose
-
-## 0.11.beta.7 (5/30/2014)
-
-- allow options to be set from with_driver
 - fail when machine is being moved from driver to driver
-- support knife.rb config for non-canonical URLs
 - @marcusn disconnect from SSH when there is a problem
-
-## 0.11.beta.6 (5/28/2014)
-
-- Fix machine_batch defaults to be significantly less stupid
-- Remove with_machine_batch
+- fix SSH gateway code to honor any options given (@marcusn)
+- Make machine_batch auto batching smarter (only batch things that have the same actions)
+- Allow auto batching to be turned off with `auto_batch_machines = false` in recipes or config
 - Allow this:
   ```ruby
   machine_batch do
@@ -32,20 +24,7 @@
     machines 'a', 'b', 'c'
     action :destroy
   end
-- fix SSH gateway code to honor any options given (@marcusn)
-
-## 0.11.beta.5 (5/28/2014)
-
 - fix issue setting Hosted Chef ACLs on nodes
-- fix single-machine converge crash
-
-## 0.11.beta.2 (5/27/2014)
-
-- Bring in cheffish-0.5.beta.2
-
-## 0.11.beta (5/23/2014)
-
-- New Driver interface (see docs/ and blogs/ directories for documentation)
 
 ## 0.10.2 (5/2/2014)
 
