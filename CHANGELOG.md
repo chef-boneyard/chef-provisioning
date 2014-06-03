@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.beta.4 (6/3/2014)
+
+- Make region part of fog:AWS URL
+- Don't reboot server on every chef-client run if non-connectable
+- Warn when username at time of creation != current username
+
 ## 0.5.beta.3 (5/30/2014)
 
 - Much better support for regions and AWS environment variables
