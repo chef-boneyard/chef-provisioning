@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.beta.6 (6/3/2014)
+
+- Add fog:AWS:<profile>:<region> driver URL support
+- Make compute options :region override profile/env vars
+
 ## 0.5.beta.5 (6/3/2014)
 
 - fix crash
