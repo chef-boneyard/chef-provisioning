@@ -28,6 +28,7 @@ module ChefMetalFog
   #
   #   fog:AWS:<account_id>:<region>
   #   fog:AWS:<profile_name>
+  #   fog:AWS:<profile_name>:<region>
   #   fog:OpenStack:https://identityHost:portNumber/v2.0
   #   fog:DigitalOcean:<client id>
   #   fog:Rackspace:https://identity.api.rackspacecloud.com/v2.0
@@ -546,7 +547,7 @@ module ChefMetalFog
       new_compute_options = {}
       new_compute_options[:provider] = provider
       new_config = { :driver_options => { :compute_options => new_compute_options }}
-      config = Cheffish::MergedConfig.new(new_config, config)
+      result = Cheffish::MergedConfig.new(new_config, config)
 
       # Get data from the identifier in the URL
       if id && id != ''
@@ -556,13 +557,15 @@ module ChefMetalFog
           if id =~ /^(\d{12})(:(.+))?$/
             if $2
               id = $1
-              driver_options[:region] = $3
+              new_compute_options[:region] = $3
             else
               Chef::Log.warn("Old-style AWS URL #{id} from an early beta of chef-metal (before 0.11-final) found. If you have servers in multiple regions on this account, you may see odd behavior like servers being recreated. To fix, edit any nodes with attribute metal.location.driver_url to include the region like so: fog:AWS:#{id}:<region> (e.g. us-east-1)")
             end
           else
             # Assume it is a profile name, and set that.
-            driver_options[:aws_profile] = id
+            aws_profile, region = id.split(':', 2)
+            new_config[:driver_options][:aws_profile] = aws_profile
+            new_compute_options[:region] = region
             id = nil
           end
         when 'DigitalOcean'
@@ -586,10 +589,12 @@ module ChefMetalFog
       case provider
       when 'AWS'
         # Grab the profile
-        aws_profile = FogDriverAWS.get_aws_profile(driver_options, id)
-        [ :aws_access_key_id, :aws_secret_access_key, :aws_security_token, :region].each do |key|
-          new_compute_options[key] = aws_profile[key] if aws_profile.has_key?(key)
+        aws_profile = FogDriverAWS.get_aws_profile(result[:driver_options], id)
+        [ :aws_access_key_id, :aws_secret_access_key, :aws_security_token].each do |key|
+          new_compute_options[key] = aws_profile[key]
         end
+        # For :region, we prefer the region in compute options or URL over the region in the profile.
+        new_compute_options[:region] ||= aws_profile[:region] if aws_profile.has_key?(:region) && !compute_options.has_key?(:region)
       when 'OpenStack'
         # TODO it is supposed to be unnecessary to load credentials from fog this way;
         # why are we doing it?
@@ -613,9 +618,9 @@ module ChefMetalFog
 
       id = case provider
         when 'AWS'
-          account_info = FogDriverAWS.aws_account_info_for(config[:driver_options][:compute_options])
+          account_info = FogDriverAWS.aws_account_info_for(result[:driver_options][:compute_options])
           new_config[:driver_options][:aws_account_info] = account_info
-          "#{account_info[:aws_account_id]}:#{config[:driver_options][:compute_options][:region]}"
+          "#{account_info[:aws_account_id]}:#{result[:driver_options][:compute_options][:region]}"
         when 'DigitalOcean'
           config[:driver_options][:compute_options][:digitalocean_client_id]
         when 'OpenStack'
@@ -623,15 +628,15 @@ module ChefMetalFog
         when 'Rackspace'
           config[:driver_options][:compute_options][:rackspace_auth_url]
         when 'CloudStack'
-          host   = config[:driver_options][:compute_options][:cloudstack_host]
-          path   = config[:driver_options][:compute_options][:cloudstack_path]    || '/client/api'
-          port   = config[:driver_options][:compute_options][:cloudstack_port]    || 443
-          scheme = config[:driver_options][:compute_options][:cloudstack_scheme]  || 'https'
+          host   = result[:driver_options][:compute_options][:cloudstack_host]
+          path   = result[:driver_options][:compute_options][:cloudstack_path]    || '/client/api'
+          port   = result[:driver_options][:compute_options][:cloudstack_port]    || 443
+          scheme = result[:driver_options][:compute_options][:cloudstack_scheme]  || 'https'
 
           URI.scheme_list[scheme.upcase].build(:host => host, :port => port, :path => path).to_s
         end
 
-      [ config, id ]
+      [ result, id ]
     end
   end
 end
