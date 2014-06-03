@@ -26,14 +26,22 @@ module ChefMetalFog
   # All Metal drivers use URLs to uniquely identify a driver's "bucket" of machines.
   # Fog URLs are of the form fog:<provider>:<identifier>:
   #
-  #   fog:AWS:<account_id>
+  #   fog:AWS:<account_id>:<region>
+  #   fog:AWS:<profile_name>
   #   fog:OpenStack:https://identityHost:portNumber/v2.0
   #   fog:DigitalOcean:<client id>
   #   fog:Rackspace:https://identity.api.rackspacecloud.com/v2.0
   #
   # Identifier is generally something uniquely identifying the account.  If multiple
   # users can access the account, the identifier should be the same for all of
-  # them (do not use the username in these cases).
+  # them (do not use the username in these cases, use an account ID or auth server
+  # URL).
+  #
+  # In particular, the identifier should be specific enough that if you create a
+  # server with a driver with this URL, the server should be retrievable from
+  # the same URL *no matter what else changes*. For example, an AWS account ID
+  # is *not* enough for this--if you varied the region, you would no longer see
+  # your server in the list.  Thus, AWS uses both the account ID and the region.
   #
   # ## Supporting a new Fog provider
   #
@@ -212,9 +220,9 @@ module ChefMetalFog
     end
 
     # Not meant to be part of public interface
-    def transport_for(machine_spec, server)
+    def transport_for(machine_spec, machine_options, server)
       # TODO winrm
-      create_ssh_transport(machine_spec, server)
+      create_ssh_transport(machine_spec, machine_options, server)
     end
 
     protected
@@ -286,6 +294,7 @@ module ChefMetalFog
           server.start
           machine_spec.location['started_at'] = Time.now.utc.to_s
         end
+        machine_spec.save(action_handler)
       end
     end
 
@@ -294,6 +303,7 @@ module ChefMetalFog
         server.reboot
         machine_spec.location['started_at'] = Time.now.utc.to_s
       end
+      machine_spec.save(action_handler)
     end
 
     def remaining_wait_time(machine_spec, machine_options)
@@ -302,6 +312,7 @@ module ChefMetalFog
       else
         timeout = option_for(machine_options, :create_timeout) - (Time.now.utc - Time.parse(machine_spec.location['allocated_at']))
       end
+      timeout > 0 ? timeout : 0.01
     end
 
     def wait_until_ready(action_handler, machine_spec, machine_options, server)
@@ -315,7 +326,7 @@ module ChefMetalFog
     end
 
     def wait_for_transport(action_handler, machine_spec, machine_options, server)
-      transport = transport_for(machine_spec, server)
+      transport = transport_for(machine_spec, machine_options, server)
       if !transport.available?
         if action_handler.should_perform_actions
           action_handler.report_progress "waiting for #{machine_spec.name} (#{server.id} on #{driver_url}) to be connectable (transport up and running) ..."
@@ -453,9 +464,9 @@ module ChefMetalFog
       end
 
       if machine_spec.location['is_windows']
-        ChefMetal::Machine::WindowsMachine.new(machine_spec, transport_for(machine_spec, server), convergence_strategy_for(machine_spec, machine_options))
+        ChefMetal::Machine::WindowsMachine.new(machine_spec, transport_for(machine_spec, machine_options, server), convergence_strategy_for(machine_spec, machine_options))
       else
-        ChefMetal::Machine::UnixMachine.new(machine_spec, transport_for(machine_spec, server), convergence_strategy_for(machine_spec, machine_options))
+        ChefMetal::Machine::UnixMachine.new(machine_spec, transport_for(machine_spec, machine_optins, server), convergence_strategy_for(machine_spec, machine_options))
       end
     end
 
@@ -494,13 +505,16 @@ module ChefMetalFog
       result
     end
 
-    def create_ssh_transport(machine_spec, server)
+    def create_ssh_transport(machine_spec, machine_options, server)
       ssh_options = ssh_options_for(machine_spec, server)
       # If we're on AWS, the default is to use ubuntu, not root
       if provider == 'AWS'
         username = machine_spec.location['ssh_username'] || 'ubuntu'
       else
         username = machine_spec.location['ssh_username'] || 'root'
+      end
+      if machine_options.has_key?(:ssh_username) && machine_options[:ssh_username] != machine_spec.location['ssh_username']
+        Chef::Log.warn("Server #{machine_spec.name} was created with SSH username #{machine_spec.location['ssh_username']} and machine_options specifies username #{machine_options[:ssh_username]}.  Using #{machine_spec.location['ssh_username']}.  Please edit the node and change the metal.location.ssh_username attribute if you want to change it.")
       end
       options = {}
       if machine_spec.location[:sudo] || (!machine_spec.location.has_key?(:sudo) && username != 'root')
@@ -511,7 +525,7 @@ module ChefMetalFog
       if machine_spec.location['use_private_ip_for_ssh']
         remote_host = server.private_ip_address
       elsif !server.public_ip_address
-        Chef::Log.warn("Server has no public ip address.  Using private ip '#{server.private_ip_address}'.  Set driver option 'use_private_ip_for_ssh' => true if this will always be the case ...")
+        Chef::Log.warn("Server #{machine_spec.name} has no public ip address.  Using private ip '#{server.private_ip_address}'.  Set driver option 'use_private_ip_for_ssh' => true if this will always be the case ...")
         remote_host = server.private_ip_address
       elsif server.public_ip_address
         remote_host = server.public_ip_address
@@ -533,11 +547,19 @@ module ChefMetalFog
       new_compute_options[:provider] = provider
       new_config = { :driver_options => { :compute_options => new_compute_options }}
 
-      # Set the identifier from the URL
+      # Get data from the identifier in the URL
       if id && id != ''
         case provider
         when 'AWS'
-          if id !~ /^\d{12}$/
+          # AWS canonical URLs are of the form fog:AWS:
+          if id =~ /^(\d{12})(:(.+))?$/
+            if $2
+              id = $1
+              driver_options[:region] = $3
+            else
+              Chef::Log.warn("Old-style AWS URL #{id} from an early beta of chef-metal (before 0.11-final) found. If you have servers in multiple regions on this account, you may see odd behavior like servers being recreated. To fix, edit any nodes with attribute metal.location.driver_url to include the region like so: fog:AWS:#{id}:<region> (e.g. us-east-1)")
+            end
+          else
             # Assume it is a profile name, and set that.
             driver_options[:aws_profile] = id
             id = nil
@@ -564,8 +586,8 @@ module ChefMetalFog
       when 'AWS'
         # Grab the profile
         aws_profile = FogDriverAWS.get_aws_profile(driver_options, id)
-        [ :aws_access_key_id, :aws_secret_access_key, :aws_session_token, :region ].each do |key|
-          new_compute_options[key] = aws_profile[key] if aws_profile[key]
+        [ :aws_access_key_id, :aws_secret_access_key, :aws_security_token, :region].each do |key|
+          new_compute_options[key] = aws_profile[key] if aws_profile.has_key?(key)
         end
       when 'OpenStack'
         # TODO it is supposed to be unnecessary to load credentials from fog this way;
@@ -594,7 +616,7 @@ module ChefMetalFog
         when 'AWS'
           account_info = FogDriverAWS.aws_account_info_for(config[:driver_options][:compute_options])
           new_config[:driver_options][:aws_account_info] = account_info
-          account_info[:aws_account_id]
+          "#{account_info[:aws_account_id]}:#{config[:driver_options][:compute_options][:region]}"
         when 'DigitalOcean'
           config[:driver_options][:compute_options][:digitalocean_client_id]
         when 'OpenStack'
