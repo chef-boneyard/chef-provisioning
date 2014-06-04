@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.beta.7 (TBD)
+
+- Don't used the InstallCached by default, instead use InstallSh which greatly speeds provisioning on remote systems. Revert to the old behavior by setting `with_machine_options :cached_installer => true`
+
 ## 0.5.beta.6 (6/3/2014)
 
 - Add fog:AWS:<profile>:<region> driver URL support
