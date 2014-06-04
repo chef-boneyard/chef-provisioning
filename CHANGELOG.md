@@ -25,6 +25,7 @@
     action :destroy
   end
 - fix issue setting Hosted Chef ACLs on nodes
+- fix local mode forwarding in mixed IPv4/IPv6 environments
 
 ## 0.10.2 (5/2/2014)
 
