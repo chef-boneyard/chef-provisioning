@@ -107,7 +107,7 @@ module ChefMetalFog
     end
 
     def self.canonicalize_url(driver_url, config)
-      scheme, provider, id = driver_url.split(':', 3)
+      _, provider, id = driver_url.split(':', 3)
       config, id = compute_options_for(provider, id, config)
       [ "fog:#{provider}:#{id}", config ]
     end
