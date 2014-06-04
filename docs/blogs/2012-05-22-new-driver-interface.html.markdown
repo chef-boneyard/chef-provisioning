@@ -2,10 +2,9 @@
 
 As Chef Metal approaches 1.0, we've landed a huge configuration and driver interface improvement intended to enable:
 
-- A standard way to specify credentials and keys that keeps them out of recipes and allows them to be used in multiple places
-- External commands (like "metal execute") that can look up information and manage a node independent of the original Metal recipe
-- Environmental and directory-specific configuration
-- Make the drivers easily usable in test-kitchen and knife
+- A standard way to specify credentials and keys that keeps them out of recipes and allows them to be used in multiple places (Chef config)
+- A cohesive way to refer to an environment (Chef profiles)
+- Make the drivers easily usable in external programs like test-kitchen and knife to create and manage machines (Driver interface)
 
 How you create machines has not changed from a *logical* standpoint, but from a *physical* standpoint--how you configure, build and use drivers--it has changed significantly and for the better!
 
@@ -15,9 +14,9 @@ I'll talk a little bit about the user-level changes here, but you can read about
 - [Building drivers](https://github.com/opscode/chef-metal/blob/master/docs/building_drivers.md#writing-drivers)
 - [Using drivers in your own programs](https://github.com/opscode/chef-metal/blob/master/docs/embedding.md)
 
-## Using Metal today
+I'll give an example of how to use chef-metal in Vagrant.  Many other clouds are supported.
 
-We've simplified the use of metal, in such a way that configuration is now shared.  Here is a very simple use of Metal.
+## Using Metal today: AWS
 
 - Install chef-metal:
 ```ruby
@@ -41,135 +40,15 @@ export CHEF_DRIVER=fog:AWS
 chef-client -z blah.rb
 ```
 
-Wallah!  Two EC2 machines!
+Wallah!  Two EC2 machines, in parallel!
 
-(If you want to experiment, the AWS free tier will more than cover such experimentation, as long as you remember to take the machines down, which we will cover shortly.)
+## Drivers, credentials and machine options
 
-## The Metal command line
+Drivers are now identifiable entirely by a URL (like `fog:AWS:default` or `vagrant:~/vms`).  To choose a driver, you specify its URL and the driver will be automatically loaded.  URLs have a flexible format, and vary for what makes sense for each driver.  Examples of setting driver URLs are [here.](https://github.com/opscode/chef-metal/blob/master/docs/configuration.md#setting-the-driver-with-a-driver-url)
 
-The other major takeaway from this release is that it enables external command line.  Let's use the demo (probably not final) metal command line to destroy the instances we just created:
+Credentials for drivers can be specified, and Chef Metal makes it easy to specify these while keeping them out of your recipes (or anything likely to be checked in to source control!).  There are many ways to specify them--see the [documentation](https://github.com/opscode/chef-metal/blob/master/docs/configuration.md#credentials-configuration-in-chef) for examples.
 
-```
-metal destroy db web
-```
-
-## Driver URLs
-
-Drivers are uniquely identifiable by their URL.  A driver URL consists of a scheme and then driver-specific stuff. You can specify driver URL several ways:
-
-- In a recipe using with_driver:
-```ruby
-with_driver 'fog:AWS:jkeiser' # the "jkeiser" profile from
-machine 'web' do
-  recipe 'apache'
-end
-machine 'db' do
-  recipe 'mysql'
-end
-```
-- In a recipe directly on the machine:
-```ruby
-machine 'web' do
-  driver 'vagrant:~/machinetest' # Vagrantfiles in the given directory
-  recipe 'apache'
-end
-machine 'db' do
-  driver 'fog:AWS:default'
-  recipe 'apache'
-end
-```
-- In configuration (`knife.rb`):
-```ruby
-driver 'fog:AWS' # default profile
-```
-- In an environmental variable:
-```
-export CHEF_DRIVER=vagrant # stores things in <chef config dir>/vms
-chef-client -z cluster.rb
-```
-
-Different machines may have different drivers.
-
-### Canonical Driver URLs
-
-There are many ways to specify a driver URL, but only one canonical. When we store a driver URL in a node, the URL is first canonicalized--turned into a unique, explicit form that can be used in multiple machines.
-
-- For EC2, the form looks like `fog:AWS:726435164533', where 726435164533 is the AWS account ID (independent of profile).
-- For Vagrant, the form looks like `vagrant:/Users/jkeiser/machinetest`, with a fully-qualified directory name.
-
-You can use these too, they just usually aren't as easy as the shorthands.
-
-### Credentials configuration in Chef
-
-Drivers usually need some credentials.  Rather than specify these in your recipe (bad mojo), these need to be specified outside:
-
-- In Chef config (`knife.rb`):
-```ruby
-driver 'fog:AWS:123123124124'
-driver_options :aws_access_key_id => '...', :aws_secret_access_key => '...'
-```
-- In a global Chef file for whenever you use that driver:
-```ruby
-drivers {
-  'fog:AWS:123123124124' => {
-    :driver_options => {
-      :aws_access_key_id => '...',
-      :aws_secret_access_key => '...'
-    }
-  }
-}
-```
-```
-export CHEF_DRIVER=fog:AWS:123123124124
-chef-client -z cluster.rb
-```
-
-## Machine options
-
-Absolutely everything that is not credentials should be specified in machine_options.  machine_options can be added in several places:
-
-- In recipes with with_machine_options:
-```ruby
-with_driver 'vagrant'
-with_machine_options :vagrant_options => { 'vm.box' => 'precise64' }
-machine 'web' do
-  recipe 'apache'
-end
-machine 'db' do
-  recipe 'mysql'
-end
-```
-- In recipes on machine definitions:
-```ruby
-with_driver 'vagrant' do
-  machine 'web' do
-    machine_options :vagrant_options => { 'vm.box' => 'centos6' }
-    recipe 'apache'
-  end
-  machine 'db' do
-    machine_options :vagrant_options => { 'vm.box' => 'precise64' }
-    recipe 'mysql'
-  end
-end
-```
-- In Chef config (`knife.rb`):
-```ruby
-machine_options :vagrant_options => { 'vm.box' => 'centos6' }
-```
-- In Chef config associated with specific drivers:
-```ruby
-drivers {
-  'vagrant:/Users/jkeiser/vms' => {
-    :machine_options => {
-      :vagrant_options => {
-        'vm.box' => 'precise64'
-      }
-    }
-  }
-}
-```
-
-Machine options are *additive*.  If you specify `'vm.box' => 'precise64'` in Chef config, and then specify `'vm.ram' => '8G'` on the machine resource, the vagrant options for that will include *both* sets of option.
+Absolutely everything that is not credentials should be specified in machine_options.  These are how you specify the OS you want to lay down, the keys you want to use to access the machine remotely, mount points, and everything else.  machine_options are generally specified in recipes, but may also be specified in configuration; details are [here]().
 
 ### Private keys
 
@@ -215,5 +94,7 @@ profiles {
   }
 }
 ```
+
+You can specify the profile with the CHEF_PROFILE environment variable or the `profile` configuration variable in your Chef configuration file.
 
 This is very very early days for profiles, and in the future I expect we will allow them to be automatically loaded from their own files, and easier to configure, in the future.  Perhaps even have more sophisticated things like automatic key paths, caches and such specific to a given profile.  But the potential is there to be a very useful way to use both Chef and Chef Metal.
