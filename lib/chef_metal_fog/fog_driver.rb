@@ -590,9 +590,9 @@ module ChefMetalFog
       when 'AWS'
         # Grab the profile
         aws_profile = FogDriverAWS.get_aws_profile(result[:driver_options], id)
-        [ :aws_access_key_id, :aws_secret_access_key, :aws_security_token].each do |key|
-          new_compute_options[key] = aws_profile[key]
-        end
+        new_compute_options[:aws_access_key_id] = aws_profile[:aws_access_key_id]
+        new_compute_options[:aws_secret_access_key] = aws_profile[:aws_secret_access_key]
+        new_compute_options[:aws_session_token] = aws_profile[:aws_security_token]
         # For :region, we prefer the region in compute options or URL over the region in the profile.
         new_compute_options[:region] ||= aws_profile[:region] if aws_profile.has_key?(:region) && !compute_options.has_key?(:region)
       when 'OpenStack'

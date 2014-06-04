@@ -6,21 +6,22 @@ module ChefMetalFog
   module FogDriverAWS
     def self.get_aws_profile(driver_options, aws_account_id)
       aws_credentials = get_aws_credentials(driver_options)
+      compute_options = driver_options[:compute_options] || {}
 
       # Order of operations:
-      # driver_options[:aws_access_key_id] / driver_options[:aws_secret_access_key] / driver_options[:aws_security_token] / driver_options[:region]
-      # driver_options[:aws_profile]
+      # compute_options[:aws_access_key_id] / compute_options[:aws_secret_access_key] / compute_options[:aws_security_token] / compute_options[:region]
+      # compute_options[:aws_profile]
       # ENV['AWS_ACCESS_KEY_ID'] / ENV['AWS_SECRET_ACCESS_KEY'] / ENV['AWS_SECURITY_TOKEN'] / ENV['AWS_REGION']
       # ENV['AWS_PROFILE']
       # ENV['DEFAULT_PROFILE']
       # 'default'
-      aws_profile = if driver_options[:aws_access_key_id]
+      aws_profile = if compute_options[:aws_access_key_id]
         Chef::Log.debug("Using AWS driver access key options")
         {
-          :aws_access_key_id => driver_options[:aws_access_key_id],
-          :aws_secret_access_key => driver_options[:aws_secret_access_key],
-          :aws_security_token => driver_options[:aws_security_token],
-          :region => driver_options[:region]
+          :aws_access_key_id => compute_options[:aws_access_key_id],
+          :aws_secret_access_key => compute_options[:aws_secret_access_key],
+          :aws_security_token => compute_options[:aws_session_token],
+          :region => compute_options[:region]
         }
       elsif driver_options[:aws_profile]
         Chef::Log.debug("Using AWS profile #{driver_options[:aws_profile]}")
