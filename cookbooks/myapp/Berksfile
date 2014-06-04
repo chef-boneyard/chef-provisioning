@@ -1,6 +1,0 @@
-source "https://api.berkshelf.com"
-
-metadata
-
-cookbook "docker", github: "tduffield/chef-docker"
-cookbook 'build-essential'
