@@ -50,6 +50,7 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
       m[:machine].setup_convergence(prefixed_handler)
       m[:spec].save(action_handler)
       Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:files])
+      # TODO only converge if machine was modified
       m[:machine].converge(prefixed_handler)
       m[:spec].save(prefixed_handler)
     end

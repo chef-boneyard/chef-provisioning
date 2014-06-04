@@ -109,7 +109,7 @@ module ChefMetal
       def make_url_available_to_remote(local_url)
         uri = URI(local_url)
         host = Socket.getaddrinfo(uri.host, uri.scheme, nil, :STREAM)[0][3]
-        if host == '127.0.0.1' || host == '[::1]'
+        if host == '127.0.0.1' || host == '::1'
           unless session.forward.active_remotes.any? { |port, bind| port == uri.port && bind == uri.host }
             Chef::Log.debug("Forwarding local server #{uri.host}:#{uri.port} to port #{uri.port} on #{username}@#{self.host}")
             session.forward.remote(uri.port, uri.host, uri.port)
