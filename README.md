@@ -43,6 +43,22 @@ chef-client -z simple.rb
 
 This will create two linux boxes in the AWS account referenced by your default profile in `~/.aws/config` (or your environment variables).
 
+### DigitalOcean
+
+If you are on DigitalOcean and using the `tugboat` gem, you can do this:
+
+```
+gem install chef-metal
+export CHEF_DRIVER=fog:DigitalOcean
+chef-client -z simple.rb
+```
+
+If you aren't using the `tugboat` gem, you can put `driver` and `driver_options` into your `.chef/knife.rb` file.
+
+This will use your tugboat settings to create whatever sort of instance you normally create.
+
+### Cleaning up
+
 When you are done with the examples, run this to clean up:
 
 ```
@@ -183,7 +199,7 @@ with_machine_options :bootstrap_options => {
 
 You will notice that we are still using `simple.rb` here.  Machine definitions are generally driver-independent.  This is an important feature that allows you to spin up your clusters in different places to create staging, test or miniature dev environments.
 
-### Pointing Boxes at Servers
+### Pointing Boxes at Chef Servers
 
 By default, Chef Metal will put your boxes on the same Chef server you started chef-client with (in the case of -z, that's a local chef-zero server). Sometimes you want to put your boxes on different servers.  There are a couple of ways to do that:
 
