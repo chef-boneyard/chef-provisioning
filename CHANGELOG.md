@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1 (6/4/2014)
+
+- [Openstack] @thommay fix for credentials retrieval
+
 ## 0.5 (6/4/2014)
 
 - [Rackspace] @hhoover @thommay Rackspace support!
