@@ -81,8 +81,10 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
             case new_driver.compute_options[:provider]
             when 'DigitalOcean'
               compute.create_ssh_key(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
-            when 'OpenStack', 'Rackspace'
+            when 'OpenStack'
               compute.create_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
+            when 'Rackspace'
+              compute.create_keypair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
             else
               compute.key_pairs.get(new_resource.name).destroy
               compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
@@ -101,8 +103,10 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         case new_driver.compute_options[:provider]
         when 'DigitalOcean'
           compute.create_ssh_key(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
-        when 'OpenStack', 'Rackspace'
+        when 'OpenStack'
           compute.create_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
+        when 'Rackspace'
+          compute.create_keypair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
         else
           compute.import_key_pair(new_resource.name, Cheffish::KeyFormatter.encode(desired_key, :format => :openssh))
         end

@@ -117,13 +117,10 @@ module ChefMetalFog
     def self.from_provider(provider, config)
       # Figure out the options and merge them into the config
       config, id = compute_options_for(provider, nil, config)
-      driver_options = config[:driver_options] || {}
-      compute_options = driver_options[:compute_options] || {}
 
       driver_url = "fog:#{provider}:#{id}"
 
-      config = ChefMetal.config_for_url(driver_url, config)
-      FogDriver.new(driver_url, config)
+      ChefMetal.driver_for_url(driver_url, config)
     end
 
     # Create a new fog driver.
@@ -606,7 +603,7 @@ module ChefMetalFog
         new_compute_options[:openstack_auth_url] ||= credential[:openstack_auth_url]
         new_compute_options[:openstack_tenant] ||= credential[:openstack_tenant]
       when 'Rackspace'
-        credential = Fog.credential
+        credential = Fog.credentials
 
         new_compute_options[:rackspace_username] ||= credential[:rackspace_username]
         new_compute_options[:rackspace_api_key] ||= credential[:rackspace_api_key]
