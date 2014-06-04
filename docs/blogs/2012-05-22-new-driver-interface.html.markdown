@@ -1,6 +1,6 @@
-# Chef Metal, Configuration and Drivers
+# Chef Metal 0.11, Configuration and Drivers
 
-As Chef Metal approaches 1.0, we've landed a huge configuration and driver interface improvement intended to enable:
+Chef Metal has gotten a facelift!  We've tried to keep the interface stable for a long time as we find out what works and what doesn't, and now we're ready to make some changes.  In 0.11, we've landed a huge configuration and driver interface improvement intended to enable:
 
 - A standard way to specify credentials and keys that keeps them out of recipes and allows them to be used in multiple places (Chef config)
 - A cohesive way to refer to an environment (Chef profiles)
@@ -50,7 +50,7 @@ Credentials for drivers can be specified, and Chef Metal makes it easy to specif
 
 Absolutely everything that is not credentials should be specified in machine_options.  These are how you specify the OS you want to lay down, the keys you want to use to access the machine remotely, mount points, and everything else.  machine_options are generally specified in recipes, but may also be specified in configuration; details are [here]().
 
-### Private keys
+## Private keys
 
 chef-metal also helps you link up Metal to your private keys.  The `private_key_paths` and `private_keys` Chef config variables let you tell Metal about sets of named private keys and paths where private keys can be found.
 
