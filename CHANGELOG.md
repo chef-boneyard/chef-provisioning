@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.2 (6/4/2014)
+
+- [DigitalOcean] Autoload ~/.tugboat file with credentials and defaults
+
 ## 0.5.1 (6/4/2014)
 
 - [Openstack] @thommay fix for credentials retrieval
