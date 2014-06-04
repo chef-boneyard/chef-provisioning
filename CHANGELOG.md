@@ -1,5 +1,9 @@
 # Chef Metal Changelog
 
+## 0.11.2 (6/4/2014)
+
+- Fix issue where machines with different drivers could get default options from the global current driver
+
 ## 0.11.1 (6/4/2014)
 
 - fix local mode port forwarding on IPv6 hosts
