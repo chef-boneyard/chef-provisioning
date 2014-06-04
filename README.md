@@ -17,6 +17,8 @@ Try It Out
 
 You can try out Metal in many different flavors.
 
+HINT: chef-metal looks prettiest with chef 11.14 alpha.  `gem install chef --pre` to get it.
+
 ### Vagrant
 
 To give it a spin, install Vagrant and VirtualBox and try this from the `chef-metal/docs/examples` directory:
