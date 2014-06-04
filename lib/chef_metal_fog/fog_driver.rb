@@ -599,7 +599,7 @@ module ChefMetalFog
         # TODO it is supposed to be unnecessary to load credentials from fog this way;
         # why are we doing it?
         # TODO support http://docs.openstack.org/cli-reference/content/cli_openrc.html
-        credential = Fog.credential
+        credential = Fog.credentials
 
         new_compute_options[:openstack_username] ||= credential[:openstack_username]
         new_compute_options[:openstack_api_key] ||= credential[:openstack_api_key]
