@@ -1,40 +1,19 @@
 # Changelog
 
-## 0.5.beta.7 (TBD)
+## 0.5 (6/4/2014)
 
-- Don't used the InstallCached by default, instead use InstallSh which greatly speeds provisioning on remote systems. Revert to the old behavior by setting `with_machine_options :cached_installer => true`
-
-## 0.5.beta.6 (6/3/2014)
-
-- Add fog:AWS:<profile>:<region> driver URL support
-- Make compute options :region override profile/env vars
-
-## 0.5.beta.5 (6/3/2014)
-
-- fix crash
-
-## 0.5.beta.4 (6/3/2014)
-
-- Make region part of fog:AWS URL
-- Don't reboot server on every chef-client run if non-connectable
-- Warn when username at time of creation != current username
-
-## 0.5.beta.3 (5/30/2014)
-
-- Much better support for regions and AWS environment variables
-- @hhoover Rackspace support!
-- @marcusn numerous bugfixes
-- @marcusn CloudStack support!
-
-## 0.5.beta.2 (5/27/2014)
-
-- Fix PKCS8 crash on Ruby 2.0+
-- Fix ability to update fog_key_pair
-
-## 0.5.beta (5/23/2014)
-
+- [Rackspace] @hhoover @thommay Rackspace support!
+- [CloudStack] @marcusn CloudStack support!
+- Adjust to chef-metal 0.11 interface
 - Major refactor for readability
-- Adjust to new chef-metal interface
+- [AWS] Make region part of fog:AWS URL: fog:AWS:<id>:<region> is canonical
+- [AWS] Support fog:AWS:<profile>:<region> to override regionis now supported.
+- [AWS] Much better support for regions and AWS environment variables
+- @marcusn numerous bugfixes
+- Fix PKCS8 crash on Ruby 2.0+
+- Don't reboot server on every chef-client run if non-connectable
+- Warn when username at time of creation is not the same as the current username (ssh might fail)
+- @irvingpop speed up converges by downloading Chef from the remote machine (InstallSh instead of InstallCached)
 
 ## 0.4 (5/1/2014)
 
