@@ -3,6 +3,7 @@ require 'chef_metal/machine/windows_machine'
 require 'chef_metal/machine/unix_machine'
 require 'chef_metal/machine_spec'
 require 'chef_metal/convergence_strategy/install_msi'
+require 'chef_metal/convergence_strategy/install_sh'
 require 'chef_metal/convergence_strategy/install_cached'
 require 'chef_metal/convergence_strategy/no_converge'
 require 'chef_metal/transport/ssh'
@@ -479,8 +480,10 @@ module ChefMetalFog
 
       if machine_spec.location['is_windows']
         ChefMetal::ConvergenceStrategy::InstallMsi.new(machine_options[:convergence_options], config)
-      else
+      elsif machine_options[:cached_installer] == true
         ChefMetal::ConvergenceStrategy::InstallCached.new(machine_options[:convergence_options], config)
+      else
+        ChefMetal::ConvergenceStrategy::InstallSh.new(machine_options[:convergence_options], config)
       end
     end
 
