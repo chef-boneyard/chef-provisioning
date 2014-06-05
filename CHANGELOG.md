@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.3 (6/5/2014)
+
+- @thommay fix issue where keypair fingerprints don't compare correctly across machines
+
 ## 0.5.2 (6/4/2014)
 
 - [DigitalOcean] Autoload ~/.tugboat file with credentials and defaults
