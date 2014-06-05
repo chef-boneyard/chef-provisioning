@@ -75,7 +75,7 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         end
       end
 
-      if !new_fingerprints.any? { |f| f == @current_fingerprint }
+      if !new_fingerprints.any? { |f| compare_public_key f }
         if new_resource.allow_overwrite
           converge_by "update #{key_description} to match local key at #{new_resource.private_key_path}" do
             case new_driver.compute_options[:provider]
@@ -153,6 +153,12 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
 
   def current_resource_exists?
     @current_resource.action != [ :delete ]
+  end
+
+  def compare_public_key(new)
+    c = @current_fingerprint.split[0,2].join(' ')
+    n = new.split[0,2].join(' ')
+    c == n
   end
 
   def compute
