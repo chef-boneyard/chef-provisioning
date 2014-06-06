@@ -499,6 +499,8 @@ module ChefMetalFog
       }.merge(machine_options[:ssh_options] || {})
       if server.respond_to?(:private_key) && server.private_key
         result[:key_data] = [ server.private_key ]
+      elsif machine_options[:bootstrap_options][:key_path]
+        result[:key_data] = [ IO.read(machine_options[:bootstrap_options][:key_path]) ]
       elsif server.respond_to?(:key_name)
         result[:key_data] = [ get_private_key(server.key_name) ]
       elsif machine_spec.location['key_name']
@@ -636,8 +638,6 @@ module ChefMetalFog
             #:ssh_username => tugboat_data['ssh']['ssh_user'],
             :ssh_options => {
               :port => tugboat_data['ssh']['ssh_port'],
-              # TODO we ignore ssh_key_path in favor of ssh_key / key_name stuff
-              #:key_data => [ IO.read(tugboat_data['ssh']['ssh_key_path']) ] # TODO use paths, not data?
             }
           )
 
@@ -650,6 +650,11 @@ module ChefMetalFog
             :private_networking => tugboat_data['defaults']['private_networking'] == 'true',
             :backups_enabled => tugboat_data['defaults']['backups_enabled'] == 'true',
           )
+
+          new_defaults[:machine_options][:bootstrap_options].merge!(
+            :key_path => tugboat_data['ssh']['ssh_key_path'],
+          ) if tugboat_data['ssh']['ssh_key_path']
+
           ssh_key = tugboat_data['defaults']['ssh_key']
           if ssh_key && ssh_key.size > 0
             new_defaults[:machine_options][:bootstrap_options][:key_name] = ssh_key
