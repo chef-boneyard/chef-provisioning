@@ -57,6 +57,15 @@ module ChefMetal
       driver.is_a?(String) ? driver_for_url(driver) : driver
     end
 
+    def connect_to_machine(name, chef_server = nil)
+      if name.is_a?(MachineSpec)
+        machine_spec = name
+      else
+        machine_spec = ChefMetal::ChefMachineSpec.get(name, chef_server)
+      end
+      ChefMetal.connect_to_machine(machine_spec, config)
+    end
+
     private
 
     def driver_for_url(driver_url)
@@ -78,15 +87,6 @@ module ChefMetal
           driver
         end
       end
-    end
-
-    def connect_to_machine(name, chef_server = nil)
-      if name.is_a?(MachineSpec)
-        machine_spec = name
-      else
-        machine_spec = ChefMetal::ChefMachineSpec.get(name, chef_server)
-      end
-      ChefMetal.connect_to_machine(machine_spec, config)
     end
 
     def keys
