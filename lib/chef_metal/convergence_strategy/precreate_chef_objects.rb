@@ -173,7 +173,7 @@ module ChefMetal
 chef_server_url #{chef_server_url.inspect}
 node_name #{node_name.inspect}
 client_key #{convergence_options[:client_pem_path].inspect}
-ssl_verify_mode :none
+ssl_verify_mode :verify_none
 EOM
       end
     end
