@@ -68,7 +68,7 @@ chef-client -z destroy_all.rb
 What Is Chef Metal?
 -------------------
 
-Chef Metal has two major abstractions: the machine resource, anf drivers.
+Chef Metal has two major abstractions: the machine resource, and drivers.
 
 ### The `machine` resource
 
