@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.4 (6/10/2014)
+
+- Fix PKCS8 fingerprint comparison on < 2.0
+
 ## 0.5.3 (6/5/2014)
 
 - @thommay fix issue where keypair fingerprints don't compare correctly across machines
