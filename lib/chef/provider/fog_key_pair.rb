@@ -70,8 +70,8 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         # them matches.
         new_fingerprints = [Cheffish::KeyFormatter.encode(desired_key, :format => :fingerprint)]
         if RUBY_VERSION.to_f < 2.0
-          new_fingerprints << lambda { Cheffish::KeyFormatter.encode(desired_private_key,
-                                         :format => :pkcs8sha1fingerprint) }
+          new_fingerprints << Cheffish::KeyFormatter.encode(desired_private_key,
+                                :format => :pkcs8sha1fingerprint)
         end
       end
 
