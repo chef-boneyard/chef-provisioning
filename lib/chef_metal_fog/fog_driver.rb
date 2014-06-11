@@ -102,6 +102,21 @@ module ChefMetalFog
       :ssh_timeout => 20
     }
 
+    class << self
+      alias :__new__ :new
+
+      def inherited(klass)
+        class << klass
+          alias :new :__new__
+        end
+      end
+    end
+
+    def self.new(driver_url, config)
+      driver = driver_url.split(':')[1]
+      ChefMetalFog::Drivers.const_get(driver).new(driver_url, config)
+    end
+
     # Passed in a driver_url, and a config in the format of Driver.config.
     def self.from_url(driver_url, config)
       FogDriver.new(driver_url, config)
