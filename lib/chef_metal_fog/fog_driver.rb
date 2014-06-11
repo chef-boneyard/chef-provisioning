@@ -245,6 +245,10 @@ module ChefMetalFog
       machine_options[key] || DEFAULT_OPTIONS[key]
     end
 
+    def creator
+      ''
+    end
+
     def create_server(action_handler, machine_spec, machine_options)
       if machine_spec.location
         if machine_spec.location['driver_url'] != driver_url
@@ -270,14 +274,6 @@ module ChefMetalFog
       server = nil
       action_handler.report_progress description
       if action_handler.should_perform_actions
-        creator = case provider
-          when 'AWS'
-            driver_options[:aws_account_info][:aws_username]
-          when 'OpenStack'
-            compute_options[:openstack_username]
-          when 'Rackspace'
-            compute_options[:rackspace_username]
-        end
         server = compute.servers.create(bootstrap_options)
         machine_spec.location = {
           'driver_url' => driver_url,
