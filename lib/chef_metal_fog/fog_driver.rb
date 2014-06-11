@@ -493,16 +493,17 @@ module ChefMetalFog
     end
 
     def ssh_username
-      machine_spec.location['ssh_username'] || 'root'
+      'root'
     end
 
     def create_ssh_transport(machine_spec, machine_options, server)
       ssh_options = ssh_options_for(machine_spec, machine_options, server)
+      username = machine_spec.location['ssh_username'] || ssh_username
       if machine_options.has_key?(:ssh_username) && machine_options[:ssh_username] != machine_spec.location['ssh_username']
         Chef::Log.warn("Server #{machine_spec.name} was created with SSH username #{machine_spec.location['ssh_username']} and machine_options specifies username #{machine_options[:ssh_username]}.  Using #{machine_spec.location['ssh_username']}.  Please edit the node and change the metal.location.ssh_username attribute if you want to change it.")
       end
       options = {}
-      if machine_spec.location[:sudo] || (!machine_spec.location.has_key?(:sudo) && ssh_username != 'root')
+      if machine_spec.location[:sudo] || (!machine_spec.location.has_key?(:sudo) && username != 'root')
         options[:prefix] = 'sudo '
       end
 
@@ -522,7 +523,7 @@ module ChefMetalFog
       options[:ssh_pty_enable] = true
       options[:ssh_gateway] = machine_spec.location['ssh_gateway'] if machine_spec.location.has_key?('ssh_gateway')
 
-      ChefMetal::Transport::SSH.new(remote_host, ssh_username, ssh_options, options, config)
+      ChefMetal::Transport::SSH.new(remote_host, username, ssh_options, options, config)
     end
 
     def self.compute_options_for(provider, id, config)

@@ -12,7 +12,7 @@ module ChefMetalFog
       end
 
       def ssh_username
-        machine_spec.location['ssh_username'] || 'ubuntu'
+        'ubuntu'
       end
 
       def self.compute_options_for(provider, id, config)
