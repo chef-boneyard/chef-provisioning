@@ -10,7 +10,7 @@ Date       | Blog
 6/3/2014   | [machine_batch and parallelization](https://github.com/opscode/chef-metal/blob/master/docs/blogs/2012-05-28-machine_batch.html.markdown#chef-metal-parallelization)
 6/3/2014   | [Chef Metal, Configuration and Drivers](https://github.com/opscode/chef-metal/blob/master/docs/blogs/2012-05-22-new-driver-interface.html.markdown#chef-metal-configuration-and-drivers)
 3/4/2014   | [Chef Metal 0.2: Overview](http://www.getchef.com/blog/2014/03/04/chef-metal-0-2-release/) - this is a pretty good overview (though dated).
-12/20/2014 | [Chef Metal Alpha](http://www.getchef.com/blog/2013/12/20/chef-metal-alpha/)
+12/20/2013 | [Chef Metal Alpha](http://www.getchef.com/blog/2013/12/20/chef-metal-alpha/)
 
 Try It Out
 ----------
