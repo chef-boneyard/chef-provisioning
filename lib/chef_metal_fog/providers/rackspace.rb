@@ -1,7 +1,8 @@
-require 'chef_metal_fog/fog_driver'
 module ChefMetalFog
-  module Drivers
+  module Providers
     class Rackspace < ChefMetalFog::FogDriver
+
+      ChefMetalFog::FogDriver.register_provider_class('Rackspace', ChefMetalFog::Providers::Rackspace)
 
       def creator
         compute_options[:rackspace_username]

@@ -1,9 +1,9 @@
-require 'chef_metal_fog/fog_driver'
-
 #   fog:DigitalOcean:<client id>
 module ChefMetalFog
-  module Drivers
+  module Providers
     class DigitalOcean < ChefMetalFog::FogDriver
+
+      ChefMetalFog::FogDriver.register_provider_class('DigitalOcean', ChefMetalFog::Providers::DigitalOcean)
 
       def bootstrap_options_for(action_handler, machine_spec, machine_options)
         bootstrap_options = symbolize_keys(machine_options[:bootstrap_options] || {})

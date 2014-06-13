@@ -1,7 +1,8 @@
-require 'chef_metal_fog/fog_driver'
 module ChefMetalFog
-  module Drivers
+  module Providers
     class CloudStack < ChefMetalFog::FogDriver
+
+      ChefMetalFog::FogDriver.register_provider_class('CloudStack', ChefMetalFog::Providers::CloudStack)
 
       def self.compute_options_for(provider, id, config)
         new_compute_options = {}

@@ -1,7 +1,8 @@
-require 'chef_metal_fog/fog_driver'
 module ChefMetalFog
-  module Drivers
+  module Providers
     class OpenStack < ChefMetalFog::FogDriver
+
+      ChefMetalFog::FogDriver.register_provider_class('OpenStack', ChefMetalFog::Providers::OpenStack)
 
       def creator
         compute_options[:openstack_username]

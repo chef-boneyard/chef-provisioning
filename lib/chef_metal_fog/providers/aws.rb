@@ -1,11 +1,11 @@
-require 'chef_metal_fog/fog_driver'
-
 #   fog:AWS:<account_id>:<region>
 #   fog:AWS:<profile_name>
 #   fog:AWS:<profile_name>:<region>
 module ChefMetalFog
-  module Drivers
+  module Providers
     class AWS < ChefMetalFog::FogDriver
+
+      ChefMetalFog::FogDriver.register_provider_class('AWS', ChefMetalFog::Providers::AWS)
 
       def creator
         driver_options[:aws_account_info][:aws_username]
