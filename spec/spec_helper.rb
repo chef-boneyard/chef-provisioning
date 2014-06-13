@@ -1,4 +1,5 @@
 $:.unshift File.expand_path('../../lib', __FILE__)
+$:.unshift File.expand_path('../support', __FILE__)
 require 'fog'
 require 'chef_metal'
 require 'chef_metal_fog'
