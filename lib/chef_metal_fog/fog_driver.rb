@@ -248,7 +248,7 @@ module ChefMetalFog
     end
 
     def creator
-      ''
+      raise "unsupported fog provider #{provider} (please implement #creator)"
     end
 
     def create_server(action_handler, machine_spec, machine_options)

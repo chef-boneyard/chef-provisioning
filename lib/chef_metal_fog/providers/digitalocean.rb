@@ -5,6 +5,10 @@ module ChefMetalFog
 
       ChefMetalFog::FogDriver.register_provider_class('DigitalOcean', ChefMetalFog::Providers::DigitalOcean)
 
+      def creator
+        ''
+      end
+
       def bootstrap_options_for(action_handler, machine_spec, machine_options)
         bootstrap_options = symbolize_keys(machine_options[:bootstrap_options] || {})
         unless bootstrap_options[:key_name]
