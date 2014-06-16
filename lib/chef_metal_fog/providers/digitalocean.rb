@@ -9,21 +9,10 @@ module ChefMetalFog
         ''
       end
 
-      def bootstrap_options_for(action_handler, machine_spec, machine_options)
-        bootstrap_options = symbolize_keys(machine_options[:bootstrap_options] || {})
+      def bootstrap_helper(action_handler, machine_spec, machine_options, bootstrap_options)
         unless bootstrap_options[:key_name]
           bootstrap_options[:key_name] = overwrite_default_key_willy_nilly(action_handler)
         end
-
-        tags = {
-          'Name' => machine_spec.name,
-          'BootstrapId' => machine_spec.id,
-          'BootstrapHost' => Socket.gethostname,
-          'BootstrapUser' => Etc.getlogin
-        }
-        # User-defined tags override the ones we set
-        tags.merge!(bootstrap_options[:tags]) if bootstrap_options[:tags]
-        bootstrap_options.merge!({ :tags => tags })
 
         if !bootstrap_options[:image_id]
           bootstrap_options[:image_name] ||= 'CentOS 6.4 x32'

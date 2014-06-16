@@ -429,11 +429,13 @@ module ChefMetalFog
       'metal_default'
     end
 
+    def bootstrap_helper(action_handler, machine_spec, machine_options, bootstrap_options)
+      bootstrap_options
+    end
+
     def bootstrap_options_for(action_handler, machine_spec, machine_options)
       bootstrap_options = symbolize_keys(machine_options[:bootstrap_options] || {})
-      if provider == 'AWS' && !bootstrap_options[:key_name]
-        bootstrap_options[:key_name] = overwrite_default_key_willy_nilly(action_handler)
-      end
+      bootstrap_options = bootstrap_helper(action_handler, machine_spec, machine_options, bootstrap_options)
       tags = {
           'Name' => machine_spec.name,
           'BootstrapId' => machine_spec.id,
