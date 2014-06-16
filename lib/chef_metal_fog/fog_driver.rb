@@ -108,10 +108,14 @@ module ChefMetalFog
       @@registered_provider_classes[name] = driver
     end
 
+    def self.provider_class_for(provider)
+      require "chef_metal_fog/providers/#{provider.downcase}"
+      @@registered_provider_classes[provider]
+    end
+
     def self.new(driver_url, config)
       provider = driver_url.split(':')[1]
-      require "chef_metal_fog/providers/#{provider.downcase}"
-      @@registered_provider_classes[provider].new(driver_url, config)
+      provider_class_for(provider).new(driver_url, config)
     end
 
     # Passed in a driver_url, and a config in the format of Driver.config.
@@ -121,18 +125,15 @@ module ChefMetalFog
 
     def self.canonicalize_url(driver_url, config)
       _, provider, id = driver_url.split(':', 3)
-      config, id = @@registered_provider_classes[provider].compute_options_for(provider, id, config)
+      config, id = provider_class_for(provider).compute_options_for(provider, id, config)
       [ "fog:#{provider}:#{id}", config ]
     end
 
     # Passed in a config which is *not* merged with driver_url (because we don't
     # know what it is yet) but which has the same keys
     def self.from_provider(provider, config)
-
-      require "chef_metal_fog/providers/#{provider.downcase}"
-
       # Figure out the options and merge them into the config
-      config, id = @@registered_provider_classes[provider].compute_options_for(provider, nil, config)
+      config, id = provider_class_for(provider).compute_options_for(provider, nil, config)
 
       driver_url = "fog:#{provider}:#{id}"
 
