@@ -1,3 +1,4 @@
+# fog:Rackspace:https://identity.api.rackspacecloud.com/v2.0
 module ChefMetalFog
   module Providers
     class Rackspace < ChefMetalFog::FogDriver

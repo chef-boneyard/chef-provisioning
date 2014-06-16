@@ -23,7 +23,8 @@ module ChefMetalFog
   # ## Fog Driver URLs
   #
   # All Metal drivers use URLs to uniquely identify a driver's "bucket" of machines.
-  # Fog URLs are of the form fog:<provider>:<identifier:>
+  # Fog URLs are of the form fog:<provider>:<identifier:> - see individual providers
+  # for sample URLs.
   #
   # Identifier is generally something uniquely identifying the account.  If multiple
   # users can access the account, the identifier should be the same for all of

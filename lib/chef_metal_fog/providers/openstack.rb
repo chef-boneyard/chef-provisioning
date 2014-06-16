@@ -1,3 +1,4 @@
+# fog:OpenStack:https://identifyhost:portNumber/v2.0
 module ChefMetalFog
   module Providers
     class OpenStack < ChefMetalFog::FogDriver
