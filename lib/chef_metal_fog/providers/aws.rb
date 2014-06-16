@@ -16,7 +16,7 @@ module ChefMetalFog
         driver_options[:aws_account_info][:aws_username]
       end
 
-      def ssh_username
+      def default_ssh_username
         'ubuntu'
       end
 
