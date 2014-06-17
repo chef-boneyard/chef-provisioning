@@ -15,15 +15,7 @@ module ChefMetalFog
           bootstrap_options[:key_name] = overwrite_default_key_willy_nilly(action_handler)
         end
 
-        tags = {
-          'Name' => machine_spec.name,
-          'BootstrapId' => machine_spec.id,
-          'BootstrapHost' => Socket.gethostname,
-          'BootstrapUser' => Etc.getlogin
-        }
-        # User-defined tags override the ones we set
-        tags.merge!(bootstrap_options[:tags]) if bootstrap_options[:tags]
-        bootstrap_options.merge!({ :tags => tags })
+        bootstrap_options[:tags]  = default_tags(machine_spec, bootstrap_options[:tags] || {})
 
         if !bootstrap_options[:image_id]
           bootstrap_options[:image_name] ||= 'CentOS 6.4 x32'
@@ -45,7 +37,6 @@ module ChefMetalFog
 
         # You don't get to specify name yourself
         bootstrap_options[:name] = machine_spec.name
-        bootstrap_options[:name] ||= machine_spec.name
 
         bootstrap_options
       end

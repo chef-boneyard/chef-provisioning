@@ -431,9 +431,15 @@ module ChefMetalFog
 
     def bootstrap_options_for(action_handler, machine_spec, machine_options)
       bootstrap_options = symbolize_keys(machine_options[:bootstrap_options] || {})
-      if provider == 'AWS' && !bootstrap_options[:key_name]
-        bootstrap_options[:key_name] = overwrite_default_key_willy_nilly(action_handler)
-      end
+
+      bootstrap_options[:tags]  = default_tags(machine_spec, bootstrap_options[:tags] || {})
+
+      bootstrap_options[:name] ||= machine_spec.name
+
+      bootstrap_options
+    end
+
+    def default_tags(machine_spec, bootstrap_tags = {})
       tags = {
           'Name' => machine_spec.name,
           'BootstrapId' => machine_spec.id,
@@ -441,12 +447,7 @@ module ChefMetalFog
           'BootstrapUser' => Etc.getlogin
       }
       # User-defined tags override the ones we set
-      tags.merge!(bootstrap_options[:tags]) if bootstrap_options[:tags]
-      bootstrap_options.merge!({ :tags => tags })
-
-      bootstrap_options[:name] ||= machine_spec.name
-
-      bootstrap_options
+      tags.merge(bootstrap_tags)
     end
 
     def machine_for(machine_spec, machine_options, server = nil)

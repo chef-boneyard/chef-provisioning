@@ -20,6 +20,20 @@ module ChefMetalFog
         'ubuntu'
       end
 
+      def bootstrap_options_for(action_handler, machine_spec, machine_options)
+        bootstrap_options = symbolize_keys(machine_options[:bootstrap_options] || {})
+
+        unless !bootstrap_options[:key_name]
+          bootstrap_options[:key_name] = overwrite_default_key_willy_nilly(action_handler)
+        end
+
+        bootstrap_options[:tags]  = default_tags(machine_spec, bootstrap_options[:tags] || {})
+
+        bootstrap_options[:name] ||= machine_spec.name
+
+        bootstrap_options
+      end
+
       def self.get_aws_profile(driver_options, aws_account_id)
         aws_credentials = get_aws_credentials(driver_options)
         compute_options = driver_options[:compute_options] || {}
