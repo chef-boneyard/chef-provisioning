@@ -38,7 +38,7 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
   action :setup do
     with_ready_machines do |m|
       prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
-      machine[:machine].setup_convergence(prefixed_handler)
+      m[:machine].setup_convergence(prefixed_handler)
       m[:spec].save(prefixed_handler)
       Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:files])
     end
