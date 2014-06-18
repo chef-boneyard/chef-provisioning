@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6 (6/18/2014)
+
+- @thommay split the driver into subclasses for each provider instead of tons of if statements
+- @lamont-granquist allow DigitalOcean to use SSH paths
+- Use unix timestamps instead of strings (@thommay)
+- Don't require PKCS8 to be installed
+
 ## 0.5.4 (6/10/2014)
 
 - Fix PKCS8 fingerprint comparison on < 2.0
