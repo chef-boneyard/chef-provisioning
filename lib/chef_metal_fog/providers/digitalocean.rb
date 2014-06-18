@@ -79,6 +79,9 @@ module ChefMetalFog
             :private_networking => tugboat_data['defaults']['private_networking'] == 'true',
             :backups_enabled => tugboat_data['defaults']['backups_enabled'] == 'true',
           )
+          if tugboat_data['ssh']['ssh_key_path']
+            new_defaults[:machine_options][:bootstrap_options][:key_path] = tugboat_data['ssh']['ssh_key_path']
+          end
           ssh_key = tugboat_data['defaults']['ssh_key']
           if ssh_key && ssh_key.size > 0
             new_defaults[:machine_options][:bootstrap_options][:key_name] = ssh_key

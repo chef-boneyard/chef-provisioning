@@ -493,6 +493,8 @@ module ChefMetalFog
         result[:key_data] = [ get_private_key(server.key_name) ]
       elsif machine_spec.location['key_name']
         result[:key_data] = [ get_private_key(machine_spec.location['key_name']) ]
+      elsif machine_options[:bootstrap_options][:key_path]
+        result[:key_data] = [ IO.read(machine_options[:bootstrap_options][:key_path]) ]
       elsif machine_options[:bootstrap_options][:key_name]
         result[:key_data] = [ get_private_key(machine_options[:bootstrap_options][:key_name]) ]
       else
