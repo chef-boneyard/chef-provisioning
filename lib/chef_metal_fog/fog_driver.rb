@@ -269,7 +269,7 @@ module ChefMetalFog
           'driver_version' => ChefMetalFog::VERSION,
           'server_id' => server.id,
           'creator' => creator,
-          'allocated_at' => Time.now.utc.to_s
+          'allocated_at' => Time.now.to_i
         }
         machine_spec.location['key_name'] = bootstrap_options[:key_name] if bootstrap_options[:key_name]
         %w(is_windows ssh_username sudo use_private_ip_for_ssh ssh_gateway).each do |key|
@@ -291,7 +291,7 @@ module ChefMetalFog
       if server.state == 'stopped'
         action_handler.perform_action "start machine #{machine_spec.name} (#{server.id} on #{driver_url})" do
           server.start
-          machine_spec.location['started_at'] = Time.now.utc.to_s
+          machine_spec.location['started_at'] = Time.now.to_i
         end
         machine_spec.save(action_handler)
       end
@@ -300,16 +300,16 @@ module ChefMetalFog
     def restart_server(action_handler, machine_spec, server)
       action_handler.perform_action "restart machine #{machine_spec.name} (#{server.id} on #{driver_url})" do
         server.reboot
-        machine_spec.location['started_at'] = Time.now.utc.to_s
+        machine_spec.location['started_at'] = Time.now.to_i
       end
       machine_spec.save(action_handler)
     end
 
     def remaining_wait_time(machine_spec, machine_options)
       if machine_spec.location['started_at']
-        timeout = option_for(machine_options, :start_timeout) - (Time.now.utc - Time.parse(machine_spec.location['started_at']))
+        timeout = option_for(machine_options, :start_timeout) - (Time.now.utc - Time.at(machine_spec.location['started_at']))
       else
-        timeout = option_for(machine_options, :create_timeout) - (Time.now.utc - Time.parse(machine_spec.location['allocated_at']))
+        timeout = option_for(machine_options, :create_timeout) - (Time.now.utc - Time.at(machine_spec.location['allocated_at']))
       end
       timeout > 0 ? timeout : 0.01
     end
