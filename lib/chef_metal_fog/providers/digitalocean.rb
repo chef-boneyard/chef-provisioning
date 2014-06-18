@@ -2,7 +2,6 @@
 module ChefMetalFog
   module Providers
     class DigitalOcean < ChefMetalFog::FogDriver
-
       ChefMetalFog::FogDriver.register_provider_class('DigitalOcean', ChefMetalFog::Providers::DigitalOcean)
 
       def creator
@@ -11,7 +10,17 @@ module ChefMetalFog
 
       def bootstrap_options_for(action_handler, machine_spec, machine_options)
         bootstrap_options = symbolize_keys(machine_options[:bootstrap_options] || {})
-        unless bootstrap_options[:key_name]
+        if bootstrap_options[:key_path]
+          bootstrap_options[:key_name] ||= File.basename(bootstrap_options[:key_path])
+          # Verify that the provided key name and path are in line (or create the key pair if not!)
+          driver = self
+          ChefMetal.inline_resource(action_handler) do
+            fog_key_pair bootstrap_options[:key_name] do
+              private_key_path bootstrap_options[:key_path]
+              driver driver
+            end
+          end
+        else
           bootstrap_options[:key_name] = overwrite_default_key_willy_nilly(action_handler)
         end
 
