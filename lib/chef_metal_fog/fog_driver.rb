@@ -320,11 +320,19 @@ module ChefMetalFog
 
     def remaining_wait_time(machine_spec, machine_options)
       if machine_spec.location['started_at']
-        timeout = option_for(machine_options, :start_timeout) - (Time.now.utc - Time.at(machine_spec.location['started_at']))
+        timeout = option_for(machine_options, :start_timeout) - (Time.now.utc - parse_time(machine_spec.location['started_at']))
       else
-        timeout = option_for(machine_options, :create_timeout) - (Time.now.utc - Time.at(machine_spec.location['allocated_at']))
+        timeout = option_for(machine_options, :create_timeout) - (Time.now.utc - parse_time(machine_spec.location['allocated_at']))
       end
       timeout > 0 ? timeout : 0.01
+    end
+
+    def parse_time(value)
+      if value.is_a?(String)
+        Time.parse(value)
+      else
+        Time.at(value)
+      end
     end
 
     def wait_until_ready(action_handler, machine_spec, machine_options, server)
