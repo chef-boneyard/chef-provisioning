@@ -24,7 +24,7 @@ HINT: chef-metal looks prettiest with chef 11.14 alpha.  `gem install chef --pre
 To give it a spin, install Vagrant and VirtualBox and try this from the `chef-metal/docs/examples` directory:
 
 ```
-gem install chef-metal
+gem install chef-metal chef-metal-vagrant
 export CHEF_DRIVER=vagrant
 chef-client -z vagrant_linux.rb simple.rb
 ```
@@ -36,7 +36,7 @@ This will create two vagrant precise64 linux boxes, "mario" and "luigi1", in `~/
 If you have an AWS account, you can spin up a machine there like this:
 
 ```
-gem install chef-metal
+gem install chef-metal chef-metal-fog
 export CHEF_DRIVER=fog:AWS
 chef-client -z simple.rb
 ```
@@ -48,7 +48,7 @@ This will create two linux boxes in the AWS account referenced by your default p
 If you are on DigitalOcean and using the `tugboat` gem, you can do this:
 
 ```
-gem install chef-metal
+gem install chef-metal chef-metal-fog
 export CHEF_DRIVER=fog:DigitalOcean
 chef-client -z simple.rb
 ```
@@ -234,4 +234,3 @@ Bugs and The Plan
 Please submit bugs, gripes and feature requests at [https://github.com/opscode/chef-metal/issues](https://twitter.com/jkeiser2), contact jkeiser on Twitter at @jkeiser2, email at [jkeiser@getchef.com](mailto:jkeiser@getchef.com)
 
 To contribute, just make a PR in the appropriate repo--also, make sure you've [signed the Chef Contributor License Agreement](https://secure.echosign.com/public/hostedForm?formid=PJIF5694K6L) (quick couple of minutes online), since this is going into core Chef eventually. It takes some time to process, so if you've just done it, let me know in the PR :)  If you already signed this for a Chef contribution, you don't need to do so again--if you're not sure, you can check for your name [here](https://wiki.opscode.com/display/chef/Approved+Contributors)!
-Â

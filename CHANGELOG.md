@@ -1,5 +1,11 @@
 # Chef Metal Changelog
 
+## 0.12 (6/18/2014)
+
+- Remove chef-metal-fog and chef-metal-vagrant as dependencies (install whatever things you want directly!)
+- Fix ssl_verify_mode to work correctly when other HTTPS calls are made (@mwrock)
+- Fix machine_file and machine_execute resources (@irvingpop)
+
 ## 0.11.2 (6/4/2014)
 
 - Fix issue where machines with different drivers could get default options from the global current driver
