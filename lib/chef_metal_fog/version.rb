@@ -1,3 +1,3 @@
 module ChefMetalFog
-  VERSION = '0.6'
+  VERSION = '0.6.1'
 end

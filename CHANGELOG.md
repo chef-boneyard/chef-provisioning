@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1 (6/18/2014)
+
+- fix bootstrap when key is not yet specified
+
 ## 0.6 (6/18/2014)
 
 - @thommay split the driver into subclasses for each provider instead of tons of if statements
