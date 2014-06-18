@@ -1,5 +1,10 @@
 # Chef Metal Changelog
 
+## 0.12.1 (6/18/2014)
+
+- fix machine_batch action :setup
+- fix issue with default machine_batch names being non-unique across recipes
+
 ## 0.12 (6/18/2014)
 
 - Remove chef-metal-fog and chef-metal-vagrant as dependencies (install whatever things you want directly!)
