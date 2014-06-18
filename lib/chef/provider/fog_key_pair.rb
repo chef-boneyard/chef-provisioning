@@ -70,8 +70,19 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
         # them matches.
         new_fingerprints = [Cheffish::KeyFormatter.encode(desired_key, :format => :fingerprint)]
         if RUBY_VERSION.to_f < 2.0
-          new_fingerprints << Cheffish::KeyFormatter.encode(desired_private_key,
-                                :format => :pkcs8sha1fingerprint)
+          if @@use_pkcs8.nil?
+            begin
+              require 'openssl_pkcs8'
+              @@use_pkcs8 = true
+            rescue LoadError
+              Chef::Log.warn("The openssl_pkcs8 gem is not loaded: you may not be able to read key fingerprints created by some cloud providers.  gem install openssl_pkcs8 to fix!")
+              @@use_pkcs8 = false
+            end
+          end
+          if @@use_pkcs8
+            new_fingerprints << Cheffish::KeyFormatter.encode(desired_private_key,
+                                  :format => :pkcs8sha1fingerprint)
+          end
         end
       end
 
