@@ -8,11 +8,9 @@ require 'chef_metal/convergence_strategy/install_cached'
 require 'chef_metal/convergence_strategy/no_converge'
 require 'chef_metal/transport/ssh'
 require 'chef_metal_fog/version'
-require 'chef_metal_fog/fog_driver_aws'
 require 'fog'
 require 'fog/core'
 require 'fog/compute'
-require 'fog/aws'
 require 'socket'
 require 'etc'
 require 'time'
@@ -25,14 +23,8 @@ module ChefMetalFog
   # ## Fog Driver URLs
   #
   # All Metal drivers use URLs to uniquely identify a driver's "bucket" of machines.
-  # Fog URLs are of the form fog:<provider>:<identifier>:
-  #
-  #   fog:AWS:<account_id>:<region>
-  #   fog:AWS:<profile_name>
-  #   fog:AWS:<profile_name>:<region>
-  #   fog:OpenStack:https://identityHost:portNumber/v2.0
-  #   fog:DigitalOcean:<client id>
-  #   fog:Rackspace:https://identity.api.rackspacecloud.com/v2.0
+  # Fog URLs are of the form fog:<provider>:<identifier:> - see individual providers
+  # for sample URLs.
   #
   # Identifier is generally something uniquely identifying the account.  If multiple
   # users can access the account, the identifier should be the same for all of
@@ -102,6 +94,31 @@ module ChefMetalFog
       :ssh_timeout => 20
     }
 
+    class << self
+      alias :__new__ :new
+
+      def inherited(klass)
+        class << klass
+          alias :new :__new__
+        end
+      end
+    end
+
+    @@registered_provider_classes = {}
+    def self.register_provider_class(name, driver)
+      @@registered_provider_classes[name] = driver
+    end
+
+    def self.provider_class_for(provider)
+      require "chef_metal_fog/providers/#{provider.downcase}"
+      @@registered_provider_classes[provider]
+    end
+
+    def self.new(driver_url, config)
+      provider = driver_url.split(':')[1]
+      provider_class_for(provider).new(driver_url, config)
+    end
+
     # Passed in a driver_url, and a config in the format of Driver.config.
     def self.from_url(driver_url, config)
       FogDriver.new(driver_url, config)
@@ -109,7 +126,7 @@ module ChefMetalFog
 
     def self.canonicalize_url(driver_url, config)
       _, provider, id = driver_url.split(':', 3)
-      config, id = compute_options_for(provider, id, config)
+      config, id = provider_class_for(provider).compute_options_for(provider, id, config)
       [ "fog:#{provider}:#{id}", config ]
     end
 
@@ -117,7 +134,7 @@ module ChefMetalFog
     # know what it is yet) but which has the same keys
     def self.from_provider(provider, config)
       # Figure out the options and merge them into the config
-      config, id = compute_options_for(provider, nil, config)
+      config, id = provider_class_for(provider).compute_options_for(provider, nil, config)
 
       driver_url = "fog:#{provider}:#{id}"
 
@@ -230,6 +247,10 @@ module ChefMetalFog
       machine_options[key] || DEFAULT_OPTIONS[key]
     end
 
+    def creator
+      raise "unsupported fog provider #{provider} (please implement #creator)"
+    end
+
     def create_server(action_handler, machine_spec, machine_options)
       if machine_spec.location
         if machine_spec.location['driver_url'] != driver_url
@@ -255,14 +276,6 @@ module ChefMetalFog
       server = nil
       action_handler.report_progress description
       if action_handler.should_perform_actions
-        creator = case provider
-          when 'AWS'
-            driver_options[:aws_account_info][:aws_username]
-          when 'OpenStack'
-            compute_options[:openstack_username]
-          when 'Rackspace'
-            compute_options[:rackspace_username]
-        end
         server = compute.servers.create(bootstrap_options)
         machine_spec.location = {
           'driver_url' => driver_url,
@@ -418,9 +431,15 @@ module ChefMetalFog
 
     def bootstrap_options_for(action_handler, machine_spec, machine_options)
       bootstrap_options = symbolize_keys(machine_options[:bootstrap_options] || {})
-      if (provider == 'DigitalOcean' || provider == 'AWS') && !bootstrap_options[:key_name]
-        bootstrap_options[:key_name] = overwrite_default_key_willy_nilly(action_handler)
-      end
+
+      bootstrap_options[:tags]  = default_tags(machine_spec, bootstrap_options[:tags] || {})
+
+      bootstrap_options[:name] ||= machine_spec.name
+
+      bootstrap_options
+    end
+
+    def default_tags(machine_spec, bootstrap_tags = {})
       tags = {
           'Name' => machine_spec.name,
           'BootstrapId' => machine_spec.id,
@@ -428,36 +447,7 @@ module ChefMetalFog
           'BootstrapUser' => Etc.getlogin
       }
       # User-defined tags override the ones we set
-      tags.merge!(bootstrap_options[:tags]) if bootstrap_options[:tags]
-      bootstrap_options.merge!({ :tags => tags })
-
-      # Provide reasonable defaults for DigitalOcean
-      if provider == 'DigitalOcean'
-        if !bootstrap_options[:image_id]
-          bootstrap_options[:image_name] ||= 'CentOS 6.4 x32'
-          bootstrap_options[:image_id] = compute.images.select { |image| image.name == bootstrap_options[:image_name] }.first.id
-        end
-        if !bootstrap_options[:flavor_id]
-          bootstrap_options[:flavor_name] ||= '512MB'
-          bootstrap_options[:flavor_id] = compute.flavors.select { |flavor| flavor.name == bootstrap_options[:flavor_name] }.first.id
-        end
-        if !bootstrap_options[:region_id]
-          bootstrap_options[:region_name] ||= 'San Francisco 1'
-          bootstrap_options[:region_id] = compute.regions.select { |region| region.name == bootstrap_options[:region_name] }.first.id
-        end
-        found_key = compute.ssh_keys.select { |k| k.name == bootstrap_options[:key_name] }.first
-        if !found_key
-          raise "Could not find key named '#{bootstrap_options[:key_name]}' on #{driver_url}"
-        end
-        bootstrap_options[:ssh_key_ids] ||= [ found_key.id ]
-
-        # You don't get to specify name yourself
-        bootstrap_options[:name] = machine_spec.name
-      end
-
-      bootstrap_options[:name] ||= machine_spec.name
-
-      bootstrap_options
+      tags.merge(bootstrap_tags)
     end
 
     def machine_for(machine_spec, machine_options, server = nil)
@@ -512,14 +502,13 @@ module ChefMetalFog
       result
     end
 
+    def default_ssh_username
+      'root'
+    end
+
     def create_ssh_transport(machine_spec, machine_options, server)
       ssh_options = ssh_options_for(machine_spec, machine_options, server)
-      # If we're on AWS, the default is to use ubuntu, not root
-      if provider == 'AWS'
-        username = machine_spec.location['ssh_username'] || 'ubuntu'
-      else
-        username = machine_spec.location['ssh_username'] || 'root'
-      end
+      username = machine_spec.location['ssh_username'] || default_ssh_username
       if machine_options.has_key?(:ssh_username) && machine_options[:ssh_username] != machine_spec.location['ssh_username']
         Chef::Log.warn("Server #{machine_spec.name} was created with SSH username #{machine_spec.location['ssh_username']} and machine_options specifies username #{machine_options[:ssh_username]}.  Using #{machine_spec.location['ssh_username']}.  Please edit the node and change the metal.location.ssh_username attribute if you want to change it.")
       end
@@ -548,136 +537,7 @@ module ChefMetalFog
     end
 
     def self.compute_options_for(provider, id, config)
-      driver_options = config[:driver_options] || {}
-      compute_options = driver_options[:compute_options] || {}
-      new_compute_options = {}
-      new_compute_options[:provider] = provider
-      new_config = { :driver_options => { :compute_options => new_compute_options }}
-      new_defaults = {
-                       :driver_options => { :compute_options => {} },
-                       :machine_options => { :bootstrap_options => {} }
-                     }
-      result = Cheffish::MergedConfig.new(new_config, config, new_defaults)
-
-      # Get data from the identifier in the URL
-      if id && id != ''
-        case provider
-        when 'AWS'
-          # AWS canonical URLs are of the form fog:AWS:
-          if id =~ /^(\d{12})(:(.+))?$/
-            if $2
-              id = $1
-              new_compute_options[:region] = $3
-            else
-              Chef::Log.warn("Old-style AWS URL #{id} from an early beta of chef-metal (before 0.11-final) found. If you have servers in multiple regions on this account, you may see odd behavior like servers being recreated. To fix, edit any nodes with attribute metal.location.driver_url to include the region like so: fog:AWS:#{id}:<region> (e.g. us-east-1)")
-            end
-          else
-            # Assume it is a profile name, and set that.
-            aws_profile, region = id.split(':', 2)
-            new_config[:driver_options][:aws_profile] = aws_profile
-            new_compute_options[:region] = region
-            id = nil
-          end
-        when 'DigitalOcean'
-          new_compute_options[:digitalocean_client_id] = id
-        when 'OpenStack'
-          new_compute_options[:openstack_auth_url] = id
-        when 'Rackspace'
-          new_compute_options[:rackspace_auth_url] = id
-        when 'CloudStack'
-          cloudstack_uri = URI.parse(id)
-          new_compute_options[:cloudstack_scheme] = cloudstack_uri.scheme
-          new_compute_options[:cloudstack_host]   = cloudstack_uri.host
-          new_compute_options[:cloudstack_port]   = cloudstack_uri.port
-          new_compute_options[:cloudstack_path]   = cloudstack_uri.path
-        else
-          raise "unsupported fog provider #{provider}"
-        end
-      end
-
-      # Set auth info from environment
-      case provider
-      when 'AWS'
-        # Grab the profile
-        aws_profile = FogDriverAWS.get_aws_profile(result[:driver_options], id)
-        new_compute_options[:aws_access_key_id] = aws_profile[:aws_access_key_id]
-        new_compute_options[:aws_secret_access_key] = aws_profile[:aws_secret_access_key]
-        new_compute_options[:aws_session_token] = aws_profile[:aws_security_token]
-        new_defaults[:driver_options][:compute_options][:region] = aws_profile[:region]
-      when 'OpenStack'
-        # TODO it is supposed to be unnecessary to load credentials from fog this way;
-        # why are we doing it?
-        # TODO support http://docs.openstack.org/cli-reference/content/cli_openrc.html
-        credential = Fog.credentials
-
-        new_compute_options[:openstack_username] ||= credential[:openstack_username]
-        new_compute_options[:openstack_api_key] ||= credential[:openstack_api_key]
-        new_compute_options[:openstack_auth_url] ||= credential[:openstack_auth_url]
-        new_compute_options[:openstack_tenant] ||= credential[:openstack_tenant]
-      when 'Rackspace'
-        credential = Fog.credentials
-
-        new_compute_options[:rackspace_username] ||= credential[:rackspace_username]
-        new_compute_options[:rackspace_api_key] ||= credential[:rackspace_api_key]
-        new_compute_options[:rackspace_auth_url] ||= credential[:rackspace_auth_url]
-        new_compute_options[:rackspace_region] ||= credential[:rackspace_region]
-        new_compute_options[:rackspace_endpoint] ||= credential[:rackspace_endpoint]
-        new_compute_options[:rackspace_compute_url] ||= credential[:rackspace_compute_url]
-      when 'DigitalOcean'
-        # This uses ~/.tugboat, generated by "tugboat authorize" - see https://github.com/pearkes/tugboat
-        tugboat_file = File.expand_path('~/.tugboat')
-        if File.exist?(tugboat_file)
-          tugboat_data = YAML.load(IO.read(tugboat_file))
-          new_compute_options.merge!(
-            :digitalocean_client_id => tugboat_data['authentication']['client_key'],
-            :digitalocean_api_key => tugboat_data['authentication']['api_key']
-          )
-          new_defaults[:machine_options].merge!(
-            #:ssh_username => tugboat_data['ssh']['ssh_user'],
-            :ssh_options => {
-              :port => tugboat_data['ssh']['ssh_port'],
-              # TODO we ignore ssh_key_path in favor of ssh_key / key_name stuff
-              #:key_data => [ IO.read(tugboat_data['ssh']['ssh_key_path']) ] # TODO use paths, not data?
-            }
-          )
-
-          # TODO verify that the key_name exists and matches the ssh key path
-
-          new_defaults[:machine_options][:bootstrap_options].merge!(
-            :region_id => tugboat_data['defaults']['region'].to_i,
-            :image_id => tugboat_data['defaults']['image'].to_i,
-            :size_id => tugboat_data['defaults']['region'].to_i,
-            :private_networking => tugboat_data['defaults']['private_networking'] == 'true',
-            :backups_enabled => tugboat_data['defaults']['backups_enabled'] == 'true',
-          )
-          ssh_key = tugboat_data['defaults']['ssh_key']
-          if ssh_key && ssh_key.size > 0
-            new_defaults[:machine_options][:bootstrap_options][:key_name] = ssh_key
-          end
-        end
-      end
-
-      id = case provider
-        when 'AWS'
-          account_info = FogDriverAWS.aws_account_info_for(result[:driver_options][:compute_options])
-          new_config[:driver_options][:aws_account_info] = account_info
-          "#{account_info[:aws_account_id]}:#{result[:driver_options][:compute_options][:region]}"
-        when 'DigitalOcean'
-          result[:driver_options][:compute_options][:digitalocean_client_id]
-        when 'OpenStack'
-          result[:driver_options][:compute_options][:openstack_auth_url]
-        when 'Rackspace'
-          result[:driver_options][:compute_options][:rackspace_auth_url]
-        when 'CloudStack'
-          host   = result[:driver_options][:compute_options][:cloudstack_host]
-          path   = result[:driver_options][:compute_options][:cloudstack_path]    || '/client/api'
-          port   = result[:driver_options][:compute_options][:cloudstack_port]    || 443
-          scheme = result[:driver_options][:compute_options][:cloudstack_scheme]  || 'https'
-
-          URI.scheme_list[scheme.upcase].build(:host => host, :port => port, :path => path).to_s
-        end
-
-      [ result, id ]
+      raise "unsupported fog provider #{provider}"
     end
   end
 end
