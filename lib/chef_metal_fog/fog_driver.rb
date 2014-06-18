@@ -497,17 +497,25 @@ module ChefMetalFog
       }.merge(machine_options[:ssh_options] || {})
       if server.respond_to?(:private_key) && server.private_key
         result[:key_data] = [ server.private_key ]
-      elsif server.respond_to?(:key_name)
-        result[:key_data] = [ get_private_key(server.key_name) ]
+      elsif server.respond_to?(:key_name) && server.key_name
+        key = get_private_key(server.key_name)
+        if !key
+          raise "Server has key name '#{server.key_name}', but the corresponding private key was not found locally.  Check if the key is in Chef::Config.private_key_paths: #{Chef::Config.private_key_paths.join(', ')}"
+        end
+        result[:key_data] = [ key ]
       elsif machine_spec.location['key_name']
-        result[:key_data] = [ get_private_key(machine_spec.location['key_name']) ]
+        key = get_private_key(machine_spec.location['key_name'])
+        if !key
+          raise "Server was created with key name '#{machine_spec.location['key_name']}', but the corresponding private key was not found locally.  Check if the key is in Chef::Config.private_key_paths: #{Chef::Config.private_key_paths.join(', ')}"
+        end
+        result[:key_data] = [ key ]
       elsif machine_options[:bootstrap_options][:key_path]
         result[:key_data] = [ IO.read(machine_options[:bootstrap_options][:key_path]) ]
       elsif machine_options[:bootstrap_options][:key_name]
         result[:key_data] = [ get_private_key(machine_options[:bootstrap_options][:key_name]) ]
       else
         # TODO make a way to suggest other keys to try ...
-        raise "No key found to connect to #{machine_spec.name}!"
+        raise "No key found to connect to #{machine_spec.name} (#{machine_spec.location.inspect})!"
       end
       result
     end
