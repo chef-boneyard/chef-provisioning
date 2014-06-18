@@ -39,14 +39,15 @@ class Chef
         end
       end
 
+      @@next_machine_batch_index = 1
+
       def machine_batch_default_name
-        if @machine_batch_index
-          @machine_batch_index += 1
-          "default#{@machine_batch_index}"
+        if @@next_machine_batch_index > 1
+          "default#{@@next_machine_batch_index}"
         else
-          @machine_batch_index = 0
           "default"
         end
+        @@next_machine_batch_index += 1
       end
 
       def machine_batch(name = nil, &block)
