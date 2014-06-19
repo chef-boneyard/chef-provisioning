@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/opscode/chef-metal.png?label=ready&title=Ready)](https://waffle.io/opscode/chef-metal)
 Chef Metal
 ==========
 
