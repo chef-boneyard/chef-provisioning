@@ -4,6 +4,10 @@ module ChefMetalFog
 
       ChefMetalFog::FogDriver.register_provider_class('CloudStack', ChefMetalFog::Providers::CloudStack)
 
+      def creator
+        ''
+      end
+
       def self.compute_options_for(provider, id, config)
         new_compute_options = {}
         new_compute_options[:provider] = provider
