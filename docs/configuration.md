@@ -102,7 +102,7 @@ driver_options :compute_options => { :aws_access_key_id => '...', :aws_secret_ac
 ```
 - In a global Chef file for whenever you use that driver:
 ```ruby
-drivers {
+drivers({
   'fog:AWS:myprofile' => {
     :driver_options => {
       :compute_options => {
@@ -112,7 +112,7 @@ drivers {
       }
     }
   }
-}
+})
 ```
 ```
 export CHEF_DRIVER=fog:AWS:123123124124
@@ -159,7 +159,7 @@ machine_options :vagrant_options => { 'vm.box' => 'centos6' }
 ```
 - In Chef config associated with specific drivers:
 ```ruby
-drivers {
+drivers({
   'vagrant:/Users/jkeiser/vms' => {
     :machine_options => {
       :vagrant_options => {
@@ -167,7 +167,7 @@ drivers {
       }
     }
   }
-}
+})
 ```
 
 Machine options are *additive*.  If you specify `'vm.box' => 'precise64'` in Chef config, and then specify `'vm.ram' => '8G'` on the machine resource, the vagrant options for that will include *both* sets of option.
@@ -180,9 +180,9 @@ In Chef config:
 
 ```ruby
 # In knife.rb
-profiles {
+profiles({
   'default' => {
-  }
+  },
   'dev' => {
     :driver => 'vagrant:',
     :machine_options => {
@@ -207,7 +207,7 @@ profiles {
       }
     }
   }
-}
+})
 ```
 
 This will get better tooling and more integrated Chef support in the future, but it is a good start.  You can set the current profile using the `CHEF_PROFILE` environment variable:
