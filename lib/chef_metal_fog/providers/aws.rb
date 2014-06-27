@@ -26,12 +26,34 @@ module ChefMetalFog
         if !bootstrap_options[:key_name]
           bootstrap_options[:key_name] = overwrite_default_key_willy_nilly(action_handler)
         end
-
-        bootstrap_options[:tags]  = default_tags(machine_spec, bootstrap_options[:tags] || {})
-
-        bootstrap_options[:name] ||= machine_spec.name
-
+        bootstrap_options.delete(:tags) # we handle these separately for performance reasons
         bootstrap_options
+      end
+
+      def create_servers(action_handler, specs_and_options, parallelizer)
+        super(action_handler, specs_and_options, parallelizer) do |machine_spec, server|
+          yield machine_spec, server if block_given?
+
+          machine_options = specs_and_options[machine_spec]
+          bootstrap_options = symbolize_keys(machine_options[:bootstrap_options] || {})
+          tags = default_tags(machine_spec, bootstrap_options[:tags] || {})
+
+          # Right now, not doing that in case manual tagging is going on
+          server_tags = server.tags || {}
+          extra_tags = tags.keys.select { |tag_name| !server_tags.has_key?(tag_name) }.to_a
+          different_tags = server_tags.select { |tag_name, tag_value| tags.has_key?(tag_name) && tags[tag_name] != tag_value }.to_a
+          if extra_tags.size > 0 || different_tags.size > 0
+            tags_description = [ "Update tags for #{machine_spec.name} on #{driver_url}" ]
+            tags_description += extra_tags.map { |tag| "  Add #{tag} = #{tags[tag].inspect}" }
+            tags_description += different_tags.map { |tag| "  Update #{tag.name} from #{tag.value.inspect} to #{tags[tag.name].inspect}"}
+            action_handler.perform_action tags_description do
+              # TODO should we narrow this down to just extra/different tags or
+              # is it OK to just pass 'em all?  Certainly easier to do the
+              # latter, and I can't think of a consequence for doing so offhand.
+              compute.create_tags(server.identity, tags)
+            end
+          end
+        end
       end
 
       def self.get_aws_profile(driver_options, aws_account_id)
@@ -208,6 +230,36 @@ module ChefMetalFog
         id = "#{account_info[:aws_account_id]}:#{result[:driver_options][:compute_options][:region]}"
 
         [result, id]
+      end
+
+      def create_many_servers(num_servers, bootstrap_options, parallelizer)
+        # Create all the servers in one request if we have a version of fog that can do that
+        if compute.servers.respond_to?(:create_many)
+          servers = compute.servers.create_many(num_servers, num_servers, bootstrap_options)
+          if block_given?
+            parallelizer.parallel_do(servers) do |server|
+              yield server
+            end
+          end
+          servers
+        else
+          super
+        end
+      end
+
+      def servers_for(machine_specs)
+        # Grab all the servers in one request
+        instance_ids = machine_specs.map { |machine_spec| (machine_spec.location || {})['server_id'] }.select { |id| !id.nil? }
+        servers = compute.servers.all('instance-id' => instance_ids)
+        result = {}
+        machine_specs.each do |machine_spec|
+          if machine_spec.location
+            result[machine_spec] = servers.select { |s| s.id == machine_spec.location['server_id'] }.first
+          else
+            result[machine_spec] = nil
+          end
+        end
+        result
       end
     end
   end

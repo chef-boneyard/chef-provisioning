@@ -155,6 +155,11 @@ module ChefMetalFog
     #   - log_level: :debug, :info, :warn, :error
     def initialize(driver_url, config)
       super(driver_url, config)
+      if config[:log_level] == :debug
+        Fog::Logger[:debug] = ::STDERR
+        Excon.defaults[:debug_request] = true
+        Excon.defaults[:debug_response] = true
+      end
     end
 
     def compute_options
@@ -170,7 +175,15 @@ module ChefMetalFog
     # converge, execute, file and directory.
     def allocate_machine(action_handler, machine_spec, machine_options)
       # If the server does not exist, create it
-      create_server(action_handler, machine_spec, machine_options)
+      create_servers(action_handler, { machine_spec => machine_options }, Chef::ChefFS::Parallelizer.new(0))
+      machine_spec
+    end
+
+    def allocate_machines(action_handler, specs_and_options, parallelizer)
+      create_servers(action_handler, specs_and_options, parallelizer) do |machine_spec, server|
+        yield machine_spec
+      end
+      specs_and_options.keys
     end
 
     def ready_machine(action_handler, machine_spec, machine_options)
@@ -251,46 +264,78 @@ module ChefMetalFog
       raise "unsupported fog provider #{provider} (please implement #creator)"
     end
 
-    def create_server(action_handler, machine_spec, machine_options)
-      if machine_spec.location
-        if machine_spec.location['driver_url'] != driver_url
-          raise "Switching a machine's driver from #{machine_spec.location['driver_url']} to #{driver_url} for is not currently supported!  Use machine :destroy and then re-create the machine on the new driver."
-        end
+    def create_servers(action_handler, specs_and_options, parallelizer, &block)
+      specs_and_servers = servers_for(specs_and_options.keys)
 
-        server = server_for(machine_spec)
+      # Get the list of servers which exist, segmented by their bootstrap options
+      # (we will try to create a set of servers for each set of bootstrap options
+      # with create_many)
+      by_bootstrap_options = {}
+      specs_and_options.each do |machine_spec, machine_options|
+        server = specs_and_servers[machine_spec]
         if server
           if %w(terminated archive).include?(server.state) # Can't come back from that
             Chef::Log.warn "Machine #{machine_spec.name} (#{server.id} on #{driver_url}) is terminated.  Recreating ..."
           else
-            return server
+            yield machine_spec, server if block_given?
+            next
           end
-        else
+        elsif machine_spec.location
           Chef::Log.warn "Machine #{machine_spec.name} (#{machine_spec.location['server_id']} on #{driver_url}) no longer exists.  Recreating ..."
         end
+
+        bootstrap_options = bootstrap_options_for(action_handler, machine_spec, machine_options)
+        by_bootstrap_options[bootstrap_options] ||= []
+        by_bootstrap_options[bootstrap_options] << machine_spec
       end
 
-      bootstrap_options = bootstrap_options_for(action_handler, machine_spec, machine_options)
+      # Create the servers in parallel
+      parallelizer.parallel_do(by_bootstrap_options) do |bootstrap_options, machine_specs|
+        machine_description = if machine_specs.size == 1
+          "machine #{machine_specs.first.name}"
+        else
+          "machines #{machine_specs.map { |s| s.name }.join(", ")}"
+        end
+        description = [ "creating #{machine_description} on #{driver_url}" ]
+        bootstrap_options.each_pair { |key,value| description << "  #{key}: #{value.inspect}" }
+        action_handler.report_progress description
 
-      description = [ "creating machine #{machine_spec.name} on #{driver_url}" ]
-      bootstrap_options.each_pair { |key,value| description << "  #{key}: #{value.inspect}" }
-      server = nil
-      action_handler.report_progress description
-      if action_handler.should_perform_actions
-        server = compute.servers.create(bootstrap_options)
-        machine_spec.location = {
-          'driver_url' => driver_url,
-          'driver_version' => ChefMetalFog::VERSION,
-          'server_id' => server.id,
-          'creator' => creator,
-          'allocated_at' => Time.now.to_i
-        }
-        machine_spec.location['key_name'] = bootstrap_options[:key_name] if bootstrap_options[:key_name]
-        %w(is_windows ssh_username sudo use_private_ip_for_ssh ssh_gateway).each do |key|
-          machine_spec.location[key] = machine_options[key.to_sym] if machine_options[key.to_sym]
+        if action_handler.should_perform_actions
+          # Actually create the servers
+          create_many_servers(machine_specs.size, bootstrap_options, parallelizer) do |server|
+
+            # Assign each one to a machine spec
+            machine_spec = machine_specs.pop
+            machine_options = specs_and_options[machine_spec]
+            machine_spec.location = {
+              'driver_url' => driver_url,
+              'driver_version' => ChefMetalFog::VERSION,
+              'server_id' => server.id,
+              'creator' => creator,
+              'allocated_at' => Time.now.to_i
+            }
+            machine_spec.location['key_name'] = bootstrap_options[:key_name] if bootstrap_options[:key_name]
+            %w(is_windows ssh_username sudo use_private_ip_for_ssh ssh_gateway).each do |key|
+              machine_spec.location[key] = machine_options[key.to_sym] if machine_options[key.to_sym]
+            end
+            action_handler.performed_action "machine #{machine_spec.name} created as #{server.id} on #{driver_url}"
+
+            yield machine_spec, server if block_given?
+          end
+          
+          if machine_specs.size > 0
+            raise "Not all machines were created by create_many_machines!"
+          end
         end
       end
-      action_handler.performed_action "machine #{machine_spec.name} created as #{server.id} on #{driver_url}"
-      server
+    end
+
+    def create_many_servers(num_servers, bootstrap_options, parallelizer)
+      parallelizer.parallelize(1.upto(num_servers)) do |i|
+        server = compute.servers.create(bootstrap_options)
+        yield server if block_given?
+        server
+      end.to_a
     end
 
     def start_server(action_handler, machine_spec, server)
@@ -416,6 +461,21 @@ module ChefMetalFog
       else
         nil
       end
+    end
+
+    def servers_for(machine_specs)
+      result = {}
+      machine_specs.each do |machine_spec|
+        if machine_spec.location
+          if machine_spec.location['driver_url'] != driver_url
+            raise "Switching a machine's driver from #{machine_spec.location['driver_url']} to #{driver_url} for is not currently supported!  Use machine :destroy and then re-create the machine on the new driver."
+          end
+          result[machine_spec] = compute.servers.get(machine_spec.location['server_id'])
+        else
+          result[machine_spec] = nil
+        end
+      end
+      result
     end
 
     @@metal_default_lock = Mutex.new
