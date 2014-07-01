@@ -66,8 +66,8 @@ module ChefMetalFog
   #
   # - bootstrap_options: hash of options to pass to compute.servers.create
   # - is_windows: true if windows.  TODO detect this from ami?
-  # - create_timeout: the time to wait for the instance to boot to ssh (defaults to 600)
-  # - start_timeout: the time to wait for the instance to start (defaults to 600)
+  # - create_timeout: the time to wait for the instance to boot to ssh (defaults to 180)
+  # - start_timeout: the time to wait for the instance to start (defaults to 180)
   # - ssh_timeout: the time to wait for ssh to be available if the instance is detected as up (defaults to 20)
   # - ssh_username: username to use for ssh
   # - sudo: true to prefix all commands with "sudo"
