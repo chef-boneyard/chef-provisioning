@@ -63,7 +63,16 @@ module ChefMetal
       else
         machine_spec = ChefMetal::ChefMachineSpec.get(name, chef_server)
       end
-      ChefMetal.connect_to_machine(machine_spec, config)
+
+      merged_config = begin
+        if current_machine_options
+          Cheffish::MergedConfig.new({ :machine_options => current_machine_options }, config)
+        else
+          config
+        end
+      end
+
+      ChefMetal.connect_to_machine(machine_spec, merged_config)
     end
 
     private
