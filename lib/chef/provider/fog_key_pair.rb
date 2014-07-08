@@ -32,6 +32,8 @@ class Chef::Provider::FogKeyPair < Chef::Provider::LWRPBase
     "#{new_resource.name} on #{new_driver.driver_url}"
   end
 
+  @@use_pkcs8 = nil # For Ruby 1.9 and below, PKCS can be run
+
   def create_key(action)
     if @should_create_directory
       Cheffish.inline_resource(self, action) do
