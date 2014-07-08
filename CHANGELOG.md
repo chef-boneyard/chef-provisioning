@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7 (7/8/2014)
+
+- [AWS] More parallelism: make single call to AWS bootstrap many machines (if fog version supports it)
+- [AWS] Fix bug when ~/.aws/config does not exist
+- [AWS] Fix bug in Ruby 1.9 when fingerprints don't match (pkcs8 loading didn't work)
+
 ## 0.6.1 (6/18/2014)
 
 - fix bootstrap when key is not yet specified
