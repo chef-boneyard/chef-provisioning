@@ -62,7 +62,25 @@ $file.Close
       end
 
       def escape(string)
-        "'#{string.gsub("'", "''")}'"
+        "\"#{string.gsub("\"", "`\"")}\""
+      end
+
+      def available?
+        # If you can't pwd within 10 seconds, you can't pwd
+        execute('pwd', :timeout => 10)
+        true
+      rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, ::WinRM::WinRMHTTPTransportError, ::WinRM::WinRMWebServiceError, ::WinRM::WinRMWSManFault
+        Chef::Log.debug("unavailable: network connection failed or broke: #{$!.inspect}")
+        disconnect
+        false
+      rescue ::WinRM::WinRMAuthorizationError
+        Chef::Log.debug("unavailable: winrm authentication error: #{$!.inspect} ")
+        disconnect
+        false
+      end
+
+      def make_url_available_to_remote(local_url)
+        local_url
       end
 
       protected
@@ -94,6 +112,7 @@ $file.Close
         attr_reader :exitstatus
         attr_reader :command
         attr_reader :options
+        attr_reader :config
 
         def error!
           if exitstatus != 0
