@@ -13,6 +13,9 @@ module ChefMetalFog
         include Enumerable
 
         def default
+          if @credentials.size == 0
+            raise "No credentials loaded!  Do you have a ~/.aws/config?"
+          end
           @credentials[ENV['AWS_DEFAULT_PROFILE'] || 'default'] || @credentials.first[1]
         end
 
@@ -30,15 +33,21 @@ module ChefMetalFog
 
         def load_ini(credentials_ini_file)
           inifile = IniFile.load(File.expand_path(credentials_ini_file))
-          inifile.each_section do |section|
-            if section =~ /^\s*profile\s+(.+)$/ || section =~ /^\s*(default)\s*/
-              profile_name = $1.strip
-              profile = inifile[section].inject({}) do |result, pair|
-                result[pair[0].to_sym] = pair[1]
-                result
+          if inifile
+            inifile.each_section do |section|
+              if section =~ /^\s*profile\s+(.+)$/ || section =~ /^\s*(default)\s*/
+                profile_name = $1.strip
+                profile = inifile[section].inject({}) do |result, pair|
+                  result[pair[0].to_sym] = pair[1]
+                  result
+                end
+                profile[:name] = profile_name
+                @credentials[profile_name] = profile
               end
-              profile[:name] = profile_name
-              @credentials[profile_name] = profile
+            end
+          else
+            # Get it to throw an error
+            File.open(File.expand_path(credentials_ini_file)) do
             end
           end
         end
@@ -55,7 +64,10 @@ module ChefMetalFog
         end
 
         def load_default
-          load_ini(ENV['AWS_CONFIG_FILE'] || File.expand_path('~/.aws/config'))
+          config_file = ENV['AWS_CONFIG_FILE'] || File.expand_path('~/.aws/config')
+          if File.file?(config_file)
+            load_ini(config_file)
+          end
         end
 
         def self.method_missing(name, *args, &block)
