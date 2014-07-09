@@ -62,7 +62,30 @@ $file.Close
       end
 
       def escape(string)
-        "'#{string.gsub("'", "''")}'"
+        "\"#{string.gsub("\"", "`\"")}\""
+      end
+
+      def available?
+        # If you can't pwd within 10 seconds, you can't pwd
+        execute('pwd', :timeout => 10)
+        true
+      rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, ::WinRM::WinRMHTTPTransportError, ::WinRM::WinRMWebServiceError, ::WinRM::WinRMWSManFault
+        Chef::Log.debug("unavailable: network connection failed or broke: #{$!.inspect}")
+        disconnect
+        false
+      rescue ::WinRM::WinRMAuthorizationError
+        Chef::Log.debug("unavailable: winrm authentication error: #{$!.inspect} ")
+        disconnect
+        false
+      end
+
+      def make_url_available_to_remote(local_url)
+        uri = URI(local_url)
+        host = Socket.getaddrinfo(uri.host, uri.scheme, nil, :STREAM)[0][3]
+        if host == '127.0.0.1' || host == '::1'
+          raise 'Unable to converge locally via winrm. Local converge is currently only supported with SSH. You may only converge with winrm against a chef-server.'
+        end
+        local_url
       end
 
       protected
@@ -94,6 +117,7 @@ $file.Close
         attr_reader :exitstatus
         attr_reader :command
         attr_reader :options
+        attr_reader :config
 
         def error!
           if exitstatus != 0
