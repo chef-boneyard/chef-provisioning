@@ -120,6 +120,8 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
         end
         result[driver] ||= {}
         result[driver][m[:spec]] = m[:machine_options].call(driver)
+      else
+        raise "No driver specified for #{m[:spec].name}"
       end
     end
     result
