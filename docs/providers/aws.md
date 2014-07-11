@@ -15,7 +15,7 @@
 :ebs_optimized            
 :groups
 :flavor_id                
-:hypervisor
+:hypervisor 
 :iam_instance_profile     
 :image_id                 
 :kernel_id                
