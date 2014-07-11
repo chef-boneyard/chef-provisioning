@@ -127,6 +127,8 @@ There will be easier ways to specify this as Chef profiles and configuration evo
 
 ## Machine options
 
+### Provider specific options [here](https://github.com/opscode/chef-metal/blob/master/docs/providers)
+
 Machine options can be specified in Chef configuration or in recipes.  For example:
 
 - In recipes with with_machine_options:
