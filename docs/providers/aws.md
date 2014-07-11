@@ -16,7 +16,9 @@
 :groups
 :flavor_id                
 :hypervisor   
-:iam_instance_profile     
+:iam_instance_profile  
+:iam_instance_profile_name  
+:iam_instance_profile_arn  
 :image_id                 
 :kernel_id                
 :key_name                 
