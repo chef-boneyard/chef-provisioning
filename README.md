@@ -225,7 +225,7 @@ with_chef_server "https://chef-server.example.org",
   :signing_key_filename => Chef::Config[:client_key]
 ```
 
-**Note for Hosted/Enterprise Chef Servers:
+**Note for Hosted/Enterprise Chef Servers**
 
 Currently, you will need to add the 'clients' group to the 'admin' group in order for machine provisioning to work:
 
