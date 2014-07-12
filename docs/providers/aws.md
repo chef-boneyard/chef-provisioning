@@ -15,8 +15,10 @@
 :ebs_optimized            
 :groups
 :flavor_id                
-:hypervisor
-:iam_instance_profile     
+:hypervisor   
+:iam_instance_profile  
+:iam_instance_profile_name  
+:iam_instance_profile_arn  
 :image_id                 
 :kernel_id                
 :key_name                 
@@ -36,12 +38,12 @@
 :root_device_type         
 :security_group_ids       
 :source_dest_check        
-:spot_instance_request_id 
+:spot_instance_request_id   
 :state                   
 :state_reason             
 :subnet_id                
 :tenancy
 :tags                     
-:user_data
+:user_data  
 :virtualization_type      
 :vpc_id                   
