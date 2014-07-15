@@ -237,9 +237,9 @@ module ChefMetalFog
         if compute.servers.respond_to?(:create_many)
           servers = compute.servers.create_many(num_servers, num_servers, bootstrap_options)
           if block_given?
-            parallelizer.parallel_do(servers) do |server|
+            parallelizer.parallelize(servers) do |server|
               yield server
-            end
+            end.to_a
           end
           servers
         else

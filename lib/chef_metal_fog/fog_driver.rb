@@ -290,7 +290,7 @@ module ChefMetalFog
       end
 
       # Create the servers in parallel
-      parallelizer.parallel_do(by_bootstrap_options) do |bootstrap_options, machine_specs|
+      parallelizer.parallelize(by_bootstrap_options) do |bootstrap_options, machine_specs|
         machine_description = if machine_specs.size == 1
           "machine #{machine_specs.first.name}"
         else
@@ -322,12 +322,12 @@ module ChefMetalFog
 
             yield machine_spec, server if block_given?
           end
-          
+
           if machine_specs.size > 0
             raise "Not all machines were created by create_many_machines!"
           end
         end
-      end
+      end.to_a
     end
 
     def create_many_servers(num_servers, bootstrap_options, parallelizer)
