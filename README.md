@@ -18,6 +18,7 @@ Documentation
 * [Configuration](https://github.com/opscode/chef-metal/blob/master/docs/configuration.md#configuring-and-using-metal-drivers)
 * [Writing Drivers](https://github.com/opscode/chef-metal/blob/master/docs/building_drivers.md#writing-drivers)
 * [Embedding](https://github.com/opscode/chef-metal/blob/master/docs/embedding.md)
+* [Providers](https://github.com/opscode/chef-metal/blob/master/docs/providers)
 
 Try It Out
 ----------
