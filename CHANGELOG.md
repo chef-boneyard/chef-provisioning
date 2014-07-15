@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1 (7/15/2014)
+
+- Fix AWS support in Chef 11.12
+
 ## 0.7 (7/8/2014)
 
 - [AWS] More parallelism: make single call to AWS bootstrap many machines (if fog version supports it)
