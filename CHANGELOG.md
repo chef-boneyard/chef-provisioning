@@ -3,7 +3,7 @@
 ## 0.13 (6/17/2014)
 
 - make winrm work again (@mwrock)
-- add bootstrap_proxy as a convergence_option for when target machines require a proxy
+- add bootstrap_proxy as a convergence_option for when target machines require a proxy (@MrMMorris)
 
 ## 0.12.1 (6/18/2014)
 
