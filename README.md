@@ -234,9 +234,14 @@ knife edit /groups/admin.json -e <editor>
 ```
 Then add:
 ```
- "groups": [
-    "clients"
+{
+  "users": [
+    "pivotal" # This is an internal superuser for Hosted/Enterprise Chef
+  ],
+  "groups": [
+    "clients" # This is what you need to add
   ]
+}
 ```
 
 This can also be done through the Chef Server web UI (Administration tab > Groups > select admins Group > Add 'clients'
