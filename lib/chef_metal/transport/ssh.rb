@@ -1,4 +1,5 @@
 require 'chef_metal/transport'
+require 'chef/log'
 require 'uri'
 require 'socket'
 require 'timeout'
