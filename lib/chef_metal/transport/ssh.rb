@@ -111,12 +111,21 @@ module ChefMetal
         uri = URI(local_url)
         host = Socket.getaddrinfo(uri.host, uri.scheme, nil, :STREAM)[0][3]
         if host == '127.0.0.1' || host == '::1'
-          unless session.forward.active_remotes.any? { |port, bind| port == uri.port && bind == uri.host }
-            Chef::Log.debug("Forwarding local server #{uri.host}:#{uri.port} to port #{uri.port} on #{username}@#{self.host}")
+          @forwarded_ports ||= {}
+          remote_port, remote_host = @forwarded_ports[[uri.port, uri.host]]
+          if !remote_port
+            Chef::Log.debug("Forwarding local server #{uri.host}:#{uri.port} to #{username}@#{self.host}")
+            old_active_remotes = session.forward.active_remotes
             session.forward.remote(uri.port, uri.host, uri.port)
+            session.loop { !(session.forward.active_remotes.length > old_active_remotes.length) }
+            remote_port, remote_host = (session.forward.active_remotes - old_active_remotes).first
+            @forwarded_ports[[uri.port, uri.host]] = [ remote_port, remote_host ]
           end
+          uri.host = remote_host
+          uri.port = remote_port
         end
-        local_url
+        Chef::Log.info "Port forwarded: local URL #{local_url} is now available at remote URL #{uri.to_s}"
+        uri.to_s
       end
 
       def disconnect
