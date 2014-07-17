@@ -71,9 +71,13 @@ module ChefMetal
   end
 
   def self.connect_to_machine(machine_spec, config = Cheffish.profiled_config)
+    chef_server = Cheffish.default_chef_server(config)
+    if machine_spec.is_a?(String)
+      machine_spec = ChefMachineSpec.get(machine_spec, chef_server)
+    end
     driver = driver_for_url(machine_spec.driver_url, config)
     if driver
-      machine_options = { :convergence_options => { :chef_server => Cheffish.default_chef_server(config) } }
+      machine_options = { :convergence_options => { :chef_server => chef_server } }
       machine_options = Cheffish::MergedConfig.new(config[:machine_options], machine_options) if config[:machine_options]
       driver.connect_to_machine(machine_spec, machine_options)
     else
