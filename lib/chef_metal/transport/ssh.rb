@@ -109,22 +109,19 @@ module ChefMetal
 
       def make_url_available_to_remote(local_url)
         uri = URI(local_url)
-        host = Socket.getaddrinfo(uri.host, uri.scheme, nil, :STREAM)[0][3]
-        if host == '127.0.0.1' || host == '::1'
-          @forwarded_ports ||= {}
-          remote_port, remote_host = @forwarded_ports[[uri.port, uri.host]]
-          if !remote_port
-            Chef::Log.debug("Forwarding local server #{uri.host}:#{uri.port} to #{username}@#{self.host}")
-            old_active_remotes = session.forward.active_remotes
-            session.forward.remote(uri.port, uri.host, uri.port)
-            session.loop { !(session.forward.active_remotes.length > old_active_remotes.length) }
-            remote_port, remote_host = (session.forward.active_remotes - old_active_remotes).first
-            @forwarded_ports[[uri.port, uri.host]] = [ remote_port, remote_host ]
+        if is_local_machine(uri.host)
+          port, host = forward_port(uri.port, uri.host, uri.port, 'localhost')
+          if !port
+            # Try harder if the port is already taken
+            port, host = forward_port(uri.port, uri.host, 0, 'localhost')
+            if !port
+              raise "Error forwarding port: could not forward #{uri.port} or 0"
+            end
           end
-          uri.host = remote_host
-          uri.port = remote_port
+          uri.host = host
+          uri.port = port
         end
-        Chef::Log.info "Port forwarded: local URL #{local_url} is now available at remote URL #{uri.to_s}"
+        Chef::Log.info("Port forwarded: local URL #{local_url} is available to #{self.host} as #{uri.to_s} for the duration of this SSH connection.")
         uri.to_s
       end
 
@@ -240,6 +237,50 @@ module ChefMetal
         rescue Errno::ETIMEDOUT
           Chef::Log.debug("Timed out connecting to gateway: #{$!}")
           raise InitialConnectTimeout.new($!)
+        end
+      end
+
+      def is_local_machine(host)
+        local_addrs = Socket.ip_address_list
+        host_addrs = Addrinfo.getaddrinfo(host, nil)
+        local_addrs.any? do |local_addr|
+          host_addrs.any? do |host_addr|
+            local_addr.ip_address == host_addr.ip_address
+          end
+        end
+      end
+
+      # Forwards a port over the connection, and returns the
+      def forward_port(local_port, local_host, remote_port, remote_host)
+        # This bit is from the documentation.
+        if session.forward.respond_to?(:active_remote_destinations)
+          got_remote_port, remote_host = session.forward.active_remote_destinations[[local_port, local_host]]
+          if !got_remote_port
+            Chef::Log.debug("Forwarding local server #{local_host}:#{local_port} to #{username}@#{self.host}")
+
+            session.forward.remote(local_port, local_host, remote_port, remote_host) do |actual_remote_port|
+              got_remote_port = actual_remote_port || :error
+              :no_exception # I'll take care of it myself, thanks
+            end
+            # Kick SSH until we get a response
+            session.loop { !got_remote_port }
+            if got_remote_port == :error
+              return nil
+            end
+          end
+          [ got_remote_port, remote_host ]
+        else
+          @forwarded_ports ||= {}
+          remote_port, remote_host = @forwarded_ports[[local_port, local_host]]
+          if !remote_port
+            Chef::Log.debug("Forwarding local server #{local_host}:#{local_port} to #{username}@#{self.host}")
+            old_active_remotes = session.forward.active_remotes
+            session.forward.remote(local_port, local_host, local_port)
+            session.loop { !(session.forward.active_remotes.length > old_active_remotes.length) }
+            remote_port, remote_host = (session.forward.active_remotes - old_active_remotes).first
+            @forwarded_ports[[local_port, local_host]] = [ remote_port, remote_host ]
+          end
+          [ remote_port, remote_host ]
         end
       end
     end
