@@ -57,6 +57,12 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
   # files '/remote/path.txt' => { :content => 'woo' }
   attribute :files, :kind_of => Hash
 
+  # The named machine_image to start from.  Specify the name of a machine_image
+  # object and the default machine_options will be set to use that image.
+  # == Examples
+  # from_image 'company_base_image'
+  attribute :from_image, :kind_of => String
+
   # A single file to upload, in the format REMOTE_PATH, LOCAL_PATH|HASH.
   # This directive may be passed multiple times, and multiple files will be uploaded.
   # == Examples

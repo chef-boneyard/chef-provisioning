@@ -183,6 +183,20 @@ module ChefMetal
     end
 
     #
+    # Create an image.
+    #
+    def create_image(action_handler, image_spec, image_options, machine_spec)
+      raise "#{self.class} does not implement create_image"
+    end
+
+    #
+    # Destroy an image.
+    #
+    def destroy_image(action_handler, image_spec)
+      raise "#{self.class} does not implement destroy_image"
+    end
+
+    #
     # Optional interface methods
     #
 

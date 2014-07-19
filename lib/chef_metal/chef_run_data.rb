@@ -16,6 +16,7 @@ module ChefMetal
     attr_reader :current_driver
 
     with :machine_options
+    with :image_options
 
     def with_driver(driver, options = nil, &block)
       if drivers[driver] && options
@@ -44,6 +45,14 @@ module ChefMetal
     def current_machine_options
       if @current_machine_options
         @current_machine_options
+      else
+        {}
+      end
+    end
+
+    def current_image_options
+      if @current_image_options
+        @current_image_options
       else
         {}
       end
