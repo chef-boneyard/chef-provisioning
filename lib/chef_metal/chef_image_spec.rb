@@ -32,7 +32,7 @@ module ChefMetal
 
     # Creates a new empty ImageSpec with the given name.
     def self.empty(name, chef_server = Cheffish.default_chef_server)
-      ChefImageSpec.new({ 'name' => name }, chef_server)
+      ChefImageSpec.new({ 'id' => id }, chef_server)
     end
 
     #
@@ -61,6 +61,19 @@ module ChefMetal
           data_bag 'images'
           chef_server _chef_server
           raw_json _self.image_data
+        end
+      end
+    end
+
+    def delete(action_handler)
+      # Save the node to the server.
+      _self = self
+      _chef_server = _self.chef_server
+      ChefMetal.inline_resource(action_handler) do
+        chef_data_bag_item _self.name do
+          data_bag 'images'
+          chef_server _chef_server
+          action :destroy
         end
       end
     end

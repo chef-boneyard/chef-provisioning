@@ -22,7 +22,7 @@ module ChefMetal
     # Name of the image. Corresponds to the name in "image 'name' do" ...
     #
     def name
-      image_data['name']
+      image_data['id']
     end
 
     #

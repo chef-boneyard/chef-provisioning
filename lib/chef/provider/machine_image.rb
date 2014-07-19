@@ -31,6 +31,9 @@ class Chef::Provider::MachineImage < Chef::Provider::LWRPBase
     end
   end
 
+  action :destroy do
+  end
+
   def create_image(image_spec)
     # 1. Create the exemplar machine
     machine_provider = Chef::Provider::Machine.new(new_resource, run_context)
@@ -38,11 +41,13 @@ class Chef::Provider::MachineImage < Chef::Provider::LWRPBase
     machine_provider.action_converge
 
     # 2. Create the image
+    image = new_driver.allocate_image(action_handler, image_spec, new_resource.image_options,
+                                      machine_provider.machine_spec)
 
-    image = new_driver.create_image(action_handler, image_spec, new_resource.image_options,
-                                    machine_provider.machine_spec)
+    # 3. Save the linkage from name -> image id
+    image_spec.save(action_handler)
 
-    # 3.
-    image_spec.save
+    # 4. Wait for image to be ready
+    new_driver.ready_image(action_handler, image_spec, new_resource.image_options)
   end
 end

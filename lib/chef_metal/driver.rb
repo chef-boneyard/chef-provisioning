@@ -183,16 +183,23 @@ module ChefMetal
     end
 
     #
-    # Create an image.
+    # Allocate an image. Returns quickly with an ID that tracks the image.
     #
-    def create_image(action_handler, image_spec, image_options, machine_spec)
+    def allocate_image(action_handler, image_spec, image_options, machine_spec)
+      raise "#{self.class} does not implement create_image"
+    end
+
+    #
+    # Ready an image, waiting till the point where it is ready to be used.
+    #
+    def ready_image(action_handler, image_spec, image_options)
       raise "#{self.class} does not implement create_image"
     end
 
     #
     # Destroy an image.
     #
-    def destroy_image(action_handler, image_spec)
+    def destroy_image(action_handler, image_spec, image_options)
       raise "#{self.class} does not implement destroy_image"
     end
 
