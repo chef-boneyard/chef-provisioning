@@ -42,7 +42,15 @@ module ChefMetal
     # Set the location for this image.
     #
     def location=(value)
-      image_data['location'] ||= value
+      image_data['location'] = value
+    end
+
+    def machine_options
+      image_data['machine_options']
+    end
+
+    def machine_options=(value)
+      image_data['machine_options'] = value
     end
 
     # URL to the driver.  Convenience for location['driver_url']

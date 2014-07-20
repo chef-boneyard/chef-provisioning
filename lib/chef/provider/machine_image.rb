@@ -19,8 +19,8 @@ class Chef::Provider::MachineImage < Chef::Provider::LWRPBase
 
   action :create do
     # Get the image mapping on the server (from name to image-id)
-    image_spec = ChefMetal::ChefImageSpec.get(new_resource.name) ||
-                 ChefMetal::ChefImageSpec.empty(new_resource.name)
+    image_spec = ChefMetal::ChefImageSpec.get(new_resource.name, new_resource.chef_server) ||
+                 ChefMetal::ChefImageSpec.empty(new_resource.name, new_resource.chef_server)
     if image_spec.location
       # TODO check for real existence and maybe update
     else
@@ -41,8 +41,8 @@ class Chef::Provider::MachineImage < Chef::Provider::LWRPBase
     machine_provider.action_converge
 
     # 2. Create the image
-    image = new_driver.allocate_image(action_handler, image_spec, new_resource.image_options,
-                                      machine_provider.machine_spec)
+    new_driver.allocate_image(action_handler, image_spec, new_resource.image_options,
+                              machine_provider.machine_spec)
 
     # 3. Save the linkage from name -> image id
     image_spec.save(action_handler)

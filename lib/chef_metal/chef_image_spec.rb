@@ -20,7 +20,9 @@ module ChefMetal
     def self.get(name, chef_server = Cheffish.default_chef_server)
       chef_api = Cheffish.chef_server_api(chef_server)
       begin
-        ChefImageSpec.new(chef_api.get("/data/images/#{name}"), chef_server)
+        data = chef_api.get("/data/images/#{name}")
+        data['machine_options'] = strings_to_symbols(data['machine_options'])
+        ChefImageSpec.new(data, chef_server)
       rescue Net::HTTPServerException => e
         if e.response.code == '404'
           nil
@@ -31,7 +33,7 @@ module ChefMetal
     end
 
     # Creates a new empty ImageSpec with the given name.
-    def self.empty(name, chef_server = Cheffish.default_chef_server)
+    def self.empty(id, chef_server = Cheffish.default_chef_server)
       ChefImageSpec.new({ 'id' => id }, chef_server)
     end
 
@@ -60,7 +62,7 @@ module ChefMetal
         chef_data_bag_item _self.name do
           data_bag 'images'
           chef_server _chef_server
-          raw_json _self.image_data
+          raw_data _self.image_data
         end
       end
     end
@@ -87,6 +89,18 @@ module ChefMetal
     #
     def chef_api
       Cheffish.server_api_for(chef_server)
+    end
+
+    def self.strings_to_symbols(data)
+      if data.is_a?(Hash)
+        result = {}
+        data.each_pair do |key, value|
+          result[key.to_sym] = strings_to_symbols(value)
+        end
+        result
+      else
+        data
+      end
     end
   end
 end
