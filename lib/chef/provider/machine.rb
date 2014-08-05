@@ -114,7 +114,9 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   end
 
   def current_machine_options
-    if current_driver
+    if from_image_spec && from_image_spec.machine_options
+      machine_options(new_driver, from_image_spec.machine_options)
+    else
       machine_options(current_driver)
     end
   end

@@ -193,7 +193,7 @@ module ChefMetal
     # Ready an image, waiting till the point where it is ready to be used.
     #
     def ready_image(action_handler, image_spec, image_options)
-      raise "#{self.class} does not implement create_image"
+      raise "#{self.class} does not implement ready_image"
     end
 
     #

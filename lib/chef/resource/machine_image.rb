@@ -9,6 +9,7 @@ class Chef::Resource::MachineImage < Chef::Resource::Machine
   def initialize(*args)
     super
     @image_options = run_context.chef_metal.current_image_options
+    @machine_options = run_context.chef_metal.current_machine_options
   end
 
   # TODO check if we still have all the actions from machine

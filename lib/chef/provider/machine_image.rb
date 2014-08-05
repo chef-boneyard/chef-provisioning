@@ -27,6 +27,7 @@ class Chef::Provider::MachineImage < Chef::Provider::LWRPBase
       #
       # Create a new image
       #
+      image_spec.machine_options = new_resource.machine_options
       create_image(image_spec)
     end
   end
