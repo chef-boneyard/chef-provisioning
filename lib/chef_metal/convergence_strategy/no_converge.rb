@@ -14,7 +14,6 @@ module ChefMetal
       end
 
       def setup_convergence(action_handler, machine)
-        machine_spec.save(action_handler)
       end
 
       def converge(action_handler, machine)

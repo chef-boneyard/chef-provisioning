@@ -9,6 +9,8 @@ require 'chef/resource/machine_file'
 require 'chef/provider/machine_file'
 require 'chef/resource/machine_execute'
 require 'chef/provider/machine_execute'
+require 'chef/resource/machine_image'
+require 'chef/provider/machine_image'
 
 class Chef
   module DSL
@@ -27,6 +29,14 @@ class Chef
 
       def add_machine_options(options, &block)
         run_context.chef_metal.add_machine_options(options, &block)
+      end
+
+      def with_image_options(image_options, &block)
+        run_context.chef_metal.with_image_options(image_options, &block)
+      end
+
+      def current_image_options
+        run_context.chef_metal.current_image_options
       end
 
       NOT_PASSED = Object.new

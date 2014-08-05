@@ -1,3 +1,4 @@
+require 'pry'
 require 'chef_metal'
 require 'cheffish'
 require 'chef_metal/machine_spec'
