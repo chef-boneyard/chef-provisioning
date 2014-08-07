@@ -105,24 +105,20 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   end
 
   def new_machine_options
-    # TODO current_machine_options
-    if from_image_spec && from_image_spec.machine_options
-      machine_options(new_driver, from_image_spec.machine_options)
-    else
-      machine_options(new_driver)
-    end
+    machine_options(new_driver)
   end
 
   def current_machine_options
-    if from_image_spec && from_image_spec.machine_options
-      machine_options(new_driver, from_image_spec.machine_options)
-    else
-      machine_options(current_driver)
-    end
+    machine_options(current_driver)
   end
 
-  def machine_options(driver, *more_configs)
-    configs = more_configs
+  def machine_options(driver)
+    configs = []
+
+    if from_image_spec && from_image_spec.machine_options
+      configs << from_image_spec.machine_options
+    end
+
     configs << {
       :convergence_options =>
         [ :chef_server,
