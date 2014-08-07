@@ -13,8 +13,8 @@
 :disable_api_termination  
 :dns_name                 
 :ebs_optimized            
-:groups
 :flavor_id                
+:groups                   # array of security group names. If using VPC, use security_group_ids instead
 :hypervisor   
 :iam_instance_profile  
 :iam_instance_profile_name  
@@ -36,7 +36,7 @@
 :requester_id             
 :root_device_name         
 :root_device_type         
-:security_group_ids       
+:security_group_ids     # array of security group IDs as assigned by Amazon, e.g. "sg-1234abcd"
 :source_dest_check        
 :spot_instance_request_id   
 :state                   
