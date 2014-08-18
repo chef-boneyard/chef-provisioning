@@ -1,5 +1,52 @@
 # Chef Metal Changelog
 
+## 0.14 (8/18/2013)
+
+
+- FEATURE: Add the machine_image resource (@jkeiser, @johnewart):
+  ```ruby
+  machine_image 'base' do
+    machine_options :bootstrap_options => { :image_id => 'ami-1234798123431', :ssh_username => 'root' }
+    recipe 'secure_base'
+    recipe 'corp_users'
+  end
+  # Build an image based on 'base' that has apache
+  machine_image 'apache' do
+    # All bootstrap options, like ssh_username, are carried forward
+    from_image 'base'
+    recipe 'apache2'
+  end
+  # Build an image with my web app based on the apache base image
+  machine_image 'myapp' do
+    from_image 'apache'
+    recipe 'mywebapp'
+  end
+  # Build an image with mysql and my schema based on the corporate base image
+  machine_image 'mydb' do
+    from_image 'base'
+    recipe 'mysql'
+    recipe 'myschema'
+  end
+  # Build a DB machine from mydb.  Does not reinstall stuff! :)
+  machine 'db' do
+    from_image 'mydb'
+  end
+  # Build a web app machine from myapp.  Does not reinstall stuff! :)
+  machine 'myapp1' do
+    from_image 'myapp'
+  end
+  ```
+  - Creates a node with the name of the machine_image, which contains metadata
+    like the username of the image.  This makes things like AWS image registries
+    possible.
+- Fix the no_converge convergence strategy (@johnewart)
+- SSH port forwarding improvements:
+  - Detects *any* IP on the localhost and forwards it--not just 127.0.0.1
+  - Binds to localhost on the remote side instead of 127.0.0.1, allowing for IPv6 communication
+  - Tries multiple ports--if the origin port is already taken, tries "0" (ephemeral).
+- Fix SSH race condition causing port forwarding to happen twice (and fail miserably)
+- Add ChefMetal.connect_to_machine('mario')
+
 ## 0.13 (6/17/2014)
 
 - make winrm work again (@mwrock)
