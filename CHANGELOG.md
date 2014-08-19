@@ -1,7 +1,10 @@
 # Chef Metal Changelog
 
-## 0.14 (8/18/2013)
+## 0.14.1 (8/18/2014)
 
+- Fix "metal execute mario ls" to work again
+
+## 0.14 (8/18/2014)
 
 - FEATURE: Add the machine_image resource (@jkeiser, @johnewart):
   ```ruby
