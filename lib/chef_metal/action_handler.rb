@@ -42,9 +42,12 @@ module ChefMetal
     # action that needs to be done.
     def perform_action(description)
       if should_perform_actions
-        yield
+        result = yield
+      else
+        result = nil
       end
       performed_action(description)
+      result
     end
 
     # Open a stream which can be printed to and closed

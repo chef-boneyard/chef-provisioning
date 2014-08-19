@@ -114,7 +114,7 @@ class ChefMetal::Application < Chef::Application
       case command
       when 'execute'
         connect_to_machines(cli_arguments.shift) do |machine|
-          machine.execute(action_handler, cli_arguments.join(' '), :read_only => config[:read_only], :stream => config[:stream], :timeout => config[:timeout].to_f)
+          result = machine.execute(action_handler, cli_arguments.join(' '), :read_only => config[:read_only], :stream => config[:stream], :timeout => config[:timeout].to_f)
           puts result.stdout if result.stdout != '' && !config[:stream] && Chef::Config.log_level != :debug
           STDERR.puts result.stderr if result.stderr != '' && !config[:stream] && Chef::Config.log_level != :debug
           exit_code = result.exitstatus if result.exitstatus != 0
@@ -246,9 +246,8 @@ class ChefMetal::Application < Chef::Application
   end
 
   def connect_to_machines(spec)
-    grouped = machine_specs(spec).group_by { |machine_spec| machine_spec.driver_url }
-    grouped.collect_concat do |driver_url, machine_specs|
-      machine_specs.map { |machine_spec| ChefMetal.connect_to_machine(machine_spec) }
+    machine_specs(spec).each do |machine_spec|
+      yield ChefMetal.connect_to_machine(machine_spec)
     end
   end
 
