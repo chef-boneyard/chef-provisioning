@@ -1,11 +1,10 @@
 require 'chef/mixin/deep_merge'
-require 'cheffish/with_pattern'
 require 'cheffish/merged_config'
 require 'chef_metal/chef_machine_spec'
 
 module ChefMetal
   class ChefRunData
-    extend Cheffish::WithPattern
+
     def initialize(config)
       @config = config
       @drivers = {}
@@ -14,9 +13,36 @@ module ChefMetal
     attr_reader :config
     attr_reader :drivers
     attr_reader :current_driver
+    attr_accessor :current_machine_options
+    attr_accessor :current_image_options
 
-    with :machine_options
-    with :image_options
+
+    def with_machine_options(value)
+      old_value = self.current_machine_options
+      Chef::Log.debug("with_machine_options(#{value}) => #{old_value}")
+      self.current_machine_options = value
+      if block_given?
+        begin
+          yield
+        ensure
+          self.current_machine_options = old_value
+        end
+      end
+    end
+
+    def with_image_options(value)
+      old_value = self.current_image_options
+      Chef::Log.debug("with_image_options(#{value}) => #{old_value}")
+      self.current_image_options = value
+      if block_given?
+        begin
+          yield
+        ensure
+          self.current_image_options = old_value
+        end
+      end
+    end
+
 
     def with_driver(driver, options = nil, &block)
       if drivers[driver] && options

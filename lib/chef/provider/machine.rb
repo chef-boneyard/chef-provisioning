@@ -115,6 +115,9 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   def machine_options(driver)
     configs = []
 
+    # Merge in with_machine_options
+    configs << run_context.chef_metal.current_machine_options
+
     if from_image_spec && from_image_spec.machine_options
       configs << from_image_spec.machine_options
     end
@@ -133,6 +136,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
           result
         end
     }
+
     configs << new_resource.machine_options if new_resource.machine_options
     configs << driver.config[:machine_options] if driver.config[:machine_options]
     Cheffish::MergedConfig.new(*configs)
