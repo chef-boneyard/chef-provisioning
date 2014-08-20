@@ -133,6 +133,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
           result
         end
     }
+
     configs << new_resource.machine_options if new_resource.machine_options
     configs << driver.config[:machine_options] if driver.config[:machine_options]
     Cheffish::MergedConfig.new(*configs)

@@ -92,6 +92,23 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
     @machine_options = Cheffish::MergedConfig.new(options, @machine_options)
   end
 
+
+  # This is here because metal users will probably want to do things like:
+  # machine "foo"
+  #   action :destroy
+  # end
+  #
+  # with_machine_options :bootstrap_options => {...}
+  # machine "foo"
+  #   converge true
+  # end
+  #
+  # Without this, the first resource's machine options will obliterate the second
+  # resource's machine options, and then unexpected (and undesired) things happen.
+  def load_prior_resource
+    Chef::Log.debug "Overloading #{self.resource_name} load_prior_resource with NOOP"
+  end
+
   # chef client version and omnibus
   # chef-zero boot method?
   # chef-client -z boot method?
