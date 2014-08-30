@@ -75,6 +75,8 @@ Allocate machine is the first method called when creating a machine.  Its job is
 
 allocate_machine takes an action_handler, machine_spec, and a machine_options argument.  action_handler is where the method should report any changes it makes.  machine_spec.location will contain the current known machine information, loaded from persistent storage (like from the node).  machine_options contains the desired options for creating the machine.  Both machine_spec.location and machine_options are freeform hashes owned by the driver.  You should document what options the user can pass in your driver's documentation.
 
+Note: `machine_spec.location` *must* contain a `driver_url` key with the canonical driver URL in it, so that metal can tell where the machine came from.
+
 By the time the method is finished, the machine should be reserved and its information stored in machine_spec.location.  If it is not feasible to do this quickly, then it is acceptable to defer this to ready_machine.
 
 ```ruby
