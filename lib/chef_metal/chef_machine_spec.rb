@@ -54,6 +54,9 @@ module ChefMetal
     # saved automatically for you after allocate_machine and ready_machine.
     #
     def save(action_handler)
+      if location && (!location.is_a?(Hash) || !location['driver_url'])
+        raise "Drivers must specify a canonical driver_url in machine_spec.location.  Contact your driver's author."
+      end
       # Save the node to the server.
       _self = self
       _chef_server = _self.chef_server
