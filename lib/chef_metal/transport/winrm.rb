@@ -19,6 +19,7 @@ module ChefMetal
 
       def execute(command, execute_options = {})
         output = with_execute_timeout(execute_options) do
+          session.set_timeout(execute_timeout(execute_options))
           session.run_powershell_script(command) do |stdout, stderr|
             stream_chunk(execute_options, stdout, stderr)
           end
