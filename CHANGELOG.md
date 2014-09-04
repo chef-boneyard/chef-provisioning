@@ -1,5 +1,15 @@
 # Chef Metal Changelog
 
+## 0.14.2 (9/2/2014)
+
+- Disable auto batching
+- Fix for with_machine_options context hash 
+- Pass timeout from execution_options to winrm set_timeout
+- Add better error message when driver does not specify driver_url
+- Add info that location.driver_url is required
+- Remove Chef 11.14 alpha note in readme
+- Gracefully handle Host Down and Network Unreachable
+
 ## 0.14.1 (8/18/2014)
 
 - Fix "metal execute mario ls" to work again
