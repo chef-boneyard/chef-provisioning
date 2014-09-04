@@ -41,14 +41,6 @@ class Chef
 
       NOT_PASSED = Object.new
 
-      def auto_batch_machines(value = NOT_PASSED)
-        if value == NOT_PASSED
-          run_context.chef_metal.auto_batch_machines
-        else
-          run_context.chef_metal.auto_batch_machines = value
-        end
-      end
-
       @@next_machine_batch_index = 0
 
       def machine_batch_default_name
@@ -69,47 +61,11 @@ class Chef
         end
       end
 
-      # When the machine resource is first declared, create a machine_batch (if there
-      # isn't one already)
-      def machine(name, &block)
-        resource = build_resource(:machine, name, caller[0], &block)
-
-        # Grab the previous resource so we can decide whether to batch this or make it its own resource.
-        previous_index = run_context.resource_collection.previous_index
-        previous = previous_index >= 0 ? run_context.resource_collection[previous_index] : nil
-        if run_context.chef_metal.auto_batch_machines &&
-           previous &&
-           Array(resource.action).size == 1 &&
-           Array(previous.action) == Array(resource.action)
-
-          # Handle batching similar machines (with similar actions)
-          if previous.is_a?(Chef::Resource::MachineBatch)
-            # If we see a machine declared after a previous machine_batch with the same action, add it to the batch.
-            previous.machines << resource
-          elsif previous.is_a?(Chef::Resource::Machine)
-            # If we see two machines in a row with the same action, batch them.
-            _self = self
-            batch = build_resource(:machine_batch, machine_batch_default_name) do
-              action resource.action
-              machines [ previous, resource ]
-            end
-            batch.from_recipe self
-            run_context.resource_collection[previous_index] = batch
-          else
-            run_context.resource_collection.insert(resource)
-          end
-
-        else
-          run_context.resource_collection.insert(resource)
-        end
-        resource
-      end
     end
   end
 
   class Config
     default(:driver) { ENV['CHEF_DRIVER'] }
-    default(:auto_batch_machines) { true }
   #   config_context :drivers do
   #     # each key is a driver_url, and each value can have driver, driver_options and machine_options
   #     config_strict_mode false

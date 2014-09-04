@@ -50,18 +50,6 @@ module ChefMetal
       @current_driver_options = options
     end
 
-    def auto_batch_machines
-      if !@auto_batch_machines.nil?
-        @auto_batch_machines
-      else
-        config[:auto_batch_machines]
-      end
-    end
-
-    def auto_batch_machines=(value)
-      @auto_batch_machines = value
-    end
-
     def current_driver
       @current_driver || config[:driver]
     end
