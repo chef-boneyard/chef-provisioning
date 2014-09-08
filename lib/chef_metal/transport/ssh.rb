@@ -10,6 +10,26 @@ require 'net/ssh/gateway'
 module ChefMetal
   class Transport
     class SSH < ChefMetal::Transport
+      #
+      # Create a new SSH transport.
+      #
+      # == Arguments
+      #
+      # - host: the host to connect to, e.g. '145.14.51.45'
+      # - username: the username to connect with
+      # - ssh_options: a list of options to Net::SSH.start
+      # - options: a hash of options for the transport itself, including:
+      #   - :prefix: a prefix to send before each command (e.g. "sudo ")
+      #   - :ssh_pty_enable: set to false to disable pty (some instances don't
+      #     support this, most do)
+      #   - :ssh_gateway: the gateway to use, e.g. "jkeiser@145.14.51.45:222".
+      #     nil (the default) means no gateway.
+      # - global_config: an options hash that looks suspiciously similar to
+      #   Chef::Config, containing at least the key :log_level.
+      #
+      # The options are used in
+      #   Net::SSH.start(host, username, ssh_options)
+
       def initialize(host, username, ssh_options, options, global_config)
         @host = host
         @username = username
@@ -224,7 +244,7 @@ module ChefMetal
       end
 
       def gateway
-        gw_host, gw_user = options[:ssh_gateway].split('@').reverse
+        gw_user, gw_host = options[:ssh_gateway].split('@')
         gw_host, gw_port = gw_host.split(':')
         gw_user = ssh_options[:ssh_username] unless gw_user
 

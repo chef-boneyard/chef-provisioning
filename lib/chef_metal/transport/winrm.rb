@@ -4,7 +4,22 @@ require 'timeout'
 
 module ChefMetal
   class Transport
+    # Transport to handle the WinRM connection protocol.
     class WinRM < ChefMetal::Transport
+      #
+      # Create a new WinRM transport.
+      #
+      # == Arguments
+      # - endpoint: the WinRM endpoint, e.g. http://145.14.51.45:5985/wsman.
+      # - type: the connection type, e.g. :plaintext.
+      # - options: options hash, including both WinRM options and transport options.
+      #   For transport options, see the Transport.options definition.  WinRM
+      #   options include :user, :pass, :disable_sspi => true, among others.
+      # - global_config: an options hash that looks suspiciously similar to
+      #   Chef::Config, containing at least the key :log_level.
+      #
+      # The actual connection is made as ::WinRM::WinRMWebService.new(endpoint, type, options)
+      #
       def initialize(endpoint, type, options, global_config)
         @endpoint = endpoint
         @type = type
