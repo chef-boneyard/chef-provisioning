@@ -117,8 +117,9 @@ module ChefMetal
 
         # Download and parse the metadata
         Chef::Log.debug("Getting metadata for machine #{machine.node['name']}: #{metadata_url}")
+        proxy = ENV['http_proxy'] ? URI.parse(ENV['http_proxy']) : OpenStruct.new
         uri = URI(metadata_url)
-        http = Net::HTTP.new(uri.host, uri.port)
+        http = Net::HTTP.new(uri.host, uri.port, proxy.host, proxy.port, proxy.user, proxy.password)
         http.use_ssl = use_ssl
         request = Net::HTTP::Get.new(uri.request_uri)
         response = http.request(request)
