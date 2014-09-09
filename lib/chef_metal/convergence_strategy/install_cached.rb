@@ -3,6 +3,7 @@ require 'pathname'
 require 'fileutils'
 require 'digest/md5'
 require 'thread'
+require 'chef/http/simple'
 
 module ChefMetal
   class ConvergenceStrategy
