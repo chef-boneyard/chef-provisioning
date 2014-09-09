@@ -3,6 +3,7 @@ require 'pathname'
 require 'fileutils'
 require 'digest/md5'
 require 'thread'
+require 'chef/http/simple'
 
 module ChefMetal
   class ConvergenceStrategy
@@ -118,11 +119,7 @@ module ChefMetal
         # Download and parse the metadata
         Chef::Log.debug("Getting metadata for machine #{machine.node['name']}: #{metadata_url}")
         uri = URI(metadata_url)
-        http = Net::HTTP.new(uri.host, uri.port)
-        http.use_ssl = use_ssl
-        request = Net::HTTP::Get.new(uri.request_uri)
-        response = http.request(request)
-        metadata_str = response.body
+        metadata_str = Chef::HTTP::Simple.new(uri).get(uri)
         metadata = {}
         metadata_str.each_line do |line|
           key, value = line.split("\t", 2)
