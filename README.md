@@ -124,7 +124,7 @@ Drivers each have their own repository.  Current drivers:
 
 **Containers:**
 - [LXC](https://github.com/opscode/chef-metal-lxc) (not yet up to date with 0.11)
-- [Docker](https://github.com/opscode/chef-metal-docker) (not yet up to date with 0.11)
+- [Docker](https://github.com/opscode/chef-metal-docker)
 
 **Bare Metal:**
 - [SSH (no PXE)](https://github.com/double-z/chef-metal-ssh) (not yet up to date with 0.11)
