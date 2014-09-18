@@ -14,7 +14,9 @@ module ChefMetal
     attr_reader :drivers
     attr_reader :current_driver
     attr_accessor :current_machine_options
+    attr_accessor :current_load_balancer_options
     attr_accessor :current_image_options
+    attr_accessor :current_datacenter
 
     def with_machine_options(value)
       old_value = self.current_machine_options
@@ -36,6 +38,18 @@ module ChefMetal
           yield
         ensure
           self.current_image_options = old_value
+        end
+      end
+    end
+
+    def with_datacenter(value)
+      old_value = self.current_datacenter
+      self.current_datacenter = value
+      if block_given?
+        begin
+          yield
+        ensure
+          self.current_datacenter = old_value
         end
       end
     end
