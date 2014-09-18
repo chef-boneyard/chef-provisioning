@@ -1,7 +1,10 @@
 require 'chef/resource/lwrp_base'
 require 'chef/mixin/deep_merge'
 
-class Chef::Resource::MachineBatch < Chef::Resource::LWRPBase
+class Chef
+class Resource
+class MachineBatch < Chef::Resource::LWRPBase
+
   self.resource_name = 'machine_batch'
 
   def initialize(*args)
@@ -69,4 +72,7 @@ class Chef::Resource::MachineBatch < Chef::Resource::LWRPBase
     end
     text << "end\n"
   end
+
+end
+end
 end

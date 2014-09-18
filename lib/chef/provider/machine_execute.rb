@@ -2,7 +2,9 @@ require 'chef/provider/lwrp_base'
 require 'chef_metal/chef_provider_action_handler'
 require 'chef_metal/machine'
 
-class Chef::Provider::MachineExecute < Chef::Provider::LWRPBase
+class Chef
+class Provider
+class MachineExecute < Chef::Provider::LWRPBase
 
   def action_handler
     @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
@@ -27,4 +29,7 @@ class Chef::Provider::MachineExecute < Chef::Provider::LWRPBase
   action :run do
     machine.execute(action_handler, new_resource.command)
   end
+
+end
+end
 end

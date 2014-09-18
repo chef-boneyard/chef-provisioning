@@ -3,7 +3,10 @@ require 'cheffish'
 require 'chef_metal'
 require 'cheffish/merged_config'
 
-class Chef::Resource::Machine < Chef::Resource::LWRPBase
+class Chef
+class Resource
+class Machine < Chef::Resource::LWRPBase
+
   self.resource_name = 'machine'
 
   def initialize(*args)
@@ -19,8 +22,10 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
 
   # Driver attributes
   attribute :driver
-  attribute :machine_options
 
+  # Machine options
+  attribute :machine_options
+  
   # Node attributes
   Cheffish.node_attributes(self)
 
@@ -98,10 +103,11 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
   #   action :destroy
   # end
   #
-  # with_machine_options :bootstrap_options => {...}
-  # machine "foo"
-  #   converge true
-  # end
+  # @example
+  #   with_machine_options :bootstrap_options => { ... }
+  #   machine "foo"
+  #     converge true
+  #   end
   #
   # Without this, the first resource's machine options will obliterate the second
   # resource's machine options, and then unexpected (and undesired) things happen.
@@ -113,4 +119,6 @@ class Chef::Resource::Machine < Chef::Resource::LWRPBase
   # chef-zero boot method?
   # chef-client -z boot method?
   # pushy boot method?
+end
+end
 end

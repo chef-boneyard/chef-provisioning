@@ -4,7 +4,9 @@ require 'openssl'
 require 'chef_metal/chef_provider_action_handler'
 require 'chef_metal/chef_machine_spec'
 
-class Chef::Provider::Machine < Chef::Provider::LWRPBase
+class Chef
+class Provider
+class Machine < Chef::Provider::LWRPBase
 
   def action_handler
     @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
@@ -168,4 +170,7 @@ class Chef::Provider::Machine < Chef::Provider::LWRPBase
   def upload_files(machine)
     Machine.upload_files(action_handler, machine, new_resource.files)
   end
+
+end
+end
 end

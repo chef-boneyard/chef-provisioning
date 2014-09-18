@@ -3,7 +3,10 @@ require 'chef_metal'
 require 'chef_metal/machine'
 require 'chef_metal/driver'
 
-class Chef::Resource::MachineExecute < Chef::Resource::LWRPBase
+class Chef
+class Resource
+class MachineExecute < Chef::Resource::LWRPBase
+
   self.resource_name = 'machine_execute'
 
   def initialize(*args)
@@ -19,4 +22,7 @@ class Chef::Resource::MachineExecute < Chef::Resource::LWRPBase
 
   attribute :chef_server, :kind_of => Hash
   attribute :driver, :kind_of => ChefMetal::Driver
+
+end
+end
 end

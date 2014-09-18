@@ -102,7 +102,7 @@ module ChefMetal
     # Returns a triplet:
     #   platform, platform_version, machine_architecture = machine.detect_os(action_handler)
     # This triplet is suitable for passing to the Chef metadata API:
-    # https://www.opscode.com/chef/metadata?p=#{platform}&pv=#{platform_version}&m=#{machine_architecture}
+    # https://www.opscode.com/chef/metadata?p=PLATFORM&pv=PLATFORM_VERSION&m=MACHINE_ARCHITECTURE
     def detect_os(action_handler)
       raise "detect_os not overridden on #{self.class}"
     end

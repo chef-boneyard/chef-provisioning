@@ -16,7 +16,6 @@ module ChefMetal
     attr_accessor :current_machine_options
     attr_accessor :current_image_options
 
-
     def with_machine_options(value)
       old_value = self.current_machine_options
       self.current_machine_options = value
@@ -40,7 +39,6 @@ module ChefMetal
         end
       end
     end
-
 
     def with_driver(driver, options = nil, &block)
       if drivers[driver] && options

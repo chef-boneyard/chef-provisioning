@@ -3,7 +3,10 @@ require 'cheffish'
 require 'chef_metal'
 require 'cheffish/merged_config'
 
-class Chef::Resource::MachineImage < Chef::Resource::Machine
+class Chef
+class Resource
+class MachineImage < Chef::Resource::Machine
+
   self.resource_name = 'machine_image'
 
   def initialize(*args)
@@ -26,4 +29,7 @@ class Chef::Resource::MachineImage < Chef::Resource::Machine
   # - ability to rebuild new image based on the previous image
   # - ability to specify whether and how to keep the image-building machine around
   # - ability to specify whether to leave the chef config around or not
+
+end
+end
 end
