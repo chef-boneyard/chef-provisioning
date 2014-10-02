@@ -1,0 +1,1 @@
+require 'chef_metal'
