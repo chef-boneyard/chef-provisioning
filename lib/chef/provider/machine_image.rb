@@ -4,7 +4,10 @@ require 'openssl'
 require 'chef_metal/chef_provider_action_handler'
 require 'chef_metal/chef_image_spec'
 
-class Chef::Provider::MachineImage < Chef::Provider::LWRPBase
+class Chef
+class Provider
+class MachineImage < Chef::Provider::LWRPBase
+
   def action_handler
     @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
   end
@@ -51,4 +54,7 @@ class Chef::Provider::MachineImage < Chef::Provider::LWRPBase
     # 4. Wait for image to be ready
     new_driver.ready_image(action_handler, image_spec, new_resource.image_options)
   end
+
+end
+end
 end

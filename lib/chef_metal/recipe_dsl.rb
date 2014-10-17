@@ -15,6 +15,7 @@ require 'chef/provider/machine_image'
 class Chef
   module DSL
     module Recipe
+
       def with_driver(driver, options = nil, &block)
         run_context.chef_metal.with_driver(driver, options, &block)
       end

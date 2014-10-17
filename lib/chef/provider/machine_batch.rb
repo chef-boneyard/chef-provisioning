@@ -6,7 +6,9 @@ require 'chef_metal/add_prefix_action_handler'
 require 'chef_metal/machine_spec'
 require 'chef_metal/chef_machine_spec'
 
-class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
+class Chef
+class Provider
+class MachineBatch < Chef::Provider::LWRPBase
 
   def action_handler
     @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
@@ -183,4 +185,7 @@ class Chef::Provider::MachineBatch < Chef::Provider::LWRPBase
     result = Chef::Mixin::DeepMerge.hash_only_merge(result, new_resource.machine_options)
     result
   end
+
+end
+end
 end

@@ -2,7 +2,9 @@ require 'chef/provider/lwrp_base'
 require 'chef_metal/chef_provider_action_handler'
 require 'chef_metal/machine'
 
-class Chef::Provider::MachineFile < Chef::Provider::LWRPBase
+class Chef
+class Provider
+class MachineFile < Chef::Provider::LWRPBase
 
   def action_handler
     @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
@@ -46,4 +48,7 @@ class Chef::Provider::MachineFile < Chef::Provider::LWRPBase
   action :delete do
     machine.delete_file(action_handler, new_resource.path)
   end
+
+end
+end
 end
