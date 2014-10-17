@@ -120,7 +120,12 @@ module ChefMetal
           remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
           Chef::Log.debug("Uploading #{local_path} to #{remote_tempfile} on #{username}@#{host}")
           Net::SCP.new(session).upload!(local_path, remote_tempfile)
-          execute("mv #{remote_tempfile} #{path}").error!
+          begin
+            execute("mv #{remote_tempfile} #{path}").error!
+          rescue
+            # Clean up if we were unable to move
+            execute("rm #{remote_tempfile}").error!
+          end
         else
           Chef::Log.debug("Uploading #{local_path} to #{path} on #{username}@#{host}")
           Net::SCP.new(session).upload!(local_path, path)
@@ -190,17 +195,45 @@ module ChefMetal
       end
 
       def download(path, local_path)
+        if options[:prefix]
+          # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
+          remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
+          Chef::Log.debug("Downloading #{path} from #{remote_tempfile} to #{local_path} on #{username}@#{host}")
+          begin
+            execute("cp #{path} #{remote_tempfile}").error!
+            execute("chown #{username} #{remote_tempfile}").error!
+            do_download remote_tempfile, local_path
+          rescue => e
+              Chef::Log.error "Unable to download #{path} to #{local_path} on #{username}@#{host} -- #{e}"
+              nil
+          ensure
+            # Clean up afterwards
+            begin
+              execute("rm #{remote_tempfile}").error!
+            rescue => e
+              Chef::Log.warn "Unable to clean up #{remote_tempfile} on #{username}@#{host} -- #{e}"
+            end
+          end
+        else
+          do_download path, local_path
+        end
+      end
+
+      def do_download(path, local_path)
         channel = Net::SCP.new(session).download(path, local_path)
         begin
           channel.wait
+          Chef::Log.debug "SCP completed for: #{path} to #{local_path}"
         rescue Net::SCP::Error => e
-          # TODO we need a way to distinguish between "directory of file does not exist" and "SCP did not finish successfully"
+          Chef::Log.error "Error with SCP: #{e}"
+          # TODO we need a way to distinguish between "directory or file does not exist" and "SCP did not finish successfully"
           nil
-        # ensure the channel is closed when a rescue happens above
         ensure
+          # ensure the channel is closed
           channel.close
           channel.wait
         end
+
         nil
       end
 

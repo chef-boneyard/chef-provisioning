@@ -24,6 +24,7 @@ module ChefMetal
       raise "execute not overridden on #{self.class}"
     end
 
+    # TODO: make exceptions for these instead of just returning nil / silently failing
     def read_file(path)
       raise "read_file not overridden on #{self.class}"
     end
