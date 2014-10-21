@@ -169,11 +169,17 @@ module ChefMetal
       end
 
       def client_rb_content(chef_server_url, node_name)
+        if chef_server_url.downcase.start_with?("https")
+          ssl_verify_mode = ':verify_none'
+        else
+          ssl_verify_mode = ':verify_peer'
+        end
+
         <<EOM
 chef_server_url #{chef_server_url.inspect}
 node_name #{node_name.inspect}
 client_key #{convergence_options[:client_pem_path].inspect}
-ssl_verify_mode :verify_peer
+ssl_verify_mode #{ssl_verify_mode}
 EOM
       end
     end
