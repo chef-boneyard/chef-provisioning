@@ -170,10 +170,10 @@ module ChefMetal
         Chef::Log.debug("#{username}@#{host} unavailable: network connection failed or broke: #{$!.inspect}")
         disconnect
         false
-      rescue Net::SSH::AuthenticationFailed, Net::SSH::HostKeyMismatch
+      rescue Net::SSH::AuthenticationFailed, Net::SSH::HostKeyMismatch => e
         Chef::Log.debug("#{username}@#{host} unavailable: SSH authentication error: #{$!.inspect} ")
         disconnect
-        false
+        raise e
       end
 
       protected
