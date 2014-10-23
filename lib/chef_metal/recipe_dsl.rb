@@ -18,8 +18,8 @@ class Chef
   module DSL
     module Recipe
 
-      def with_datacenter(datacenter, &block)
-        run_context.chef_metal.with_datacenter(datacenter, &block)
+      def with_data_center(data_center, &block)
+        run_context.chef_metal.with_data_center(data_center, &block)
       end
 
       def with_driver(driver, options = nil, &block)
