@@ -26,10 +26,6 @@ class Chef
       attribute :name, :kind_of => String, :name_attribute => true
       attribute :machines
 
-      # Node attributes
-      Cheffish.node_attributes(self)
-
-
       def add_load_balancer_options(options)
         @load_balancer_options = Cheffish::MergedConfig.new(options, @load_balancer_options)
       end
