@@ -129,7 +129,7 @@ class Chef::Resource::ChefDataBagResource < Chef::Resource::LWRPBase
     Cheffish.inline_resource(self, :delete) do
       chef_data_bag_item _name do
         data_bag _databag_name
-        action :destroy
+        action :delete
       end
     end
   end
