@@ -4,9 +4,6 @@ require 'cheffish'
 # A resource that is backed by a data bag in a Chef server somewhere
 class Chef::Resource::ChefDataBagResource < Chef::Resource::LWRPBase
 
-  # Which actions can be taken on this thing?
-  actions :create, :delete, :nothing, :update
-
   # The key to store this thing under (/data/bag/<<name>>).
   attr_reader :name
 
