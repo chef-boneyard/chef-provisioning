@@ -57,7 +57,7 @@ class Chef::Resource::ChefDataBagResource < Chef::Resource::LWRPBase
     begin
       data = chef_api.get("/data/#{self.class.databag_name}/#{name}")
       load_from_hash(data)
-      Chef::Log.debug("HASH: #{data}")
+      Chef::Log.debug("Rehydrating resource from #{self.class.databag_name}/#{name}: #{data}")
     rescue Net::HTTPServerException => e
       if e.response.code == '404'
         nil
@@ -72,12 +72,7 @@ class Chef::Resource::ChefDataBagResource < Chef::Resource::LWRPBase
   # @return [Object] self after having been populated with data.
   def load_from_hash hash
     hash.each do |k,v|
-      begin
-        self.instance_variable_set("@#{k}", v)
-      rescue NameError => ne
-        # do nothing ...
-        # TODO: warn / complain?
-      end
+      self.instance_variable_set("@#{k}", v)
     end
     self
   end
@@ -110,7 +105,7 @@ class Chef::Resource::ChefDataBagResource < Chef::Resource::LWRPBase
     _hash = self.storage_hash
     _name = self.name
 
-    Cheffish.inline_resource(self, :create) do
+    Cheffish.inline_resource(self, @action) do
       chef_data_bag_item _name do
         data_bag _databag_name
         raw_data _hash
@@ -126,7 +121,7 @@ class Chef::Resource::ChefDataBagResource < Chef::Resource::LWRPBase
     _name = self.name
     _databag_name = self.class.databag_name
 
-    Cheffish.inline_resource(self, :delete) do
+    Cheffish.inline_resource(self, @action) do
       chef_data_bag_item _name do
         data_bag _databag_name
         action :delete
@@ -143,7 +138,7 @@ class Chef::Resource::ChefDataBagResource < Chef::Resource::LWRPBase
   # @return [Void]
   def create_databag_if_needed databag_name
     _databag_name = databag_name
-    Cheffish.inline_resource(self, :create) do
+    Cheffish.inline_resource(self, @action) do
       chef_data_bag _databag_name do
         action :create
       end
