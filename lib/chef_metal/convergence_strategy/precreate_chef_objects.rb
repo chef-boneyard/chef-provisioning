@@ -5,12 +5,14 @@ require 'cheffish'
 module ChefMetal
   class ConvergenceStrategy
     class PrecreateChefObjects < ConvergenceStrategy
+      attr_reader :bootstrap_proxy, :chef_server, :ssl_verify_mode
+
       def initialize(convergence_options, config)
         super
-      end
 
-      def chef_server
+        @bootstrap_proxy ||= convergence_options[:bootstrap_proxy] || nil
         @chef_server ||= convergence_options[:chef_server] || Cheffish.default_chef_server(config)
+        @ssl_verify_mode ||= convergence_options[:ssl_verify_mode] || :verify_peer
       end
 
       def setup_convergence(action_handler, machine)
@@ -173,7 +175,10 @@ module ChefMetal
 chef_server_url #{chef_server_url.inspect}
 node_name #{node_name.inspect}
 client_key #{convergence_options[:client_pem_path].inspect}
-ssl_verify_mode :verify_peer
+ssl_verify_mode #{convergence_options[:ssl_verify_mode].inspect}
+http_proxy #{convergence_options[:bootstrap_proxy].inspect}
+https_proxy #{convergence_options[:bootstrap_proxy].inspect}
+no_proxy #{convergence_options[:bootstrap_noproxy].inspect}
 EOM
       end
     end
