@@ -11,10 +11,16 @@ require 'chef/resource/machine_execute'
 require 'chef/provider/machine_execute'
 require 'chef/resource/machine_image'
 require 'chef/provider/machine_image'
+require 'chef/resource/load_balancer'
+require 'chef/provider/load_balancer'
 
 class Chef
   module DSL
     module Recipe
+
+      def with_data_center(data_center, &block)
+        run_context.chef_metal.with_data_center(data_center, &block)
+      end
 
       def with_driver(driver, options = nil, &block)
         run_context.chef_metal.with_driver(driver, options, &block)

@@ -265,6 +265,29 @@ module ChefMetal
       end.to_a
     end
 
+    # Allocate a load balancer
+    # @param [ChefMetal::ActionHandler] action_handler The action handler
+    # @param [ChefMetal::LoadBalancerSpec] lb_spec Frozen LB specification
+    # @param [Hash] lb_options A hash of options to pass the LB
+    def allocate_load_balancer(action_handler, lb_spec, lb_options)
+    end
+
+    # Make the load balancer ready
+    # @param [ChefMetal::ActionHandler] action_handler The action handler
+    # @param [ChefMetal::LoadBalancerSpec] lb_spec Frozen LB specification
+    # @param [Hash] lb_options A hash of options to pass the LB
+    def ready_load_balancer(action_handler, lb_spec, lb_options)
+    end
+
+    # Destroy the load balancer
+    # @param [ChefMetal::ActionHandler] action_handler The action handler
+    # @param [ChefMetal::LoadBalancerSpec] lb_spec Frozen LB specification
+    # @param [Hash] lb_options A hash of options to pass the LB
+    def destroy_load_balancer(action_handler, lb_spec, lb_options)
+    end
+
+    def update_load_balancer(action_handler, lb_spec, lb_options, opts = {})
+    end
 
     protected
 
