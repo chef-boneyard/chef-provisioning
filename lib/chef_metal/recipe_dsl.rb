@@ -1,5 +1,6 @@
 require 'chef_metal/chef_run_data'
 require 'chef/resource_collection'
+require 'chef/resource/chef_data_bag_resource'
 
 require 'chef/resource/machine'
 require 'chef/provider/machine'
