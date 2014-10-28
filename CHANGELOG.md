@@ -1,9 +1,13 @@
 # Chef Metal Changelog
 
+## 0.15 (9/28/2014)
+
+- Rename chef-metal to chef-provisioning
+
 ## 0.14.2 (9/2/2014)
 
 - Disable auto batching
-- Fix for with_machine_options context hash 
+- Fix for with_machine_options context hash
 - Pass timeout from execution_options to winrm set_timeout
 - Add better error message when driver does not specify driver_url
 - Add info that location.driver_url is required
