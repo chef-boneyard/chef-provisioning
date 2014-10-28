@@ -1,1 +1,1 @@
-require "chef_provisioning/recipe_dsl"
+require "chef/provisioning/recipe_dsl"

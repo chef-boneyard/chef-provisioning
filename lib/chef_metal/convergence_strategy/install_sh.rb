@@ -1,1 +1,1 @@
-require "chef_provisioning/convergence_strategy/install_sh"
+require "chef/provisioning/convergence_strategy/install_sh"

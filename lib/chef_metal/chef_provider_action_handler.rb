@@ -1,1 +1,1 @@
-require "chef_provisioning/chef_provider_action_handler"
+require "chef/provisioning/chef_provider_action_handler"

@@ -1,1 +1,1 @@
-require "chef_provisioning/driver"
+require "chef/provisioning/driver"

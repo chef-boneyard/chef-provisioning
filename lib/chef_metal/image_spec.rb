@@ -1,1 +1,1 @@
-require "chef_provisioning/image_spec"
+require "chef/provisioning/image_spec"

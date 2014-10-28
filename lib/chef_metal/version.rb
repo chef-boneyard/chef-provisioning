@@ -1,1 +1,1 @@
-require "chef_provisioning/version"
+require "chef/provisioning/version"

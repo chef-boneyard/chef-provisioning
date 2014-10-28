@@ -1,1 +1,1 @@
-require "chef_provisioning/transport"
+require "chef/provisioning/transport"

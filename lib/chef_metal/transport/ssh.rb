@@ -1,1 +1,1 @@
-require "chef_provisioning/transport/ssh"
+require "chef/provisioning/transport/ssh"

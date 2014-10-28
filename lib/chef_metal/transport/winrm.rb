@@ -1,1 +1,1 @@
-require "chef_provisioning/transport/winrm"
+require "chef/provisioning/transport/winrm"

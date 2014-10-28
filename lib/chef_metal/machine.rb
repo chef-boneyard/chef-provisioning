@@ -1,1 +1,1 @@
-require "chef_provisioning/machine"
+require "chef/provisioning/machine"

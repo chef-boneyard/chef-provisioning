@@ -1,1 +1,1 @@
-require "chef_provisioning/convergence_strategy/precreate_chef_objects"
+require "chef/provisioning/convergence_strategy/precreate_chef_objects"

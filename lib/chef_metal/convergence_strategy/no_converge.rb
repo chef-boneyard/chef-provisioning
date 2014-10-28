@@ -1,1 +1,1 @@
-require "chef_provisioning/convergence_strategy/no_converge"
+require "chef/provisioning/convergence_strategy/no_converge"
