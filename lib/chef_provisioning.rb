@@ -42,7 +42,11 @@ module ChefProvisioning
     # Figure out the driver class
     #
     scheme = driver_url.split(':', 2)[0]
-    require "chef_provisioning/driver_init/#{scheme}"
+    begin
+      require "chef_provisioning/driver_init/#{scheme}"
+    rescue LoadError => e
+      require "chef_metal/driver_init/#{scheme}"
+    end
     driver_class = @@registered_driver_classes[scheme]
 
     #
