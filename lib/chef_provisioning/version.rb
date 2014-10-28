@@ -1,3 +1,3 @@
 module ChefProvisioning
-  VERSION = '0.14.2'
+  VERSION = '0.15'
 end
