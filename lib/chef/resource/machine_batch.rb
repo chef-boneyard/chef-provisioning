@@ -58,7 +58,7 @@ class MachineBatch < Chef::Resource::LWRPBase
       end
     end
     machine_names = @machines.map do |m|
-      if m.is_a?(ChefProvisioning::MachineSpec)
+      if m.is_a?(Chef::Provisioning::MachineSpec)
         m.name
       elsif m.is_a?(Chef::Resource::Machine)
         m.name

@@ -61,7 +61,7 @@
   - Binds to localhost on the remote side instead of 127.0.0.1, allowing for IPv6 communication
   - Tries multiple ports--if the origin port is already taken, tries "0" (ephemeral).
 - Fix SSH race condition causing port forwarding to happen twice (and fail miserably)
-- Add ChefProvisioning.connect_to_machine('mario')
+- Add Chef::Provisioning.connect_to_machine('mario')
 
 ## 0.13 (6/17/2014)
 
@@ -166,7 +166,7 @@
 - Transports: stream output automatically when in debug
 - Support the :read_only execute hint (for Docker)
 - Add more metal command lines (converge, update, delete)
-- Add ChefProvisioning.connect_to_machine(machine_name) method to get Machine object for a node name
+- Add Chef::Provisioning.connect_to_machine(machine_name) method to get Machine object for a node name
 
 ## 0.8 (4/8/2014)
 
@@ -193,7 +193,7 @@
     - driver.cookbook_name -> driver.debug_name
   * Convergence strategy: delete_chef_objects() -> cleanup_convergence()
 * Ability to get back to a machine from a node (another Provisioner interface change) (doubt@getchef.com):
-  * Provisioners must create a file named `chef_provisioning/provisioner_init/<scheme>_init.rb`.  It will be required when a node is encountered with that scheme.  It should call ChefProvisioning.add_registered_provisioner_class(<scheme>, <provisioner class name>).  For the provisioner_url `fog:AWS:21348723432`, the scheme is "fog" and the file is `chef_provisioningprovisioner_init/fog_init.rb`.  It should call `ChefProvisioning.add_registered_provisioner_class('fog', ChefProvisioning::Provisioner::FogProvisioner)`.
+  * Provisioners must create a file named `chef_provisioning/provisioner_init/<scheme>_init.rb`.  It will be required when a node is encountered with that scheme.  It should call Chef::Provisioning.add_registered_provisioner_class(<scheme>, <provisioner class name>).  For the provisioner_url `fog:AWS:21348723432`, the scheme is "fog" and the file is `chef_provisioningprovisioner_init/fog_init.rb`.  It should call `Chef::Provisioning.add_registered_provisioner_class('fog', Chef::Provisioning::Provisioner::FogProvisioner)`.
   * Provisioner classes must implement the class method `inflate(node)`, which should create a Provisioner instance appropriate to the given `node` (generally by looking at `node['normal']['provisioner_output']`)
 * New `NoConverge` convergence strategy that creates a node but does not install Chef or converge.
 * Support for machine_file `group`, `owner` and `mode` attributes (@irvingpop)

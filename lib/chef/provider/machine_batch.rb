@@ -1,17 +1,17 @@
 require 'chef/chef_fs/parallelizer'
 require 'chef/provider/lwrp_base'
 require 'chef/provider/machine'
-require 'chef_provisioning/chef_provider_action_handler'
-require 'chef_provisioning/add_prefix_action_handler'
-require 'chef_provisioning/machine_spec'
-require 'chef_provisioning/chef_machine_spec'
+require 'chef/provisioning/chef_provider_action_handler'
+require 'chef/provisioning/add_prefix_action_handler'
+require 'chef/provisioning/machine_spec'
+require 'chef/provisioning/chef_machine_spec'
 
 class Chef
 class Provider
 class MachineBatch < Chef::Provider::LWRPBase
 
   def action_handler
-    @action_handler ||= ChefProvisioning::ChefProviderActionHandler.new(self)
+    @action_handler ||= Chef::Provisioning::ChefProviderActionHandler.new(self)
   end
 
   use_inline_resources
@@ -27,7 +27,7 @@ class MachineBatch < Chef::Provider::LWRPBase
   action :allocate do
     by_new_driver.each do |driver, specs_and_options|
       driver.allocate_machines(action_handler, specs_and_options, parallelizer) do |machine_spec|
-        prefixed_handler = ChefProvisioning::AddPrefixActionHandler.new(action_handler, "[#{machine_spec.name}] ")
+        prefixed_handler = Chef::Provisioning::AddPrefixActionHandler.new(action_handler, "[#{machine_spec.name}] ")
         machine_spec.save(prefixed_handler)
       end
     end
@@ -39,7 +39,7 @@ class MachineBatch < Chef::Provider::LWRPBase
 
   action :setup do
     with_ready_machines do |m|
-      prefixed_handler = ChefProvisioning::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
+      prefixed_handler = Chef::Provisioning::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
       m[:machine].setup_convergence(prefixed_handler)
       m[:spec].save(prefixed_handler)
       Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:files])
@@ -48,7 +48,7 @@ class MachineBatch < Chef::Provider::LWRPBase
 
   action :converge do
     with_ready_machines do |m|
-      prefixed_handler = ChefProvisioning::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
+      prefixed_handler = Chef::Provisioning::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
       m[:machine].setup_convergence(prefixed_handler)
       m[:spec].save(action_handler)
       Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:files])
@@ -60,7 +60,7 @@ class MachineBatch < Chef::Provider::LWRPBase
 
   action :converge_only do
     parallel_do(@machines) do |m|
-      prefixed_handler = ChefProvisioning::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
+      prefixed_handler = Chef::Provisioning::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
       machine = run_context.chef_provisioning.connect_to_machine(m[:spec])
       machine.converge(prefixed_handler)
     end
@@ -156,7 +156,7 @@ class MachineBatch < Chef::Provider::LWRPBase
           :files => machine_resource.files,
           :machine_options => proc { |driver| provider.machine_options(driver) }
         }
-      elsif machine.is_a?(ChefProvisioning::MachineSpec)
+      elsif machine.is_a?(Chef::Provisioning::MachineSpec)
         machine_spec = machine
         {
           :spec => machine_spec,
@@ -166,8 +166,8 @@ class MachineBatch < Chef::Provider::LWRPBase
         }
       else
         name = machine
-        machine_spec = ChefProvisioning::ChefMachineSpec.get(name, new_resource.chef_server) ||
-                       ChefProvisioning::ChefMachineSpec.empty(name, new_resource.chef_server)
+        machine_spec = Chef::Provisioning::ChefMachineSpec.get(name, new_resource.chef_server) ||
+                       Chef::Provisioning::ChefMachineSpec.empty(name, new_resource.chef_server)
         {
           :spec => machine_spec,
           :desired_driver => new_resource.driver,

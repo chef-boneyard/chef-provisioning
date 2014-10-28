@@ -1,7 +1,7 @@
 require 'chef/resource/lwrp_base'
-require 'chef_provisioning'
-require 'chef_provisioning/machine'
-require 'chef_provisioning/driver'
+require 'chef/provisioning'
+require 'chef/provisioning/machine'
+require 'chef/provisioning/driver'
 
 class Chef
 class Resource
@@ -27,7 +27,7 @@ class MachineFile < Chef::Resource::LWRPBase
   attribute :mode, :kind_of => String
 
   attribute :chef_server, :kind_of => Hash
-  attribute :driver, :kind_of => ChefProvisioning::Driver
+  attribute :driver, :kind_of => Chef::Provisioning::Driver
 
 end
 end

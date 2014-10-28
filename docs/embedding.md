@@ -47,9 +47,9 @@ end
 `ActionHandler` is how Chef Provisioning communicates back to your application. It will report progress and tell you when it updates things, so that you can print that information to the user (whether it be to the console or to a UI). To create an ActionHandler, you implement these methods:
 
 ```ruby
-require 'chef_provisioning/action_handler'
+require 'chef/provisioning/action_handler'
 
-class MyActionHandler < ChefProvisioning::ActionHandler
+class MyActionHandler < Chef::Provisioning::ActionHandler
   # Loads node (which is a hash witha  bunch of attributes including 'name')
   def initialize(name, my_storage)
     @node = my_storage.load(name) || { 'name' => name }
@@ -84,10 +84,10 @@ If you are OK with just storing the nodes in the Chef server, then you can just 
 
 ```ruby
 require 'cheffish'
-require 'chef_provisioning/chef_machine_spec'
+require 'chef/provisioning/chef_machine_spec'
 
 chef_server = Cheffish.default_chef_server(config)
-machine_spec = ChefProvisioning::ChefMachineSpec.new(machine_name, chef_server)
+machine_spec = Chef::Provisioning::ChefMachineSpec.new(machine_name, chef_server)
 ```
 
 ### Instantiating a driver
@@ -97,15 +97,15 @@ When you want to work with machines, you need a driver.  There are two principal
 To get a driver URL from config:
 
 ```ruby
-require 'chef_provisioning'
-driver = ChefProvisioning.driver_for_url(chef_config[:driver], chef_config)
+require 'chef/provisioning'
+driver = Chef::Provisioning.driver_for_url(chef_config[:driver], chef_config)
 ```
 
 To get a driver URL from a machine spec:
 
 ```ruby
 if machine_spec.driver_url
-  driver = ChefProvisioning.driver_for_url(machine_spec.driver_url, chef_config)
+  driver = Chef::Provisioning.driver_for_url(machine_spec.driver_url, chef_config)
 end
 ```
 
@@ -122,7 +122,7 @@ driver.ready_machine(action_handler, machine_spec, machine_options)
 ### Creating multiple machines in parallel
 
 ```ruby
-driver = ChefProvisioning.driver_for_url(chef_config[:driver], chef_config)
+driver = Chef::Provisioning.driver_for_url(chef_config[:driver], chef_config)
 machine_options = driver.config[:machine_options]
 specs_and_options = {}
 machine_specs.each do |machine_spec|

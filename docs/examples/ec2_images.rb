@@ -1,4 +1,4 @@
-require 'chef_provisioning'
+require 'chef/provisioning'
 
 machine_image 'foo'
 

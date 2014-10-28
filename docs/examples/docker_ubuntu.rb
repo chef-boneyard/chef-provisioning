@@ -1,4 +1,4 @@
-require 'chef_provisioning_docker'
+require 'chef/provisioning_docker'
 
 machine 'wario' do
   recipe 'apache'

@@ -1,15 +1,15 @@
 require 'chef/provider/lwrp_base'
 require 'chef/provider/chef_node'
 require 'openssl'
-require 'chef_provisioning/chef_provider_action_handler'
-require 'chef_provisioning/chef_machine_spec'
+require 'chef/provisioning/chef_provider_action_handler'
+require 'chef/provisioning/chef_machine_spec'
 
 class Chef
 class Provider
 class Machine < Chef::Provider::LWRPBase
 
   def action_handler
-    @action_handler ||= ChefProvisioning::ChefProviderActionHandler.new(self)
+    @action_handler ||= Chef::Provisioning::ChefProviderActionHandler.new(self)
   end
 
   use_inline_resources
@@ -99,7 +99,7 @@ class Machine < Chef::Provider::LWRPBase
   def from_image_spec
     @from_image_spec ||= begin
       if new_resource.from_image
-        ChefProvisioning::ChefImageSpec.get(new_resource.from_image, new_resource.chef_server)
+        Chef::Provisioning::ChefImageSpec.get(new_resource.from_image, new_resource.chef_server)
       else
         nil
       end
@@ -146,7 +146,7 @@ class Machine < Chef::Provider::LWRPBase
     node_driver.load_current_resource
     json = node_driver.new_json
     json['normal']['chef_provisioning'] = node_driver.current_json['normal']['chef_provisioning']
-    @machine_spec = ChefProvisioning::ChefMachineSpec.new(json, new_resource.chef_server)
+    @machine_spec = Chef::Provisioning::ChefMachineSpec.new(json, new_resource.chef_server)
   end
 
   def self.upload_files(action_handler, machine, files)

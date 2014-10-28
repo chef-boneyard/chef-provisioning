@@ -27,16 +27,16 @@ vagrant                     # implies <chef config dir>/vms
 ```
 
 The bit before the colon--the scheme--is the identifier for your driver gem.
-Some of these URLs are canonical and some are not.  When you create a driver with one of these URLs, the driver_url on the resulting driver *must* be the canonical URL.  For example, ChefProvisioning.driver_for_url("fog:AWS").driver_url would equal "fog:AWS:12312412312" (or whatever your account is).  This is important because the canonical URL will be stored in the URL and may be used by different people on different workstations with different profile names.
+Some of these URLs are canonical and some are not.  When you create a driver with one of these URLs, the driver_url on the resulting driver *must* be the canonical URL.  For example, Chef::Provisioning.driver_for_url("fog:AWS").driver_url would equal "fog:AWS:12312412312" (or whatever your account is).  This is important because the canonical URL will be stored in the URL and may be used by different people on different workstations with different profile names.
 
 ## from_url
 
 To instantiate the driver, you must implement Driver.from_url.  This method's job is to canonicalize the URL, and to make an instance of the Driver.  For example:
 
 ```ruby
-require 'chef_provisioning/driver'
+require 'chef/provisioning/driver'
 
-class MyDriver < ChefProvisioning::Driver
+class MyDriver < Chef::Provisioning::Driver
   def self.from_url(url, config)
     MyDriver.new(url, config)
   end
@@ -147,9 +147,9 @@ ready_machine takes the same arguments as allocate_machine, and machine_spec.loc
 The Machine object contains a lot of the complexity of connecting to and configuring a machine once it is ready.  Happily, most of the work is already done for you here.
 
 ```ruby
-require 'chef_provisioning/transport/ssh_transport'
-require 'chef_provisioning/convergence_strategy/install_cached'
-require 'chef_provisioning/machine/unix_machine'
+require 'chef/provisioning/transport/ssh_transport'
+require 'chef/provisioning/convergence_strategy/install_cached'
+require 'chef/provisioning/machine/unix_machine'
 
   def machine_for(machine_spec, machine_options)
     server_id = machine_spec.location['server_id']
@@ -158,9 +158,9 @@ require 'chef_provisioning/machine/unix_machine'
       :auth_methods => ['publickey'],
       :keys => [ get_key('bootstrapkey') ],
     }
-    transport = ChefProvisioning::Transport::SSHTransport.new(the_ultimate_cloud.get_hostname(server_id), ssh_options, {}, config)
-    convergence_strategy = ChefProvisioning::ConvergenceStrategy::InstallCached.new(machine_options[:convergence_options])
-    ChefProvisioning::Machine::UnixMachine.new(machine_spec, transport, convergence_strategy)
+    transport = Chef::Provisioning::Transport::SSHTransport.new(the_ultimate_cloud.get_hostname(server_id), ssh_options, {}, config)
+    convergence_strategy = Chef::Provisioning::ConvergenceStrategy::InstallCached.new(machine_options[:convergence_options])
+    Chef::Provisioning::Machine::UnixMachine.new(machine_spec, transport, convergence_strategy)
   end
 ```
 
@@ -209,14 +209,14 @@ This method should return the Machine object for a machine, *without* spinning i
 
 ## Creating the init file
 
-Drivers are automatically loaded based on their driver URL.  The way Chef does this is by extracting the *scheme* from the URL, and then doing `require 'chef_provisioning/driver_init/schemename'`. So for our driver to load when driver is set to `mydriver:http://theultimatecloud.com:80`, we need to create a file named chef_provisioning/driver_init/mydriver.rb` that looks like this:
+Drivers are automatically loaded based on their driver URL.  The way Chef does this is by extracting the *scheme* from the URL, and then doing `require 'chef/provisioning/driver_init/schemename'`. So for our driver to load when driver is set to `mydriver:http://theultimatecloud.com:80`, we need to create a file named chef/provisioning/driver_init/mydriver.rb` that looks like this:
 
 ```ruby
-require 'chef_provisioning_mydriver/mydriver'
-ChefProvisioning.register_driver_class("mydriver", ChefProvisioningMyDriver::MyDriver)
+require 'chef/provisioning_mydriver/mydriver'
+Chef::Provisioning.register_driver_class("mydriver", Chef::ProvisioningMyDriver::MyDriver)
 ```
 
-After this require, chef-provisioning will call `ChefProvisioningMyDriver::MyDriver.from_url('mydriver:http://theultimatecloud.com:80', config)` and will have a driver!
+After this require, chef-provisioning will call `Chef::ProvisioningMyDriver::MyDriver.from_url('mydriver:http://theultimatecloud.com:80', config)` and will have a driver!
 
 ## Publishing it all as a gem
 

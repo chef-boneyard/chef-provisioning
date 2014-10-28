@@ -1,4 +1,4 @@
-require 'chef_provisioning'
+require 'chef/provisioning'
 
 machine_batch do
   machines %w(primary secondary web1 web2)

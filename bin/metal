@@ -2,17 +2,17 @@
 
 require 'rubygems'
 $:.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
-require 'chef_provisioning'
+require 'chef/provisioning'
 require 'chef/rest'
 require 'chef/application'
 require 'chef/knife'
 require 'chef/run_context'
 require 'chef/server_api'
-require 'chef_provisioning/action_handler'
-require 'chef_provisioning/version'
-require 'chef_provisioning/chef_machine_spec'
+require 'chef/provisioning/action_handler'
+require 'chef/provisioning/version'
+require 'chef/provisioning/chef_machine_spec'
 
-class ChefProvisioning::Application < Chef::Application
+class Chef::Provisioning::Application < Chef::Application
 
   # Mimic self_pipe sleep from Unicorn to capture signals safely
   SELF_PIPE = []
@@ -167,7 +167,7 @@ class ChefProvisioning::Application < Chef::Application
         to = cli_arguments.pop
         if to =~ /^([^\/:]+):(.+)$/
           to_server = $1
-          machines[to_server] ||= ChefProvisioning.connect_to_machine(to_server)
+          machines[to_server] ||= Chef::Provisioning.connect_to_machine(to_server)
           to_path = $2
           to_is_directory = machines[to_server].is_directory?(to_path)
         else
@@ -219,11 +219,11 @@ class ChefProvisioning::Application < Chef::Application
 
   def machine_specs(*specs)
     names = specs.collect_concat { |spec| spec.split(',') }.uniq
-    parallelizer.parallelize(names) { |name| ChefProvisioning::ChefMachineSpec.get(name) }.to_a
+    parallelizer.parallelize(names) { |name| Chef::Provisioning::ChefMachineSpec.get(name) }.to_a
   end
 
   def each_new_machine(spec)
-    driver = ChefProvisioning.default_driver
+    driver = Chef::Provisioning.default_driver
     specs_and_options = {}
     machine_specs(spec).each do |machine_spec|
       specs_and_options[machine_spec] = driver.config[:machine_options]
@@ -235,7 +235,7 @@ class ChefProvisioning::Application < Chef::Application
     grouped = machine_specs(spec).group_by { |machine_spec| machine_spec.driver_url }
     parallelizer.parallelize(grouped) do |driver_url, machine_specs|
       if driver_url
-        driver = ChefProvisioning.driver_for_url(driver_url)
+        driver = Chef::Provisioning.driver_for_url(driver_url)
         specs_and_options = {}
         machine_specs(spec).each do |machine_spec|
           specs_and_options[machine_spec] = driver.config[:machine_options]
@@ -247,7 +247,7 @@ class ChefProvisioning::Application < Chef::Application
 
   def connect_to_machines(spec)
     machine_specs(spec).each do |machine_spec|
-      yield ChefProvisioning.connect_to_machine(machine_spec)
+      yield Chef::Provisioning.connect_to_machine(machine_spec)
     end
   end
 
@@ -259,17 +259,17 @@ class ChefProvisioning::Application < Chef::Application
     @action_handler ||= ActionHandler.new
   end
 
-  class ActionHandler < ChefProvisioning::ActionHandler
+  class ActionHandler < Chef::Provisioning::ActionHandler
     def recipe_context
       # TODO: somehow remove this code; should context really always be needed?
       node = Chef::Node.new
       node.name 'nothing'
       node.automatic[:platform] = 'provisioning'
-      node.automatic[:platform_version] = ChefProvisioning::VERSION
+      node.automatic[:platform_version] = Chef::Provisioning::VERSION
       Chef::RunContext.new(node, {},
         Chef::EventDispatch::Dispatcher.new(Chef::Formatters::Doc.new(STDOUT,STDERR)))
     end
   end
 end
 
-ChefProvisioning::Application.new.run
+Chef::Provisioning::Application.new.run

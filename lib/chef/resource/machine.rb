@@ -1,6 +1,6 @@
 require 'chef/resource/lwrp_base'
 require 'cheffish'
-require 'chef_provisioning'
+require 'chef/provisioning'
 require 'cheffish/merged_config'
 
 class Chef

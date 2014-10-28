@@ -1,15 +1,15 @@
 require 'chef/provider/lwrp_base'
 require 'chef/provider/chef_node'
 require 'openssl'
-require 'chef_provisioning/chef_provider_action_handler'
-require 'chef_provisioning/chef_image_spec'
+require 'chef/provisioning/chef_provider_action_handler'
+require 'chef/provisioning/chef_image_spec'
 
 class Chef
 class Provider
 class MachineImage < Chef::Provider::LWRPBase
 
   def action_handler
-    @action_handler ||= ChefProvisioning::ChefProviderActionHandler.new(self)
+    @action_handler ||= Chef::Provisioning::ChefProviderActionHandler.new(self)
   end
 
   def load_current_resource
@@ -22,8 +22,8 @@ class MachineImage < Chef::Provider::LWRPBase
 
   action :create do
     # Get the image mapping on the server (from name to image-id)
-    image_spec = ChefProvisioning::ChefImageSpec.get(new_resource.name, new_resource.chef_server) ||
-                 ChefProvisioning::ChefImageSpec.empty(new_resource.name, new_resource.chef_server)
+    image_spec = Chef::Provisioning::ChefImageSpec.get(new_resource.name, new_resource.chef_server) ||
+                 Chef::Provisioning::ChefImageSpec.empty(new_resource.name, new_resource.chef_server)
     if image_spec.location
       # TODO check for real existence and maybe update
     else

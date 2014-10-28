@@ -30,7 +30,7 @@ aws_secret_access_key=...
 ```
 - Make a simple recipe that creates two machines:
 ```
-require 'chef_provisioning'
+require 'chef/provisioning'
 machine 'web'
 machine 'db'
 ```
