@@ -10,4 +10,7 @@ Gem::Specification.new do |s|
   s.homepage = 'http://github.com/opscode/chef-metal'
 
   s.add_dependency 'chef-provisioning'
+
+  s.require_path = 'lib'
+  s.files = %w(Rakefile LICENSE README.md CHANGELOG.md) + Dir.glob("{distro,lib,tasks,spec}/**/*", File::FNM_DOTMATCH).reject {|f| File.directory?(f) }
 end
