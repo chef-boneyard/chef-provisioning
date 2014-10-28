@@ -1,0 +1,1 @@
+require "chef_provisioning/add_prefix_action_handler"
