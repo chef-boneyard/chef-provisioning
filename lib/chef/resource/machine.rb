@@ -1,6 +1,6 @@
 require 'chef/resource/lwrp_base'
 require 'cheffish'
-require 'chef_metal'
+require 'chef_provisioning'
 require 'cheffish/merged_config'
 
 class Chef
@@ -13,8 +13,8 @@ class Machine < Chef::Resource::LWRPBase
     super
     @chef_environment = run_context.cheffish.current_environment
     @chef_server = run_context.cheffish.current_chef_server
-    @driver = run_context.chef_metal.current_driver
-    @machine_options = run_context.chef_metal.current_machine_options
+    @driver = run_context.chef_provisioning.current_driver
+    @machine_options = run_context.chef_provisioning.current_machine_options
   end
 
   actions :allocate, :ready, :setup, :converge, :converge_only, :destroy, :stop
@@ -25,7 +25,7 @@ class Machine < Chef::Resource::LWRPBase
 
   # Machine options
   attribute :machine_options
-  
+
   # Node attributes
   Cheffish.node_attributes(self)
 
@@ -98,7 +98,7 @@ class Machine < Chef::Resource::LWRPBase
   end
 
 
-  # This is here because metal users will probably want to do things like:
+  # This is here because provisioning users will probably want to do things like:
   # machine "foo"
   #   action :destroy
   # end

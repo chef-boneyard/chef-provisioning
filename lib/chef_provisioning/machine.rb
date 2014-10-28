@@ -1,4 +1,4 @@
-module ChefMetal
+module ChefProvisioning
   class Machine
     def initialize(machine_spec)
       @machine_spec = machine_spec

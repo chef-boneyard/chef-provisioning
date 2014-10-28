@@ -1,10 +1,10 @@
-## Using Metal drivers directly in your programs
+## Using Provisioning drivers directly in your programs
 
-There are many programs that could benefit from creating and manipulating machines with Metal.  For example, the `machine` and `machine_batch` resources in Chef recipes, `test-kitchen`, and `knife` all use the Metal Driver interface for provisioning.  This is an explanation of how the Driver interface is used.
+There are many programs that could benefit from creating and manipulating machines with Chef.  For example, the `machine` and `machine_batch` resources in Chef recipes, `test-kitchen`, and `knife` all use the Provisioning Driver interface for provisioning.  This is an explanation of how the Driver interface is used.
 
 ### Configuration
 
-The fundamental bit of Metal is the configuration, passed in to.  This is a hash, with symbol keys for the important top level things:
+The fundamental bit of Chef Provisioning is the configuration, passed in to the machine.  This is a hash, with symbol keys for the important top level things:
 
 ```ruby
 {
@@ -42,14 +42,14 @@ Cheffish.honor_local_mode do
 end
 ```
 
-### Listening to Metal: implementing ActionHandler
+### Listening to Chef Provisioning: implementing ActionHandler
 
-`ActionHandler` is how Metal communicates back to your application. It will report progress and tell you when it updates things, so that you can print that information to the user (whether it be to the console or to a UI). To create an ActionHandler, you implement these methods:
+`ActionHandler` is how Chef Provisioning communicates back to your application. It will report progress and tell you when it updates things, so that you can print that information to the user (whether it be to the console or to a UI). To create an ActionHandler, you implement these methods:
 
 ```ruby
-require 'chef_metal/action_handler'
+require 'chef_provisioning/action_handler'
 
-class MyActionHandler < ChefMetal::ActionHandler
+class MyActionHandler < ChefProvisioning::ActionHandler
   # Loads node (which is a hash witha  bunch of attributes including 'name')
   def initialize(name, my_storage)
     @node = my_storage.load(name) || { 'name' => name }
@@ -76,7 +76,7 @@ end
 
 ### Storing machine data: implementing MachineSpec
 
-`MachineSpec` is the way you communicate the persisted state of a machine to metal (including save and load).
+`MachineSpec` is the way you communicate the persisted state of a machine to Chef (including save and load).
 
 MachineSpec has a save() method that saves the machine location data (like its instance ID or Vagrantfile) to persistent storage for later retrieval. For chef-client, this location is a Chef node. For other applications, you may prefer to store this sort of persistent data elsewhere (test-kitchen has its own server state storage). To do that, you will override `MachineSpec` and implement the `save` method (as well as create a method to instantiate YourMachineSpec by loading it back in).
 
@@ -84,10 +84,10 @@ If you are OK with just storing the nodes in the Chef server, then you can just 
 
 ```ruby
 require 'cheffish'
-require 'chef_metal/chef_machine_spec'
+require 'chef_provisioning/chef_machine_spec'
 
 chef_server = Cheffish.default_chef_server(config)
-machine_spec = ChefMetal::ChefMachineSpec.new(machine_name, chef_server)
+machine_spec = ChefProvisioning::ChefMachineSpec.new(machine_name, chef_server)
 ```
 
 ### Instantiating a driver
@@ -97,15 +97,15 @@ When you want to work with machines, you need a driver.  There are two principal
 To get a driver URL from config:
 
 ```ruby
-require 'chef_metal'
-driver = ChefMetal.driver_for_url(chef_config[:driver], chef_config)
+require 'chef_provisioning'
+driver = ChefProvisioning.driver_for_url(chef_config[:driver], chef_config)
 ```
 
 To get a driver URL from a machine spec:
 
 ```ruby
 if machine_spec.driver_url
-  driver = ChefMetal.driver_for_url(machine_spec.driver_url, chef_config)
+  driver = ChefProvisioning.driver_for_url(machine_spec.driver_url, chef_config)
 end
 ```
 
@@ -122,7 +122,7 @@ driver.ready_machine(action_handler, machine_spec, machine_options)
 ### Creating multiple machines in parallel
 
 ```ruby
-driver = ChefMetal.driver_for_url(chef_config[:driver], chef_config)
+driver = ChefProvisioning.driver_for_url(chef_config[:driver], chef_config)
 machine_options = driver.config[:machine_options]
 specs_and_options = {}
 machine_specs.each do |machine_spec|

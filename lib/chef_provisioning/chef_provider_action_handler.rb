@@ -16,11 +16,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'chef_metal/action_handler'
+require 'chef_provisioning/action_handler'
 
-# This is included in the metal drivers to proxy from generic requests needed
+# This is included in provisioning drivers to proxy from generic requests needed
 # to specific driver actions
-module ChefMetal
+module ChefProvisioning
   class ChefProviderActionHandler < ActionHandler
     def initialize(provider)
       @provider = provider

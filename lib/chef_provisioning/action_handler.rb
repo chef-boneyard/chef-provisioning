@@ -17,7 +17,7 @@
 # limitations under the License.
 
 # This is the generic action handler
-module ChefMetal
+module ChefProvisioning
   class ActionHandler
 
     # This should be replaced with whatever records the update; by default it

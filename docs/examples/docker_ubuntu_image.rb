@@ -1,4 +1,4 @@
-require 'chef_metal_docker'
+require 'chef_provisioning_docker'
 
 machine_image 'web_server' do
   recipe 'apache'

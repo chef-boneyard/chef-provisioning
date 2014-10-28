@@ -1,8 +1,8 @@
-require 'chef_metal/convergence_strategy'
+require 'chef_provisioning/convergence_strategy'
 require 'pathname'
 require 'cheffish'
 
-module ChefMetal
+module ChefProvisioning
   class ConvergenceStrategy
     class NoConverge < ConvergenceStrategy
       def initialize(convergence_options, config)
@@ -21,7 +21,7 @@ module ChefMetal
 
       def cleanup_convergence(action_handler, machine_spec)
         _self = self
-        ChefMetal.inline_resource(action_handler) do
+        ChefProvisioning.inline_resource(action_handler) do
           chef_node machine_spec.name do
             chef_server _self.chef_server
             action :delete

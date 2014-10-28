@@ -1,4 +1,4 @@
-require 'chef_metal/chef_run_data'
+require 'chef_provisioning/chef_run_data'
 require 'chef/resource_collection'
 require 'chef/resource/chef_data_bag_resource'
 
@@ -24,27 +24,27 @@ class Chef
       end
 
       def with_driver(driver, options = nil, &block)
-        run_context.chef_metal.with_driver(driver, options, &block)
+        run_context.chef_provisioning.with_driver(driver, options, &block)
       end
 
       def with_machine_options(machine_options, &block)
-        run_context.chef_metal.with_machine_options(machine_options, &block)
+        run_context.chef_provisioning.with_machine_options(machine_options, &block)
       end
 
       def current_machine_options
-        run_context.chef_metal.current_machine_options
+        run_context.chef_provisioning.current_machine_options
       end
 
       def add_machine_options(options, &block)
-        run_context.chef_metal.add_machine_options(options, &block)
+        run_context.chef_provisioning.add_machine_options(options, &block)
       end
 
       def with_image_options(image_options, &block)
-        run_context.chef_metal.with_image_options(image_options, &block)
+        run_context.chef_provisioning.with_image_options(image_options, &block)
       end
 
       def current_image_options
-        run_context.chef_metal.current_image_options
+        run_context.chef_provisioning.current_image_options
       end
 
       NOT_PASSED = Object.new
@@ -89,8 +89,8 @@ class Chef
   end
 
   class RunContext
-    def chef_metal
-      @chef_metal ||= ChefMetal::ChefRunData.new(config)
+    def chef_provisioning
+      @chef_provisioning ||= ChefProvisioning::ChefRunData.new(config)
     end
   end
 

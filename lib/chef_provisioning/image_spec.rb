@@ -1,4 +1,4 @@
-module ChefMetal
+module ChefProvisioning
   #
   # Specification for a image. Sufficient information to find and contact it
   # after it has been set up.
@@ -32,7 +32,7 @@ module ChefMetal
     #
     # This MUST include a 'driver_url' attribute with the driver's URL in it.
     #
-    # chef-metal will do its darnedest to not lose this information.
+    # chef-provisioning will do its darnedest to not lose this information.
     #
     def location
       image_data['location']

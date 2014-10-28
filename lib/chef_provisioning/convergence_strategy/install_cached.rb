@@ -1,11 +1,11 @@
-require 'chef_metal/convergence_strategy/precreate_chef_objects'
+require 'chef_provisioning/convergence_strategy/precreate_chef_objects'
 require 'pathname'
 require 'fileutils'
 require 'digest/md5'
 require 'thread'
 require 'chef/http/simple'
 
-module ChefMetal
+module ChefProvisioning
   class ConvergenceStrategy
     class InstallCached < PrecreateChefObjects
       # convergence_options is a hash of setup convergence_options, including:
@@ -85,7 +85,7 @@ module ChefMetal
             # Download actual package desired by metadata
             package_file = "#{@package_cache_path}/#{URI(metadata['url']).path.split('/')[-1]}"
 
-            ChefMetal.inline_resource(action_handler) do
+            ChefProvisioning.inline_resource(action_handler) do
               remote_file package_file do
                 source metadata['url']
                 checksum metadata['sha256']

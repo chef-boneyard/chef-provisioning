@@ -1,6 +1,6 @@
 require 'timeout'
 
-module ChefMetal
+module ChefProvisioning
   class Transport
     DEFAULT_TIMEOUT = 15*60
 

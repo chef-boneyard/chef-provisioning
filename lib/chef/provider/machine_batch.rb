@@ -1,17 +1,17 @@
 require 'chef/chef_fs/parallelizer'
 require 'chef/provider/lwrp_base'
 require 'chef/provider/machine'
-require 'chef_metal/chef_provider_action_handler'
-require 'chef_metal/add_prefix_action_handler'
-require 'chef_metal/machine_spec'
-require 'chef_metal/chef_machine_spec'
+require 'chef_provisioning/chef_provider_action_handler'
+require 'chef_provisioning/add_prefix_action_handler'
+require 'chef_provisioning/machine_spec'
+require 'chef_provisioning/chef_machine_spec'
 
 class Chef
 class Provider
 class MachineBatch < Chef::Provider::LWRPBase
 
   def action_handler
-    @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
+    @action_handler ||= ChefProvisioning::ChefProviderActionHandler.new(self)
   end
 
   use_inline_resources
@@ -27,7 +27,7 @@ class MachineBatch < Chef::Provider::LWRPBase
   action :allocate do
     by_new_driver.each do |driver, specs_and_options|
       driver.allocate_machines(action_handler, specs_and_options, parallelizer) do |machine_spec|
-        prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{machine_spec.name}] ")
+        prefixed_handler = ChefProvisioning::AddPrefixActionHandler.new(action_handler, "[#{machine_spec.name}] ")
         machine_spec.save(prefixed_handler)
       end
     end
@@ -39,7 +39,7 @@ class MachineBatch < Chef::Provider::LWRPBase
 
   action :setup do
     with_ready_machines do |m|
-      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
+      prefixed_handler = ChefProvisioning::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
       m[:machine].setup_convergence(prefixed_handler)
       m[:spec].save(prefixed_handler)
       Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:files])
@@ -48,7 +48,7 @@ class MachineBatch < Chef::Provider::LWRPBase
 
   action :converge do
     with_ready_machines do |m|
-      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
+      prefixed_handler = ChefProvisioning::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
       m[:machine].setup_convergence(prefixed_handler)
       m[:spec].save(action_handler)
       Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:files])
@@ -60,8 +60,8 @@ class MachineBatch < Chef::Provider::LWRPBase
 
   action :converge_only do
     parallel_do(@machines) do |m|
-      prefixed_handler = ChefMetal::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
-      machine = run_context.chef_metal.connect_to_machine(m[:spec])
+      prefixed_handler = ChefProvisioning::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
+      machine = run_context.chef_provisioning.connect_to_machine(m[:spec])
       machine.converge(prefixed_handler)
     end
   end
@@ -109,12 +109,12 @@ class MachineBatch < Chef::Provider::LWRPBase
     drivers = {}
     @machines.each do |m|
       if m[:desired_driver]
-        drivers[m[:desired_driver]] ||= run_context.chef_metal.driver_for(m[:desired_driver])
+        drivers[m[:desired_driver]] ||= run_context.chef_provisioning.driver_for(m[:desired_driver])
         driver = drivers[m[:desired_driver]]
         # Check whether the current driver is same or different; we disallow
         # moving a machine from one place to another.
         if m[:spec].driver_url
-          drivers[m[:spec].driver_url] ||= run_context.chef_metal.driver_for(m[:spec].driver_url)
+          drivers[m[:spec].driver_url] ||= run_context.chef_provisioning.driver_for(m[:spec].driver_url)
           current_driver = drivers[m[:spec].driver_url]
           if driver.driver_url != current_driver.driver_url
             raise "Cannot move '#{m[:spec].name}' from #{current_driver.driver_url} to #{driver.driver_url}: machine moving is not supported.  Destroy and recreate."
@@ -134,7 +134,7 @@ class MachineBatch < Chef::Provider::LWRPBase
     drivers = {}
     @machines.each do |m|
       if m[:spec].driver_url
-        drivers[m[:spec].driver_url] ||= run_context.chef_metal.driver_for(m[:spec].driver_url)
+        drivers[m[:spec].driver_url] ||= run_context.chef_provisioning.driver_for(m[:spec].driver_url)
         driver = drivers[m[:spec].driver_url]
         result[driver] ||= {}
         result[driver][m[:spec]] = m[:machine_options].call(driver)
@@ -156,7 +156,7 @@ class MachineBatch < Chef::Provider::LWRPBase
           :files => machine_resource.files,
           :machine_options => proc { |driver| provider.machine_options(driver) }
         }
-      elsif machine.is_a?(ChefMetal::MachineSpec)
+      elsif machine.is_a?(ChefProvisioning::MachineSpec)
         machine_spec = machine
         {
           :spec => machine_spec,
@@ -166,8 +166,8 @@ class MachineBatch < Chef::Provider::LWRPBase
         }
       else
         name = machine
-        machine_spec = ChefMetal::ChefMachineSpec.get(name, new_resource.chef_server) ||
-                       ChefMetal::ChefMachineSpec.empty(name, new_resource.chef_server)
+        machine_spec = ChefProvisioning::ChefMachineSpec.get(name, new_resource.chef_server) ||
+                       ChefProvisioning::ChefMachineSpec.empty(name, new_resource.chef_server)
         {
           :spec => machine_spec,
           :desired_driver => new_resource.driver,
@@ -180,7 +180,7 @@ class MachineBatch < Chef::Provider::LWRPBase
 
   def machine_options(driver)
     result = { :convergence_options => { :chef_server => new_resource.chef_server } }
-    result = Chef::Mixin::DeepMerge.hash_only_merge(result, run_context.chef_metal.config[:machine_options]) if run_context.chef_metal.config[:machine_options]
+    result = Chef::Mixin::DeepMerge.hash_only_merge(result, run_context.chef_provisioning.config[:machine_options]) if run_context.chef_provisioning.config[:machine_options]
     result = Chef::Mixin::DeepMerge.hash_only_merge(result, driver.config[:machine_options]) if driver.config && driver.config[:machine_options]
     result = Chef::Mixin::DeepMerge.hash_only_merge(result, new_resource.machine_options)
     result

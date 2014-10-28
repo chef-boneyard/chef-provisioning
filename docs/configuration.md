@@ -1,6 +1,6 @@
-# Configuring and using Metal drivers
+# Configuring and using Provisioning drivers
 
-Metal's `machine` resource has not changed, but the way you specify drivers has changed significantly. No longer are you encouraged to specify the driver name and credentials in the recipe (though it is still possible); instead, it is preferred to configure this information through Chef configuration files and the environment.
+Chef's `machine` resource has not changed, but the way you specify drivers has changed significantly. No longer are you encouraged to specify the driver name and credentials in the recipe (though it is still possible); instead, it is preferred to configure this information through Chef configuration files and the environment.
 
 ### Basic recipes
 
@@ -18,7 +18,7 @@ You'll notice you don't specify where the machine should be or what OS it should
 
 ## Installing drivers
 
-chef-metal drivers are generally named chef-metal-<drivername>.  To install, just use `gem install chef-metal-docker` (for instance).  Fog and Vagrant come pre-installed when you install chef-metal.
+chef-provisioning drivers are generally named chef-provisioning-<drivername>.  To install, just use `gem install chef-provisioning-docker` (for instance).  Fog and Vagrant come pre-installed when you install chef-provisioning.
 
 ## Using a driver
 
@@ -127,7 +127,7 @@ There will be easier ways to specify this as Chef profiles and configuration evo
 
 ## Machine options
 
-### Provider specific options [here](https://github.com/opscode/chef-metal/blob/master/docs/providers)
+### Provider specific options [here](https://github.com/opscode/chef-provisioning/blob/master/docs/providers)
 
 Machine options can be specified in Chef configuration or in recipes.  For example:
 
@@ -220,9 +220,9 @@ CHEF_PROFILE=dev chef-client -z my_cluster.rb
 
 ### Private keys
 
-chef-metal also helps you link up Metal to your private keys.  The `private_key_paths` and `private_keys` Chef config variables let you tell Metal about sets of named private keys and paths where private keys can be found.
+chef-provisioning also helps you link up to your private keys.  The `private_key_paths` and `private_keys` Chef config variables let you tell Chef about sets of named private keys and paths where private keys can be found.
 
-By default, chef-metal will search for a private key named 'blah' in <config dir>/keys/blah, or ~/.ssh/blah.
+By default, chef-provisioning will search for a private key named 'blah' in <config dir>/keys/blah, or ~/.ssh/blah.
 
 This manifests, for example, when you bootstrap AWS servers:
 

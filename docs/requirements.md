@@ -66,8 +66,8 @@ Jenna's task is to develop the test.  The first thing she does is get Metal to *
 
 4. She builds a Metal recipe that describes LXC containers in 'lxc_ubuntu.rb':
    ```ruby
-   require 'chef_metal/lxc'
-   with_provisioner ChefMetal::Provisioner::LXC.new
+   require 'chef_provisioning/lxc'
+   with_provisioner ChefProvisioning::Provisioner::LXC.new
    with_provisioner_options { :template => 'ubuntu' }
    ```
 **Ed.: should we build some kind of default mechanism, or global place to put these?**
@@ -85,7 +85,7 @@ Jenna goes home and wants to work on her OS X machine.  This means developing us
 
 2. She builds a Metal recipe that describes the vagrant options and architecture: 'vagrant_linux.rb':
    ```ruby
-   require 'chef_metal/vagrant'
+   require 'chef_provisioning/vagrant'
    vagrant_cluster "#{Chef::Config.chef_repo_path}/vagrantboxes"
    vagrant_box 'precise64' do
      url 'http://files.vagrantup.com/precise64.box'

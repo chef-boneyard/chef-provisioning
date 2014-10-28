@@ -1,6 +1,6 @@
-require 'chef_metal/machine/basic_machine'
+require 'chef_provisioning/machine/basic_machine'
 
-module ChefMetal
+module ChefProvisioning
   class Machine
     class WindowsMachine < BasicMachine
       def initialize(machine_spec, transport, convergence_strategy)

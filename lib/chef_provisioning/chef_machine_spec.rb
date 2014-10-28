@@ -1,9 +1,9 @@
 require 'pry'
-require 'chef_metal'
+require 'chef_provisioning'
 require 'cheffish'
-require 'chef_metal/machine_spec'
+require 'chef_provisioning/machine_spec'
 
-module ChefMetal
+module ChefProvisioning
   #
   # Specification for a machine. Sufficient information to find and contact it
   # after it has been set up.
@@ -60,7 +60,7 @@ module ChefMetal
       # Save the node to the server.
       _self = self
       _chef_server = _self.chef_server
-      ChefMetal.inline_resource(action_handler) do
+      ChefProvisioning.inline_resource(action_handler) do
         chef_node _self.name do
           chef_server _chef_server
           raw_json _self.node

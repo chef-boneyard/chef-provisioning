@@ -1,15 +1,15 @@
 require 'chef/provider/lwrp_base'
 require 'chef/provider/chef_node'
 require 'openssl'
-require 'chef_metal/chef_provider_action_handler'
-require 'chef_metal/chef_image_spec'
+require 'chef_provisioning/chef_provider_action_handler'
+require 'chef_provisioning/chef_image_spec'
 
 class Chef
 class Provider
 class MachineImage < Chef::Provider::LWRPBase
 
   def action_handler
-    @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
+    @action_handler ||= ChefProvisioning::ChefProviderActionHandler.new(self)
   end
 
   def load_current_resource
@@ -17,13 +17,13 @@ class MachineImage < Chef::Provider::LWRPBase
 
   # Get the driver specified in the resource
   def new_driver
-    @new_driver ||= run_context.chef_metal.driver_for(new_resource.driver)
+    @new_driver ||= run_context.chef_provisioning.driver_for(new_resource.driver)
   end
 
   action :create do
     # Get the image mapping on the server (from name to image-id)
-    image_spec = ChefMetal::ChefImageSpec.get(new_resource.name, new_resource.chef_server) ||
-                 ChefMetal::ChefImageSpec.empty(new_resource.name, new_resource.chef_server)
+    image_spec = ChefProvisioning::ChefImageSpec.get(new_resource.name, new_resource.chef_server) ||
+                 ChefProvisioning::ChefImageSpec.empty(new_resource.name, new_resource.chef_server)
     if image_spec.location
       # TODO check for real existence and maybe update
     else

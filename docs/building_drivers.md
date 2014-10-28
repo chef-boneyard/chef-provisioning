@@ -1,6 +1,6 @@
 # Writing Drivers
 
-When you need to access a new PXE or cloud service, you need to write a new Driver. (For cloud services, often modifying chef-metal-fog will be sufficient rather than creating a whole new driver.)
+When you need to access a new PXE or cloud service, you need to write a new Driver. (For cloud services, often modifying chef-provisioning-fog will be sufficient rather than creating a whole new driver.)
 
 ## The Driver interface
 
@@ -9,7 +9,7 @@ The Driver interface is a set of 4 objects that allow provisioning programs to c
 - `Driver`: Represents a "machine warehouse"--an AWS account, a set of vagrant machines, a PXE machine registry. You can ask it for new machines, power machines on and off, and get rid of machines you are no longer using.
 - `Machine`: Represents a ready, connectable machine.  The machine interface lets you run commands, upload and download files, and converge recipes.  This is returned by Driver methods that create and connect to machines.
 - `MachineSpec`: Represents the saved information about a Machine.  Drivers use this to save information about how to locate and manipulate individual machines (like the AWS instance ID, PXE MAC address, or Vagrantfile location).
-- `ActionHandler`: this is how Metal communicates back to the host provisioning program (like the machine resource, test-kitchen, or knife/metal command line). It primarily uses it to report actions it performs and progress, so that the host can print pretty output informing the user.
+- `ActionHandler`: this is how Chef communicates back to the host provisioning program (like the machine resource, test-kitchen, or knife command line). It primarily uses it to report actions it performs and progress, so that the host can print pretty output informing the user.
 
 ## Picking a URL scheme
 
@@ -27,16 +27,16 @@ vagrant                     # implies <chef config dir>/vms
 ```
 
 The bit before the colon--the scheme--is the identifier for your driver gem.
-Some of these URLs are canonical and some are not.  When you create a driver with one of these URLs, the driver_url on the resulting driver *must* be the canonical URL.  For example, ChefMetal.driver_for_url("fog:AWS").driver_url would equal "fog:AWS:12312412312" (or whatever your account is).  This is important because the canonical URL will be stored in the URL and may be used by different people on different workstations with different profile names.
+Some of these URLs are canonical and some are not.  When you create a driver with one of these URLs, the driver_url on the resulting driver *must* be the canonical URL.  For example, ChefProvisioning.driver_for_url("fog:AWS").driver_url would equal "fog:AWS:12312412312" (or whatever your account is).  This is important because the canonical URL will be stored in the URL and may be used by different people on different workstations with different profile names.
 
 ## from_url
 
 To instantiate the driver, you must implement Driver.from_url.  This method's job is to canonicalize the URL, and to make an instance of the Driver.  For example:
 
 ```ruby
-require 'chef_metal/driver'
+require 'chef_provisioning/driver'
 
-class MyDriver < ChefMetal::Driver
+class MyDriver < ChefProvisioning::Driver
   def self.from_url(url, config)
     MyDriver.new(url, config)
   end
@@ -75,7 +75,7 @@ Allocate machine is the first method called when creating a machine.  Its job is
 
 allocate_machine takes an action_handler, machine_spec, and a machine_options argument.  action_handler is where the method should report any changes it makes.  machine_spec.location will contain the current known machine information, loaded from persistent storage (like from the node).  machine_options contains the desired options for creating the machine.  Both machine_spec.location and machine_options are freeform hashes owned by the driver.  You should document what options the user can pass in your driver's documentation.
 
-Note: `machine_spec.location` *must* contain a `driver_url` key with the canonical driver URL in it, so that metal can tell where the machine came from.
+Note: `machine_spec.location` *must* contain a `driver_url` key with the canonical driver URL in it, so that Chef can tell where the machine came from.
 
 By the time the method is finished, the machine should be reserved and its information stored in machine_spec.location.  If it is not feasible to do this quickly, then it is acceptable to defer this to ready_machine.
 
@@ -112,7 +112,7 @@ If you notice the user wants the machine to be *different* than it is now--for e
 
 You'll notice the service is passed a private key for bootstrap.  This is the bootstrap key, and in our example, TheUltimateCloud will allow you to ssh to the machine with the root user using that private key after it is bootstrapped.  (Several cloud services already work this way.)
 
-The issue one has here is, the user needs to be able to pass you these keys.  chef-metal introduces configuration variables `:private_keys` and `:private_key_paths` to allow the user to tell us about his keys.  We then refer to the keys by name (rather than path) in drivers, and look them up from configuration.
+The issue one has here is, the user needs to be able to pass you these keys.  chef-provisioning introduces configuration variables `:private_keys` and `:private_key_paths` to allow the user to tell us about his keys.  We then refer to the keys by name (rather than path) in drivers, and look them up from configuration.
 
 You can call the `get_private_key(name)` method from the Driver base class to get a private key by name.
 
@@ -147,9 +147,9 @@ ready_machine takes the same arguments as allocate_machine, and machine_spec.loc
 The Machine object contains a lot of the complexity of connecting to and configuring a machine once it is ready.  Happily, most of the work is already done for you here.
 
 ```ruby
-require 'chef_metal/transport/ssh_transport'
-require 'chef_metal/convergence_strategy/install_cached'
-require 'chef_metal/machine/unix_machine'
+require 'chef_provisioning/transport/ssh_transport'
+require 'chef_provisioning/convergence_strategy/install_cached'
+require 'chef_provisioning/machine/unix_machine'
 
   def machine_for(machine_spec, machine_options)
     server_id = machine_spec.location['server_id']
@@ -158,13 +158,13 @@ require 'chef_metal/machine/unix_machine'
       :auth_methods => ['publickey'],
       :keys => [ get_key('bootstrapkey') ],
     }
-    transport = ChefMetal::Transport::SSHTransport.new(the_ultimate_cloud.get_hostname(server_id), ssh_options, {}, config)
-    convergence_strategy = ChefMetal::ConvergenceStrategy::InstallCached.new(machine_options[:convergence_options])
-    ChefMetal::Machine::UnixMachine.new(machine_spec, transport, convergence_strategy)
+    transport = ChefProvisioning::Transport::SSHTransport.new(the_ultimate_cloud.get_hostname(server_id), ssh_options, {}, config)
+    convergence_strategy = ChefProvisioning::ConvergenceStrategy::InstallCached.new(machine_options[:convergence_options])
+    ChefProvisioning::Machine::UnixMachine.new(machine_spec, transport, convergence_strategy)
   end
 ```
 
-WindowsMachine and WinRMTransport are also available for Windows machines.  You can look at how these are instantiated in the chef-metal-vagrant driver.
+WindowsMachine and WinRMTransport are also available for Windows machines.  You can look at how these are instantiated in the chef-provisioning-vagrant driver.
 
 ## destroy_machine
 
@@ -209,22 +209,22 @@ This method should return the Machine object for a machine, *without* spinning i
 
 ## Creating the init file
 
-Drivers are automatically loaded based on their driver URL.  The way Metal does this is by extracting the *scheme* from the URL, and then doing `require 'chef_metal/driver_init/schemename'`. So for our driver to load when driver is set to `mydriver:http://theultimatecloud.com:80`, we need to create a file named chef_metal/driver_init/mydriver.rb` that looks like this:
+Drivers are automatically loaded based on their driver URL.  The way Chef does this is by extracting the *scheme* from the URL, and then doing `require 'chef_provisioning/driver_init/schemename'`. So for our driver to load when driver is set to `mydriver:http://theultimatecloud.com:80`, we need to create a file named chef_provisioning/driver_init/mydriver.rb` that looks like this:
 
 ```ruby
-require 'chef_metal_mydriver/mydriver'
-ChefMetal.register_driver_class("mydriver", ChefMetalMyDriver::MyDriver)
+require 'chef_provisioning_mydriver/mydriver'
+ChefProvisioning.register_driver_class("mydriver", ChefProvisioningMyDriver::MyDriver)
 ```
 
-After this require, chef-metal will call `ChefMetalMyDriver::MyDriver.from_url('mydriver:http://theultimatecloud.com:80', config)` and will have a driver!
+After this require, chef-provisioning will call `ChefProvisioningMyDriver::MyDriver.from_url('mydriver:http://theultimatecloud.com:80', config)` and will have a driver!
 
 ## Publishing it all as a gem
 
-For users to actually use their gem, you need to release the gem on rubygems.org, and people will do `gem install chef-metal-mydriver`.  Instructions for publishing a gem are at rubygems [here](http://guides.rubygems.org/publishing/).
+For users to actually use their gem, you need to release the gem on rubygems.org, and people will do `gem install chef-provisioning-mydriver`.  Instructions for publishing a gem are at rubygems [here](http://guides.rubygems.org/publishing/).
 
-## Parallelism!  allocate_machines
+## Parallelism! (`allocate_machines`)
 
-By default Chef Metal provides parallelism on top of your driver by calling allocate_machine and ready_machine in parallel threads.  But many providers have interfaces that let you spin up many machines at once.  If you have one of these, you can implement the `allocate_machines` method.  It takes the action_handler you love and know, plus a specs_and_options hash (keys are machine_spec and values are machine_options), and a parallelizer object you can optionally use to run multiple ruby blocks in parallel.
+By default Chef Provisioning provides parallelism on top of your driver by calling allocate_machine and ready_machine in parallel threads.  But many providers have interfaces that let you spin up many machines at once.  If you have one of these, you can implement the `allocate_machines` method.  It takes the action_handler you love and know, plus a specs_and_options hash (keys are machine_spec and values are machine_options), and a parallelizer object you can optionally use to run multiple ruby blocks in parallel.
 
 ```ruby
   def allocate_machines(action_handler, specs_and_options, parallelizer)

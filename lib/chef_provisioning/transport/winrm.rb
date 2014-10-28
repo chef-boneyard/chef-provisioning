@@ -1,11 +1,11 @@
-require 'chef_metal/transport'
+require 'chef_provisioning/transport'
 require 'base64'
 require 'timeout'
 
-module ChefMetal
+module ChefProvisioning
   class Transport
     # Transport to handle the WinRM connection protocol.
-    class WinRM < ChefMetal::Transport
+    class WinRM < ChefProvisioning::Transport
       #
       # Create a new WinRM transport.
       #

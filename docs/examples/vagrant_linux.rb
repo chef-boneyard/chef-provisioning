@@ -1,4 +1,4 @@
-require 'chef_metal_vagrant'
+require 'chef_provisioning_vagrant'
 
 vagrant_box 'precise64' do
   url 'http://files.vagrantup.com/precise64.box'

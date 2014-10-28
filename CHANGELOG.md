@@ -1,9 +1,12 @@
 # Chef Metal Changelog
+## 0.15 (10/29/2014)
+
+- Rename from chef-metal to chef-provisioning
 
 ## 0.14.2 (9/2/2014)
 
 - Disable auto batching
-- Fix for with_machine_options context hash 
+- Fix for with_machine_options context hash
 - Pass timeout from execution_options to winrm set_timeout
 - Add better error message when driver does not specify driver_url
 - Add info that location.driver_url is required
@@ -58,7 +61,7 @@
   - Binds to localhost on the remote side instead of 127.0.0.1, allowing for IPv6 communication
   - Tries multiple ports--if the origin port is already taken, tries "0" (ephemeral).
 - Fix SSH race condition causing port forwarding to happen twice (and fail miserably)
-- Add ChefMetal.connect_to_machine('mario')
+- Add ChefProvisioning.connect_to_machine('mario')
 
 ## 0.13 (6/17/2014)
 
@@ -72,7 +75,7 @@
 
 ## 0.12 (6/18/2014)
 
-- Remove chef-metal-fog and chef-metal-vagrant as dependencies (install whatever things you want directly!)
+- Remove chef-provisioning-fog and chef-provisioning-vagrant as dependencies (install whatever things you want directly!)
 - Fix ssl_verify_mode to work correctly when other HTTPS calls are made (@mwrock)
 - Fix machine_file and machine_execute resources (@irvingpop)
 
@@ -124,7 +127,7 @@
 - Parallelism!
   - All machines by default will be created in parallel just before the first "machine" definition. They will attempt to run all the way to converge.  If they fail, add "with_machine_batch 'mybatch', :setup"
   - Use "with_machine_batch 'mybatch'" before any machines if you want tighter control. Actions include :delete, :acquire, :setup, and :converge.
-- Parallelizableness: chef-metal now stores data in the run_context instead of globally, so that it can be run multiple times in parallel. This capability is not yet being used.
+- Parallelizableness: chef-provisioning now stores data in the run_context instead of globally, so that it can be run multiple times in parallel. This capability is not yet being used.
 
 ## 0.9.4 (4/23/2014)
 
@@ -163,7 +166,7 @@
 - Transports: stream output automatically when in debug
 - Support the :read_only execute hint (for Docker)
 - Add more metal command lines (converge, update, delete)
-- Add ChefMetal.connect_to_machine(machine_name) method to get Machine object for a node name
+- Add ChefProvisioning.connect_to_machine(machine_name) method to get Machine object for a node name
 
 ## 0.8 (4/8/2014)
 
@@ -177,7 +180,7 @@
 
 ## 0.6 (4/4/2014)
 
-- Vagrant and Fog provisioners moved to their own gems (chef-metal-vagrant and chef-metal-fog)
+- Vagrant and Fog provisioners moved to their own gems (chef-provisioning-vagrant and chef-provisioning-fog)
 - Support for Hosted and Enterprise Chef (https://github.com/dafyddcrosby)
 
 ## 0.5 (4/3/2014)
@@ -190,7 +193,7 @@
     - driver.cookbook_name -> driver.debug_name
   * Convergence strategy: delete_chef_objects() -> cleanup_convergence()
 * Ability to get back to a machine from a node (another Provisioner interface change) (doubt@getchef.com):
-  * Provisioners must create a file named `chef_metal/provisioner_init/<scheme>_init.rb`.  It will be required when a node is encountered with that scheme.  It should call ChefMetal.add_registered_provisioner_class(<scheme>, <provisioner class name>).  For the provisioner_url `fog:AWS:21348723432`, the scheme is "fog" and the file is `chef_metalprovisioner_init/fog_init.rb`.  It should call `ChefMetal.add_registered_provisioner_class('fog', ChefMetal::Provisioner::FogProvisioner)`.
+  * Provisioners must create a file named `chef_provisioning/provisioner_init/<scheme>_init.rb`.  It will be required when a node is encountered with that scheme.  It should call ChefProvisioning.add_registered_provisioner_class(<scheme>, <provisioner class name>).  For the provisioner_url `fog:AWS:21348723432`, the scheme is "fog" and the file is `chef_provisioningprovisioner_init/fog_init.rb`.  It should call `ChefProvisioning.add_registered_provisioner_class('fog', ChefProvisioning::Provisioner::FogProvisioner)`.
   * Provisioner classes must implement the class method `inflate(node)`, which should create a Provisioner instance appropriate to the given `node` (generally by looking at `node['normal']['provisioner_output']`)
 * New `NoConverge` convergence strategy that creates a node but does not install Chef or converge.
 * Support for machine_file `group`, `owner` and `mode` attributes (@irvingpop)
@@ -198,7 +201,7 @@
 
 ## 0.4 (3/29/2014)
 
-* EC2: Make it possible for multiple IAM users to converge chef-metal on the same account
+* EC2: Make it possible for multiple IAM users to converge chef-provisioning on the same account
 * Openstack: Openstack support via the Fog driver! (@cstewart87)
 * EC2: Add :use_private_ip_for_ssh option, and use private ip by default if public IP does not exist.  (@xorl, @dafyddcrosby)
 * RHEL/Centos: fix platform detection and installation

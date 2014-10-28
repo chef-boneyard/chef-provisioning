@@ -1,4 +1,4 @@
-module ChefMetal
+module ChefProvisioning
   #
   # Specification for a machine. Sufficient information to find and contact it
   # after it has been set up.
@@ -6,6 +6,10 @@ module ChefMetal
   class MachineSpec
     def initialize(node)
       @node = node
+      # Upgrade from metal to chef_provisioning ASAP.
+      if node['normal'] && !node['normal']['chef_provisioning'] && node['normal']['metal']
+        node['normal']['chef_provisioning'] = node['normal'].delete('metal')
+      end
     end
 
     attr_reader :node
@@ -32,17 +36,17 @@ module ChefMetal
     #
     # This MUST include a 'driver_url' attribute with the driver's URL in it.
     #
-    # chef-metal will do its darnedest to not lose this information.
+    # chef-provisioning will do its darnedest to not lose this information.
     #
     def location
-      metal_attr('location')
+      chef_provisioning_attr('location')
     end
 
     #
     # Set the location for this machine.
     #
     def location=(value)
-      set_metal_attr('location', value)
+      set_chef_provisioning_attr('location', value)
     end
 
     # URL to the driver.  Convenience for location['driver_url']
@@ -61,18 +65,16 @@ module ChefMetal
 
     protected
 
-    def metal_attr(attr)
-      if node['normal'] && node['normal']['metal']
-        node['normal']['metal'][attr]
-      else
-        nil
+    def chef_provisioning_attr(attr)
+      if node['normal'] && node['normal']['chef_provisioning']
+        node['normal']['chef_provisioning'][attr]
       end
     end
 
-    def set_metal_attr(attr, value)
+    def set_chef_provisioning_attr(attr, value)
       node['normal'] ||= {}
-      node['normal']['metal'] ||= {}
-      node['normal']['metal'][attr] = value
+      node['normal']['chef_provisioning'] ||= {}
+      node['normal']['chef_provisioning'][attr] = value
     end
   end
 end

@@ -1,6 +1,6 @@
-require 'chef_metal/action_handler'
+require 'chef_provisioning/action_handler'
 
-module ChefMetal
+module ChefProvisioning
   class AddPrefixActionHandler
     extend Forwardable
 

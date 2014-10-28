@@ -8,19 +8,19 @@ Chef Metal has gotten a facelift!  We've tried to keep the interface stable for 
 
 How you create machines has not changed from a *logical* standpoint, but from a *physical* standpoint--how you configure, build and use drivers--it has changed significantly and for the better!
 
-I'll talk a little bit about the user-level changes here, but you can read about these changes in depth in the docs/ section of the chef-metal repository:
+I'll talk a little bit about the user-level changes here, but you can read about these changes in depth in the docs/ section of the chef-provisioning repository:
 
-- [Configuring and using drivers](https://github.com/opscode/chef-metal/blob/master/docs/configuration.md#configuring-and-using-metal-drivers)
-- [Building drivers](https://github.com/opscode/chef-metal/blob/master/docs/building_drivers.md#writing-drivers)
-- [Using drivers in your own programs](https://github.com/opscode/chef-metal/blob/master/docs/embedding.md)
+- [Configuring and using drivers](https://github.com/opscode/chef-provisioning/blob/master/docs/configuration.md#configuring-and-using-metal-drivers)
+- [Building drivers](https://github.com/opscode/chef-provisioning/blob/master/docs/building_drivers.md#writing-drivers)
+- [Using drivers in your own programs](https://github.com/opscode/chef-provisioning/blob/master/docs/embedding.md)
 
-I'll give an example of how to use chef-metal in Vagrant.  Many other clouds are supported.
+I'll give an example of how to use chef-provisioning in Vagrant.  Many other clouds are supported.
 
 ## Using Metal today: AWS
 
-- Install chef-metal:
+- Install chef-provisioning:
 ```ruby
-gem install chef-metal
+gem install chef-provisioning
 ```
 - Put your AWS credentials in `~/.aws/config` a la [http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#d0e726](this tutorial).  It should look like this:
 ```
@@ -30,7 +30,7 @@ aws_secret_access_key=...
 ```
 - Make a simple recipe that creates two machines:
 ```
-require 'chef_metal'
+require 'chef_provisioning'
 machine 'web'
 machine 'db'
 ```
@@ -44,17 +44,17 @@ Wallah!  Two EC2 machines, in parallel!
 
 ## Drivers, credentials and machine options
 
-Drivers are now identifiable entirely by a URL (like `fog:AWS:default` or `vagrant:~/vms`).  To choose a driver, you specify its URL and the driver will be automatically loaded.  URLs have a flexible format, and vary for what makes sense for each driver.  Examples of setting driver URLs are [here.](https://github.com/opscode/chef-metal/blob/master/docs/configuration.md#setting-the-driver-with-a-driver-url)
+Drivers are now identifiable entirely by a URL (like `fog:AWS:default` or `vagrant:~/vms`).  To choose a driver, you specify its URL and the driver will be automatically loaded.  URLs have a flexible format, and vary for what makes sense for each driver.  Examples of setting driver URLs are [here.](https://github.com/opscode/chef-provisioning/blob/master/docs/configuration.md#setting-the-driver-with-a-driver-url)
 
-Credentials for drivers can be specified, and Chef Metal makes it easy to specify these while keeping them out of your recipes (or anything likely to be checked in to source control!).  There are many ways to specify them--see the [documentation](https://github.com/opscode/chef-metal/blob/master/docs/configuration.md#credentials-configuration-in-chef) for examples.
+Credentials for drivers can be specified, and Chef Metal makes it easy to specify these while keeping them out of your recipes (or anything likely to be checked in to source control!).  There are many ways to specify them--see the [documentation](https://github.com/opscode/chef-provisioning/blob/master/docs/configuration.md#credentials-configuration-in-chef) for examples.
 
 Absolutely everything that is not credentials should be specified in machine_options.  These are how you specify the OS you want to lay down, the keys you want to use to access the machine remotely, mount points, and everything else.  machine_options are generally specified in recipes, but may also be specified in configuration; details are [here]().
 
 ## Private keys
 
-chef-metal also helps you link up Metal to your private keys.  The `private_key_paths` and `private_keys` Chef config variables let you tell Metal about sets of named private keys and paths where private keys can be found.
+chef-provisioning also helps you link up Metal to your private keys.  The `private_key_paths` and `private_keys` Chef config variables let you tell Metal about sets of named private keys and paths where private keys can be found.
 
-By default, chef-metal will search for a private key named 'blah' in <config dir>/keys/blah, or ~/.ssh/blah.
+By default, chef-provisioning will search for a private key named 'blah' in <config dir>/keys/blah, or ~/.ssh/blah.
 
 This manifests, for example, when you bootstrap AWS servers:
 

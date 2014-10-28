@@ -1,4 +1,4 @@
-require 'chef_metal'
+require 'chef_provisioning'
 
 machine_batch do
   machines %w(primary secondary web1 web2)

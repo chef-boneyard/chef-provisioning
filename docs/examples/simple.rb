@@ -1,4 +1,4 @@
-require 'chef_metal'
+require 'chef_provisioning'
 
 machine 'mario' do
   tag 'itsa_me'

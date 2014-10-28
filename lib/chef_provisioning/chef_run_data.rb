@@ -1,8 +1,8 @@
 require 'chef/mixin/deep_merge'
 require 'cheffish/merged_config'
-require 'chef_metal/chef_machine_spec'
+require 'chef_provisioning/chef_machine_spec'
 
-module ChefMetal
+module ChefProvisioning
   class ChefRunData
 
     def initialize(config)
@@ -94,9 +94,9 @@ module ChefMetal
       if name.is_a?(MachineSpec)
         machine_spec = name
       else
-        machine_spec = ChefMetal::ChefMachineSpec.get(name, chef_server)
+        machine_spec = ChefProvisioning::ChefMachineSpec.get(name, chef_server)
       end
-      ChefMetal.connect_to_machine(machine_spec, config)
+      ChefProvisioning.connect_to_machine(machine_spec, config)
     end
 
     private
@@ -106,9 +106,9 @@ module ChefMetal
         if driver_url == @current_driver && @current_driver_options
           # Use the driver options if available
           merged_config = Cheffish::MergedConfig.new({ :driver_options => @current_driver_options }, config)
-          driver = ChefMetal.driver_for_url(driver_url, merged_config)
+          driver = ChefProvisioning.driver_for_url(driver_url, merged_config)
         else
-          driver = ChefMetal.driver_for_url(driver_url, config)
+          driver = ChefProvisioning.driver_for_url(driver_url, config)
         end
         # Check the canonicalized driver_url from the driver
         if driver.driver_url != driver_url

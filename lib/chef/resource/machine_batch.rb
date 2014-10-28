@@ -10,9 +10,9 @@ class MachineBatch < Chef::Resource::LWRPBase
   def initialize(*args)
     super
     @machines = []
-    @driver = run_context.chef_metal.current_driver
+    @driver = run_context.chef_provisioning.current_driver
     @chef_server = run_context.cheffish.current_chef_server
-    @machine_options = run_context.chef_metal.current_machine_options
+    @machine_options = run_context.chef_provisioning.current_machine_options
   end
 
   actions :allocate, :ready, :setup, :converge, :converge_only, :destroy, :stop
@@ -58,7 +58,7 @@ class MachineBatch < Chef::Resource::LWRPBase
       end
     end
     machine_names = @machines.map do |m|
-      if m.is_a?(ChefMetal::MachineSpec)
+      if m.is_a?(ChefProvisioning::MachineSpec)
         m.name
       elsif m.is_a?(Chef::Resource::Machine)
         m.name

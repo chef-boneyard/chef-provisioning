@@ -1,4 +1,4 @@
-module ChefMetal
+module ChefProvisioning
   class ConvergenceStrategy
     # convergence_options - a freeform hash of options to the converger.
     # config - a Chef::Config-like object with global config like :log_level

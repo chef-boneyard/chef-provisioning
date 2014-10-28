@@ -1,6 +1,6 @@
 require 'chef/resource/lwrp_base'
 require 'cheffish'
-require 'chef_metal'
+require 'chef_provisioning'
 require 'cheffish/merged_config'
 
 class Chef
@@ -11,8 +11,8 @@ class MachineImage < Chef::Resource::Machine
 
   def initialize(*args)
     super
-    @image_options = run_context.chef_metal.current_image_options
-    @machine_options = run_context.chef_metal.current_machine_options
+    @image_options = run_context.chef_provisioning.current_image_options
+    @machine_options = run_context.chef_provisioning.current_machine_options
   end
 
   # TODO check if we still have all the actions from machine

@@ -7,8 +7,8 @@ gemspec
 #gem 'chef', :path => '../chef'
 #gem 'ohai', :path => '../ohai'
 #gem 'cheffish', :path => '../cheffish' # :git => 'https://github.com/jkeiser/cheffish.git'
-#gem 'chef-metal-vagrant', :path => '../chef-metal-vagrant'
-#gem 'chef-metal-fog', :path => '../chef-metal-fog'
+#gem 'chef-provisioning-vagrant', :path => '../chef-provisioning-vagrant'
+#gem 'chef-provisioning-fog', :path => '../chef-provisioning-fog'
 #gem 'chef-zero', :path => '../chef-zero'
 gem 'pry'
 group :development do

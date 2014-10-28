@@ -1,7 +1,7 @@
-require 'chef_metal/convergence_strategy/precreate_chef_objects'
+require 'chef_provisioning/convergence_strategy/precreate_chef_objects'
 require 'pathname'
 
-module ChefMetal
+module ChefProvisioning
   class ConvergenceStrategy
     class InstallMsi < PrecreateChefObjects
       @@install_msi_cache = {}

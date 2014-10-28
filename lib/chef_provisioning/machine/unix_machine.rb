@@ -1,7 +1,7 @@
-require 'chef_metal/machine/basic_machine'
+require 'chef_provisioning/machine/basic_machine'
 require 'digest'
 
-module ChefMetal
+module ChefProvisioning
   class Machine
     class UnixMachine < BasicMachine
       def initialize(machine_spec, transport, convergence_strategy)

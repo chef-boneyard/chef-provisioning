@@ -1,15 +1,15 @@
 require 'chef/provider/lwrp_base'
 require 'chef/provider/chef_node'
 require 'openssl'
-require 'chef_metal/chef_provider_action_handler'
-require 'chef_metal/chef_machine_spec'
+require 'chef_provisioning/chef_provider_action_handler'
+require 'chef_provisioning/chef_machine_spec'
 
 class Chef
 class Provider
 class Machine < Chef::Provider::LWRPBase
 
   def action_handler
-    @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
+    @action_handler ||= ChefProvisioning::ChefProviderActionHandler.new(self)
   end
 
   use_inline_resources
@@ -64,7 +64,7 @@ class Machine < Chef::Provider::LWRPBase
   end
 
   action :converge_only do
-    machine = run_context.chef_metal.connect_to_machine(machine_spec, current_machine_options)
+    machine = run_context.chef_provisioning.connect_to_machine(machine_spec, current_machine_options)
     begin
       machine.converge(action_handler)
     ensure
@@ -87,19 +87,19 @@ class Machine < Chef::Provider::LWRPBase
   attr_reader :machine_spec
 
   def new_driver
-    run_context.chef_metal.driver_for(new_resource.driver)
+    run_context.chef_provisioning.driver_for(new_resource.driver)
   end
 
   def current_driver
     if machine_spec.driver_url
-      run_context.chef_metal.driver_for(machine_spec.driver_url)
+      run_context.chef_provisioning.driver_for(machine_spec.driver_url)
     end
   end
 
   def from_image_spec
     @from_image_spec ||= begin
       if new_resource.from_image
-        ChefMetal::ChefImageSpec.get(new_resource.from_image, new_resource.chef_server)
+        ChefProvisioning::ChefImageSpec.get(new_resource.from_image, new_resource.chef_server)
       else
         nil
       end
@@ -145,8 +145,8 @@ class Machine < Chef::Provider::LWRPBase
     node_driver = Chef::Provider::ChefNode.new(new_resource, run_context)
     node_driver.load_current_resource
     json = node_driver.new_json
-    json['normal']['metal'] = node_driver.current_json['normal']['metal']
-    @machine_spec = ChefMetal::ChefMachineSpec.new(json, new_resource.chef_server)
+    json['normal']['chef_provisioning'] = node_driver.current_json['normal']['chef_provisioning']
+    @machine_spec = ChefProvisioning::ChefMachineSpec.new(json, new_resource.chef_server)
   end
 
   def self.upload_files(action_handler, machine, files)

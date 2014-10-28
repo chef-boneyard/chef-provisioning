@@ -1,4 +1,4 @@
-require 'chef_metal'
+require 'chef_provisioning'
 
 machine_image 'foo'
 

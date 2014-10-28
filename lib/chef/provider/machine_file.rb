@@ -1,13 +1,13 @@
 require 'chef/provider/lwrp_base'
-require 'chef_metal/chef_provider_action_handler'
-require 'chef_metal/machine'
+require 'chef_provisioning/chef_provider_action_handler'
+require 'chef_provisioning/machine'
 
 class Chef
 class Provider
 class MachineFile < Chef::Provider::LWRPBase
 
   def action_handler
-    @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
+    @action_handler ||= ChefProvisioning::ChefProviderActionHandler.new(self)
   end
 
   use_inline_resources
@@ -18,10 +18,10 @@ class MachineFile < Chef::Provider::LWRPBase
 
   def machine
     @machine ||= begin
-      if new_resource.machine.kind_of?(ChefMetal::Machine)
+      if new_resource.machine.kind_of?(ChefProvisioning::Machine)
         new_resource.machine
       else
-        run_context.chef_metal.connect_to_machine(new_resource.machine, new_resource.chef_server)
+        run_context.chef_provisioning.connect_to_machine(new_resource.machine, new_resource.chef_server)
       end
     end
   end

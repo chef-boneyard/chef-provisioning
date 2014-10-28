@@ -1,4 +1,4 @@
-require 'chef_metal/transport'
+require 'chef_provisioning/transport'
 require 'chef/log'
 require 'uri'
 require 'socket'
@@ -7,9 +7,9 @@ require 'net/ssh'
 require 'net/scp'
 require 'net/ssh/gateway'
 
-module ChefMetal
+module ChefProvisioning
   class Transport
-    class SSH < ChefMetal::Transport
+    class SSH < ChefProvisioning::Transport
       #
       # Create a new SSH transport.
       #

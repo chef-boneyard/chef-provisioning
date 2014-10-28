@@ -1,4 +1,4 @@
-module ChefMetal
+module ChefProvisioning
   #
   # A Driver instance represents a place where machines can be created and found,
   # and contains methods to create, delete, start, stop, and find them.
@@ -24,9 +24,9 @@ module ChefMetal
   # * stop_machines - stop a group of machines.
   # * destroy_machines - delete a group of machines.
   #
-  # Additionally, you must create a file named `chef_metal/driver_init/<scheme>.rb`,
+  # Additionally, you must create a file named `chef_provisioning/driver_init/<scheme>.rb`,
   # where <scheme> is the name of the scheme you chose for your driver_url. This
-  # file, when required, must call ChefMetal.add_registered_driver(<scheme>, <class>).
+  # file, when required, must call ChefProvisioning.add_registered_driver(<scheme>, <class>).
   # The given <class>.from_url(url, config) will be called with a driver_url and
   # configuration.
   #
@@ -53,7 +53,7 @@ module ChefMetal
     # Override this on specific driver classes
     #
     def self.from_url(driver_url, config)
-      ChefMetal.from_url(driver_url, config)
+      ChefProvisioning.from_url(driver_url, config)
     end
 
     #
@@ -100,12 +100,12 @@ module ChefMetal
     # it, but does not need to wait until it is started.  The idea is to get the
     # gears moving, but the job doesn't need to be done :)
     #
-    # @param [ChefMetal::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [ChefMetal::MachineSpec] machine_spec A machine specification representing this machine.
+    # @param [ChefProvisioning::ActionHandler] action_handler The action_handler object that is calling this method
+    # @param [ChefProvisioning::MachineSpec] machine_spec A machine specification representing this machine.
     # @param [Hash] machine_options A set of options representing the desired options when
     # constructing the machine
     #
-    # @return [ChefMetal::MachineSpec] Modifies the passed-in machine_spec.  Anything in here will be saved
+    # @return [ChefProvisioning::MachineSpec] Modifies the passed-in machine_spec.  Anything in here will be saved
     # back after allocate_machine completes.
     #
     def allocate_machine(action_handler, machine_spec, machine_options)
@@ -119,8 +119,8 @@ module ChefMetal
     # execute, file and directory.
     #
     #
-    # @param [ChefMetal::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [ChefMetal::MachineSpec] machine_spec A machine specification representing this machine.
+    # @param [ChefProvisioning::ActionHandler] action_handler The action_handler object that is calling this method
+    # @param [ChefProvisioning::MachineSpec] machine_spec A machine specification representing this machine.
     # @param [Hash] machine_options A set of options representing the desired state of the machine
     #
     # @return [Machine] A machine object pointing at the machine, allowing useful actions like setup,
@@ -133,7 +133,7 @@ module ChefMetal
     # Connect to a machine without allocating or readying it.  This method will
     # NOT make any changes to anything, or attempt to wait.
     #
-    # @param [ChefMetal::MachineSpec] machine_spec MachineSpec representing this machine.
+    # @param [ChefProvisioning::MachineSpec] machine_spec MachineSpec representing this machine.
     # @param [Hash] machine_options
     # @return [Machine] A machine object pointing at the machine, allowing useful actions like setup,
     # converge, execute, file and directory.
@@ -146,8 +146,8 @@ module ChefMetal
     # Delete the given machine --  destroy the machine,
     # returning things to the state before allocate_machine was called.
     #
-    # @param [ChefMetal::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [ChefMetal::MachineSpec] machine_spec A machine specification representing this machine.
+    # @param [ChefProvisioning::ActionHandler] action_handler The action_handler object that is calling this method
+    # @param [ChefProvisioning::MachineSpec] machine_spec A machine specification representing this machine.
     # @param [Hash] machine_options A set of options representing the desired state of the machine
     def destroy_machine(action_handler, machine_spec, machine_options)
       raise "#{self.class} does not implement destroy_machine"
@@ -155,8 +155,8 @@ module ChefMetal
 
     # Stop the given machine.
     #
-    # @param [ChefMetal::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [ChefMetal::MachineSpec] machine_spec A machine specification representing this machine.
+    # @param [ChefProvisioning::ActionHandler] action_handler The action_handler object that is calling this method
+    # @param [ChefProvisioning::MachineSpec] machine_spec A machine specification representing this machine.
     # @param [Hash] machine_options A set of options representing the desired state of the machine
     def stop_machine(action_handler, machine_spec, machine_options)
       raise "#{self.class} does not implement stop_machine"
@@ -164,8 +164,8 @@ module ChefMetal
 
     # Allocate an image. Returns quickly with an ID that tracks the image.
     #
-    # @param [ChefMetal::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [ChefMetal::ImageSpec] image_spec A machine specification representing this machine.
+    # @param [ChefProvisioning::ActionHandler] action_handler The action_handler object that is calling this method
+    # @param [ChefProvisioning::ImageSpec] image_spec A machine specification representing this machine.
     # @param [Hash] image_options A set of options representing the desired state of the machine
     def allocate_image(action_handler, image_spec, image_options, machine_spec)
       raise "#{self.class} does not implement create_image"
@@ -173,8 +173,8 @@ module ChefMetal
 
     # Ready an image, waiting till the point where it is ready to be used.
     #
-    # @param [ChefMetal::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [ChefMetal::ImageSpec] image_spec A machine specification representing this machine.
+    # @param [ChefProvisioning::ActionHandler] action_handler The action_handler object that is calling this method
+    # @param [ChefProvisioning::ImageSpec] image_spec A machine specification representing this machine.
     # @param [Hash] image_options A set of options representing the desired state of the machine
     def ready_image(action_handler, image_spec, image_options)
       raise "#{self.class} does not implement ready_image"
@@ -182,8 +182,8 @@ module ChefMetal
 
     # Destroy an image using this service.
     #
-    # @param [ChefMetal::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [ChefMetal::ImageSpec] image_spec A machine specification representing this machine.
+    # @param [ChefProvisioning::ActionHandler] action_handler The action_handler object that is calling this method
+    # @param [ChefProvisioning::ImageSpec] image_spec A machine specification representing this machine.
     # @param [Hash] image_options A set of options representing the desired state of the machine
     def destroy_image(action_handler, image_spec, image_options)
       raise "#{self.class} does not implement destroy_image"
@@ -209,7 +209,7 @@ module ChefMetal
     #   end.to_a
     #   # The to_a at the end causes you to wait until the parallelization is done
     #
-    # This object is shared among other chef-metal actions, ensuring that you do
+    # This object is shared among other chef-provisioning actions, ensuring that you do
     # not go over parallelization limits set by the user.  Use of the parallelizer
     # to parallelizer machines is not required.
     #
@@ -224,9 +224,9 @@ module ChefMetal
     #     ...
     #   end
     #
-    # @param [ChefMetal::ActionHandler] action_handler The action_handler object that is calling this method; this
+    # @param [ChefProvisioning::ActionHandler] action_handler The action_handler object that is calling this method; this
     #        is generally a driver, but could be anything that can support the
-    #        interface (i.e., in the case of the test kitchen metal driver for
+    #        interface (i.e., in the case of the test kitchen provisioning driver for
     #        acquiring and destroying VMs).
     # @param [Hash] specs_and_options A hash of machine_spec -> machine_options representing the
     #                 machines to allocate.

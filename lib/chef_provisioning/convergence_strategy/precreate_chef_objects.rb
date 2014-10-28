@@ -1,8 +1,8 @@
-require 'chef_metal/convergence_strategy'
+require 'chef_provisioning/convergence_strategy'
 require 'pathname'
 require 'cheffish'
 
-module ChefMetal
+module ChefProvisioning
   class ConvergenceStrategy
     class PrecreateChefObjects < ConvergenceStrategy
       def initialize(convergence_options, config)
@@ -38,7 +38,7 @@ module ChefMetal
 
       def cleanup_convergence(action_handler, machine_spec)
         _self = self
-        ChefMetal.inline_resource(action_handler) do
+        ChefProvisioning.inline_resource(action_handler) do
           chef_node machine_spec.name do
             chef_server _self.chef_server
             action :delete
@@ -77,7 +77,7 @@ module ChefMetal
 
           # If the server does not already have keys, create them and upload
           _convergence_options = convergence_options
-          ChefMetal.inline_resource(action_handler) do
+          ChefProvisioning.inline_resource(action_handler) do
             private_key 'in_memory' do
               path :none
               if _convergence_options[:private_key_options]
@@ -128,7 +128,7 @@ module ChefMetal
         _convergence_options = convergence_options
         _chef_server = chef_server
         # Save the node and create the client keys and client.
-        ChefMetal.inline_resource(action_handler) do
+        ChefProvisioning.inline_resource(action_handler) do
           # Create client
           chef_client machine.name do
             chef_server _chef_server
