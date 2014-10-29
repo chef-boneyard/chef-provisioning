@@ -1,8 +1,9 @@
-require 'chef_metal'
+require 'chef/provisioning'
 require 'cheffish'
-require 'chef_metal/load_balancer_spec'
+require 'chef/provisioning/load_balancer_spec'
 
-module ChefMetal
+class Chef
+module Provisioning
   #
   # Specification for a image. Sufficient information to find and contact it
   # after it has been set up.
@@ -58,8 +59,7 @@ module ChefMetal
       # Save the node to the server.
       _self = self
       _chef_server = _self.chef_server
-      puts "LB SPEC: #{_self.inspect}"
-      ChefMetal.inline_resource(action_handler) do
+      Chef::Provisioning.inline_resource(action_handler) do
         chef_data_bag_item _self.name do
           data_bag 'loadbalancers'
           chef_server _chef_server
@@ -72,7 +72,7 @@ module ChefMetal
       # Save the node to the server.
       _self = self
       _chef_server = _self.chef_server
-      ChefMetal.inline_resource(action_handler) do
+      Chef::Provisioning.inline_resource(action_handler) do
         chef_data_bag_item _self.name do
           data_bag 'loadbalancers'
           chef_server _chef_server
@@ -104,4 +104,5 @@ module ChefMetal
       end
     end
   end
+end
 end

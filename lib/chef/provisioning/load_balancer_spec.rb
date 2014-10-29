@@ -1,4 +1,5 @@
-module ChefMetal
+class Chef
+module Provisioning
   #
   # Specification for a machine. Sufficient information to find and contact it
   # after it has been set up.
@@ -7,6 +8,10 @@ module ChefMetal
   class LoadBalancerSpec
     def initialize(load_balancer_data)
       @load_balancer_data = load_balancer_data
+      # Upgrade from metal to chef_provisioning ASAP.
+      if @load_balancer_data['normal'] && !@load_balancer_data['normal']['chef_provisioning'] && @load_balancer_data['normal']['metal']
+        @load_balancer_data['normal']['chef_provisioning'] = @load_balancer_data['normal'].delete('metal')
+      end
     end
 
     attr_reader :load_balancer_data
@@ -34,7 +39,7 @@ module ChefMetal
     #
     # This MUST include a 'driver_url' attribute with the driver's URL in it.
     #
-    # chef-metal will do its darnedest to not lose this information.
+    # chef-provisioning will do its darnedest to not lose this information.
     #
     def location
       load_balancer_data['location']
@@ -76,22 +81,6 @@ module ChefMetal
     #
     def save(action_handler)
       raise "save unimplemented"
-    end
-
-    protected
-
-    def metal_attr(attr)
-      if node['normal'] && node['normal']['metal']
-        node['normal']['metal'][attr]
-      else
-        nil
-      end
-    end
-
-    def set_metal_attr(attr, value)
-      node['normal'] ||= {}
-      node['normal']['metal'] ||= {}
-      node['normal']['metal'][attr] = value
     end
   end
 end

@@ -1,15 +1,15 @@
 require 'chef/provider/lwrp_base'
 require 'chef/provider/chef_node'
 require 'openssl'
-require 'chef_metal/chef_provider_action_handler'
-require 'chef_metal/chef_load_balancer_spec'
+require 'chef/provisioning/chef_provider_action_handler'
+require 'chef/provisioning/chef_load_balancer_spec'
 
 class Chef
   class Provider
     class LoadBalancer < Chef::Provider::LWRPBase
 
       def action_handler
-        @action_handler ||= ChefMetal::ChefProviderActionHandler.new(self)
+        @action_handler ||= Chef::Provisioning::ChefProviderActionHandler.new(self)
       end
 
       def whyrun_supported?
@@ -17,12 +17,12 @@ class Chef
       end
 
       def new_driver
-        @new_driver ||= run_context.chef_metal.driver_for(new_resource.driver)
+        @new_driver ||= run_context.chef_provisioning.driver_for(new_resource.driver)
       end
 
       action :create do
-        lb_spec = ChefMetal::ChefLoadBalancerSpec.get(new_resource.name, new_resource.chef_server) ||
-                  ChefMetal::ChefLoadBalancerSpec.empty(new_resource.name, new_resource.chef_server)
+        lb_spec = Chef::Provisioning::ChefLoadBalancerSpec.get(new_resource.name, new_resource.chef_server) ||
+                  Chef::Provisioning::ChefLoadBalancerSpec.empty(new_resource.name, new_resource.chef_server)
 
         if lb_spec.location
           # Updating
@@ -35,7 +35,7 @@ class Chef
       end
 
       action :destroy do
-        lb_spec = ChefMetal::ChefLoadBalancerSpec.get(new_resource.name, new_resource.chef_server)
+        lb_spec = Chef::Provisioning::ChefLoadBalancerSpec.get(new_resource.name, new_resource.chef_server)
         new_driver.destroy_load_balancer(@action_handler, lb_spec, lb_options)
       end
 
@@ -65,7 +65,7 @@ class Chef
 
       private
       def get_machine_spec(machine_name)
-        ChefMetal::ChefMachineSpec.get(machine_name, new_resource.chef_server)
+        Chef::Provisioning::ChefMachineSpec.get(machine_name, new_resource.chef_server)
       end
 
       def lb_options
