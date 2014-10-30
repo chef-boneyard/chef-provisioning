@@ -1,4 +1,8 @@
 # Chef Metal Changelog
+## 0.15.1 (10/30/2014)
+
+- Make syntax error go away, grr.
+
 ## 0.15 (10/29/2014)
 
 - Rename from chef-metal to chef-provisioning
