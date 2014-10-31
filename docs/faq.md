@@ -79,7 +79,7 @@ end
 
 **Q:** Where does machine information get stored?
 
-**A:** When you first provision a machine with Provisioning (like, when you allocate it), Chef Provisioning creates a **Chef node** for the machine with a special attribute `{ "provisioning": { "location": { ... }}}`. Inside there is a hash of information identifying the server, including a `driver_url`.  The driver_url is the same thing you specify in `CHEF_DRIVER` and `with_driver`.  Different drivers will store different information; the AWS driver, for instance, stores the instance ID (`i-19834b 13`).
+**A:** When you first provision a machine with Provisioning (like, when you allocate it), Chef Provisioning creates a **Chef node** for the machine with a special attribute `{ "chef_provisioning": { "location": { ... }}}`. Inside there is a hash of information identifying the server, including a `driver_url`.  The driver_url is the same thing you specify in `CHEF_DRIVER` and `with_driver`.  Different drivers will store different information; the AWS driver, for instance, stores the instance ID (`i-19834b 13`).
 
 If you are running against a Chef server, this node lives on the Chef server and anyone else with permissions can see it.  If you are running in local mode, the nodegets saved to <chef_repo_path>/nodes/node_name.json (which you can look at on the hard drive).  If you haven't set anything, `<chef_repo_path>` will generally be the current directory.
 
