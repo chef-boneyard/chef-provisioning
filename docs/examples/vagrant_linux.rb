@@ -1,4 +1,4 @@
-require 'chef/provisioning_vagrant'
+require 'chef/provisioning/vagrant_driver'
 
 vagrant_box 'precise64' do
   url 'http://files.vagrantup.com/precise64.box'
