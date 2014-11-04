@@ -12,7 +12,6 @@ Gem::Specification.new do |s|
   s.email = 'jkeiser@opscode.com'
   s.homepage = 'http://wiki.opscode.com/display/chef'
 
-  s.add_dependency 'chef'
   s.add_dependency 'net-ssh', '~> 2.0'
   s.add_dependency 'net-scp', '~> 1.0'
   s.add_dependency 'net-ssh-gateway', '~> 1.2.0'

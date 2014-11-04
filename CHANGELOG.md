@@ -1,4 +1,4 @@
-# Chef Metal Changelog
+# Chef Provisioning Changelog
 ## 0.15.1 (10/30/2014)
 
 - Make syntax error go away, grr.
