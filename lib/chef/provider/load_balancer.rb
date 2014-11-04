@@ -17,14 +17,15 @@ class Chef
       end
 
       def new_driver
-        @new_driver ||= run_context.chef_provisioning.driver_for(new_resource.driver)
+        @new_driver ||= run_context.chef_metal.driver_for(new_resource.driver)
       end
 
       action :create do
-        lb_spec = Chef::Provisioning::ChefLoadBalancerSpec.get(new_resource.name, new_resource.chef_server) ||
-                  Chef::Provisioning::ChefLoadBalancerSpec.empty(new_resource.name, new_resource.chef_server)
+        lb_spec = Chef::Provisioning::ChefLoadBalancerSpec.get(new_resource.name) ||
+                  Chef::Provisioning::ChefLoadBalancerSpec.empty(new_resource.name)
 
-        if lb_spec.location
+        Chef::Log.debug "Creating load balancer: #{new_resource.name}; loaded #{lb_spec.inspect}"
+        if lb_spec.load_balancer_options
           # Updating
           update_loadbalancer(lb_spec)
         else
@@ -35,7 +36,7 @@ class Chef
       end
 
       action :destroy do
-        lb_spec = Chef::Provisioning::ChefLoadBalancerSpec.get(new_resource.name, new_resource.chef_server)
+        lb_spec = Chef::Provisioning::ChefLoadBalancerSpec.get(new_resource.name)
         new_driver.destroy_load_balancer(@action_handler, lb_spec, lb_options)
       end
 
@@ -43,6 +44,7 @@ class Chef
 
 
       def update_loadbalancer(lb_spec)
+        Chef::Log.debug "Updating load balancer: #{lb_spec.id}"
         machines = Hash[
             *(new_resource.machines).collect {
                 |machine_name| [machine_name, get_machine_spec(machine_name)]
@@ -65,7 +67,8 @@ class Chef
 
       private
       def get_machine_spec(machine_name)
-        Chef::Provisioning::ChefMachineSpec.get(machine_name, new_resource.chef_server)
+        Chef::Log.debug "Getting machine spec for #{machine_name}"
+        Chef::Provisioning::ChefMachineSpec.get(machine_name)
       end
 
       def lb_options
