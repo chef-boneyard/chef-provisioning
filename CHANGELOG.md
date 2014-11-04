@@ -1,4 +1,8 @@
 # Chef Provisioning Changelog
+## 0.15.2 (11/4/2014)
+
+- Remove Chef as a dependency so that it can be a dep of Chef
+
 ## 0.15.1 (10/30/2014)
 
 - Make syntax error go away, grr.
