@@ -45,8 +45,12 @@ module Provisioning
     scheme = driver_url.split(':', 2)[0]
     begin
       require "chef/provisioning/driver_init/#{scheme}"
-    rescue LoadError => e
-      require "chef_metal/driver_init/#{scheme}"
+    rescue LoadError
+      begin
+        require "chef_metal/driver_init/#{scheme}"
+      rescue LoadError
+        require "chef/provisioning/driver_init/#{scheme}"
+      end
     end
     driver_class = @@registered_driver_classes[scheme]
 
