@@ -1,4 +1,8 @@
 # Chef Provisioning Changelog
+## 0.16 (11/4/2014)
+
+- Make it work with Chef 12
+
 ## 0.15.2 (11/4/2014)
 
 - Remove Chef as a dependency so that it can be a dep of Chef

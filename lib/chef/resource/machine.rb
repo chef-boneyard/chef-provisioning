@@ -111,7 +111,7 @@ class Machine < Chef::Resource::LWRPBase
   #
   # Without this, the first resource's machine options will obliterate the second
   # resource's machine options, and then unexpected (and undesired) things happen.
-  def load_prior_resource
+  def load_prior_resource(*args)
     Chef::Log.debug "Overloading #{self.resource_name} load_prior_resource with NOOP"
   end
 

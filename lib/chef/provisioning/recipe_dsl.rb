@@ -90,7 +90,7 @@ class Chef
 
   class RunContext
     def chef_provisioning
-      @chef_provisioning ||= Chef::Provisioning::ChefRunData.new(config)
+      node.run_state[:chef_provisioning] ||= Chef::Provisioning::ChefRunData.new(config)
     end
     alias :chef_metal :chef_provisioning
   end
