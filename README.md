@@ -147,7 +147,7 @@ The driver is specified on the command line.  Drivers are URLs.  You could use `
 The `vagrant_linux.rb` recipe handles the physical specification of the machines and Vagrant box:
 
 ```ruby
-require 'chef/provisioning_vagrant'
+require 'chef/provisioning/vagrant_driver'
 
 vagrant_box 'precise64' do
   url 'http://files.vagrantup.com/precise64.box'
@@ -158,7 +158,7 @@ with_machine_options :vagrant_options => {
 }
 ```
 
-`require 'chef/provisioning_vagrant'` is how we bring in the `vagrant_box` resource.
+`require 'chef/provisioning/vagrant_driver'` is how we bring in the `vagrant_box` resource.
 
 `vagrant_box` makes sure a particular vagrant box exists, and lets you specify `machine_options` for things like port forwarding, OS definitions, and any other vagrant-isms.
 
@@ -190,7 +190,7 @@ Most Chef Provisioning drivers try hard to provide reasonable defaults so you ca
 You will usually want to create or input a custom key pair for bootstrap. To customize, specify keys and AMI and other options, you can make recipes like this:
 
 ```ruby
-require 'chef/provisioning_fog'
+require 'chef/provisioning/fog_driver'
 
 fog_key_pair 'my_bootstrap_key'
 
