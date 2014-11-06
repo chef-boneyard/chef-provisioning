@@ -36,10 +36,10 @@ class Chef::Resource::ChefDataBagResource < Chef::Resource::LWRPBase
   # and then delegating to {Chef::Resource::LWRPBase#attribute}
   # @param attr_name [Symbol] Name of the attribute as a symbol
   # @return [Void]
-  def self.stored_attribute(attr_name)
+  def self.stored_attribute(attr_name, *args)
     @stored_attributes ||= []
     @stored_attributes << attr_name
-    self.attribute attr_name
+    self.attribute attr_name, *args
   end
 
   # Load persisted data from the server's databag. If the databag does not exist on the
@@ -145,4 +145,3 @@ class Chef::Resource::ChefDataBagResource < Chef::Resource::LWRPBase
     end
   end
 end
-
