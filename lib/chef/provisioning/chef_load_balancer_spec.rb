@@ -22,7 +22,6 @@ module Provisioning
       chef_api = Cheffish.chef_server_api(chef_server)
       begin
         data = chef_api.get("/data/loadbalancers/#{name}")
-        data['load_balancer_options'] = strings_to_symbols(data['load_balancer_options'])
         ChefLoadBalancerSpec.new(data, chef_server)
       rescue Net::HTTPServerException => e
         if e.response.code == '404'
@@ -60,6 +59,7 @@ module Provisioning
       _self = self
       _chef_server = _self.chef_server
       Chef::Provisioning.inline_resource(action_handler) do
+        chef_data_bag 'loadbalancers'
         chef_data_bag_item _self.name do
           data_bag 'loadbalancers'
           chef_server _chef_server

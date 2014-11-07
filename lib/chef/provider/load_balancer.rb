@@ -25,44 +25,16 @@ class Chef
                   Chef::Provisioning::ChefLoadBalancerSpec.empty(new_resource.name)
 
         Chef::Log.debug "Creating load balancer: #{new_resource.name}; loaded #{lb_spec.inspect}"
-        if lb_spec.load_balancer_options
-          # Updating
-          update_loadbalancer(lb_spec)
-        else
-          lb_spec.load_balancer_options = new_resource.load_balancer_options
-          lb_spec.machines = new_resource.machines
-          create_loadbalancer(lb_spec)
-        end
+        machine_specs = new_resource.machines ? new_resource.machines.map { |machine| get_machine_spec(machine) } : nil
+
+        new_driver.allocate_load_balancer(action_handler, lb_spec, lb_options, machine_specs)
+        lb_spec.save(action_handler)
+        new_driver.ready_load_balancer(action_handler, lb_spec, lb_options, machine_specs)
       end
 
       action :destroy do
         lb_spec = Chef::Provisioning::ChefLoadBalancerSpec.get(new_resource.name)
-        new_driver.destroy_load_balancer(@action_handler, lb_spec, lb_options)
-      end
-
-      attr_reader :lb_spec
-
-
-      def update_loadbalancer(lb_spec)
-        Chef::Log.debug "Updating load balancer: #{lb_spec.id}"
-        machines = Hash[
-            *(new_resource.machines).collect {
-                |machine_name| [machine_name, get_machine_spec(machine_name)]
-            }.flatten
-        ]
-        new_driver.update_load_balancer(action_handler, lb_spec, lb_options, {
-                  :machines => machines
-                }
-            )
-        lb_spec.load_balancer_options = new_resource.load_balancer_options
-        lb_spec.machines = new_resource.machines
-        lb_spec.save(action_handler)
-      end
-
-      def create_loadbalancer(lb_spec)
-        new_driver.allocate_load_balancer(action_handler, lb_spec, lb_options)
-        lb_spec.save(action_handler)
-        new_driver.ready_load_balancer(action_handler, lb_spec, lb_options)
+        new_driver.destroy_load_balancer(action_handler, lb_spec, lb_options)
       end
 
       private

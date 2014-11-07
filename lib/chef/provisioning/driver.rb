@@ -270,14 +270,16 @@ module Provisioning
     # @param [ChefMetal::ActionHandler] action_handler The action handler
     # @param [ChefMetal::LoadBalancerSpec] lb_spec Frozen LB specification
     # @param [Hash] lb_options A hash of options to pass the LB
-    def allocate_load_balancer(action_handler, lb_spec, lb_options)
+    # @param [Array[ChefMetal::MachineSpec]] machine_specs An array of machine specs
+    #        the load balancer should have
+    def allocate_load_balancer(action_handler, lb_spec, lb_options, machine_specs)
     end
 
     # Make the load balancer ready
     # @param [ChefMetal::ActionHandler] action_handler The action handler
     # @param [ChefMetal::LoadBalancerSpec] lb_spec Frozen LB specification
     # @param [Hash] lb_options A hash of options to pass the LB
-    def ready_load_balancer(action_handler, lb_spec, lb_options)
+    def ready_load_balancer(action_handler, lb_spec, lb_options, machine_specs)
     end
 
     # Destroy the load balancer
@@ -285,9 +287,6 @@ module Provisioning
     # @param [ChefMetal::LoadBalancerSpec] lb_spec Frozen LB specification
     # @param [Hash] lb_options A hash of options to pass the LB
     def destroy_load_balancer(action_handler, lb_spec, lb_options)
-    end
-
-    def update_load_balancer(action_handler, lb_spec, lb_options, opts = {})
     end
 
     protected

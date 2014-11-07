@@ -52,14 +52,6 @@ module Provisioning
       load_balancer_data['location'] =  value
     end
 
-    def load_balancer_options
-      load_balancer_data['load_balancer_options']
-    end
-
-    def load_balancer_options=(value)
-      load_balancer_data['load_balancer_options'] = value
-    end
-
     # URL to the driver.  Convenience for location['driver_url']
     def driver_url
       location ? location['driver_url'] : nil
