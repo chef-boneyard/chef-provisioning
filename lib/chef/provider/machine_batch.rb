@@ -11,7 +11,7 @@ class Provider
 class MachineBatch < Chef::Provider::LWRPBase
 
   def action_handler
-    @action_handler ||= Chef::Provisioning::ChefProviderActionHandler.new(self)
+    @action_handler ||= Provisioning::ChefProviderActionHandler.new(self)
   end
 
   use_inline_resources
@@ -27,8 +27,8 @@ class MachineBatch < Chef::Provider::LWRPBase
   action :allocate do
     by_new_driver.each do |driver, specs_and_options|
       driver.allocate_machines(action_handler, specs_and_options, parallelizer) do |machine_spec|
-        prefixed_handler = Chef::Provisioning::AddPrefixActionHandler.new(action_handler, "[#{machine_spec.name}] ")
-        machine_spec.save(prefixed_handler)
+        m = by_id[machine_spec.id]
+        machine_spec.save(m[:action_handler])
       end
     end
   end
@@ -39,30 +39,40 @@ class MachineBatch < Chef::Provider::LWRPBase
 
   action :setup do
     with_ready_machines do |m|
-      prefixed_handler = Chef::Provisioning::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
-      m[:machine].setup_convergence(prefixed_handler)
-      m[:spec].save(prefixed_handler)
-      Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:files])
+      m[:machine].setup_convergence(m[:action_handler])
+      m[:spec].save(m[:action_handler])
+      Chef::Provider::Machine.upload_files(m[:action_handler], m[:machine], m[:files])
     end
   end
 
   action :converge do
     with_ready_machines do |m|
-      prefixed_handler = Chef::Provisioning::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
-      m[:machine].setup_convergence(prefixed_handler)
-      m[:spec].save(action_handler)
-      Chef::Provider::Machine.upload_files(prefixed_handler, m[:machine], m[:files])
-      # TODO only converge if machine was modified
-      m[:machine].converge(prefixed_handler)
-      m[:spec].save(prefixed_handler)
+      m[:machine].setup_convergence(m[:action_handler])
+      m[:spec].save(m[:action_handler])
+      Chef::Provider::Machine.upload_files(m[:action_handler], m[:machine], m[:files])
+
+      if m[:resource] && m[:resource].converge
+        Chef::Log.info("Converging #{m[:spec].name} because 'converge true' is set ...")
+        m[:machine].converge(m[:action_handler])
+        m[:spec].save(m[:action_handler])
+      elsif (!m[:resource] || m[:resource].converge.nil?) && m[:action_handler].locally_updated
+        Chef::Log.info("Converging #{m[:spec].name} because the resource was updated ...")
+        m[:machine].converge(m[:action_handler])
+        m[:spec].save(m[:action_handler])
+      elsif !m[:spec].node['automatic'] || m[:spec].node['automatic'].size == 0
+        Chef::Log.info("Converging #{m[:spec].name} because it has never been converged (automatic attributes are empty) ...")
+        m[:machine].converge(m[:action_handler])
+        m[:spec].save(m[:action_handler])
+      elsif m[:resource] && m[:resource].converge == false
+        Chef::Log.debug("Not converging #{m[:spec].name} because 'converge false' is set.")
+      end
     end
   end
 
   action :converge_only do
     parallel_do(@machines) do |m|
-      prefixed_handler = Chef::Provisioning::AddPrefixActionHandler.new(action_handler, "[#{m[:spec].name}] ")
       machine = run_context.chef_provisioning.connect_to_machine(m[:spec])
-      machine.converge(prefixed_handler)
+      machine.converge(m[:action_handler])
     end
   end
 
@@ -80,7 +90,6 @@ class MachineBatch < Chef::Provider::LWRPBase
 
   def with_ready_machines
     action_allocate
-    by_id = @machines.inject({}) { |hash,m| hash[m[:spec].id] = m; hash }
     parallel_do(by_new_driver) do |driver, specs_and_options|
       driver.ready_machines(action_handler, specs_and_options, parallelizer) do |machine|
         machine.machine_spec.save(action_handler)
@@ -95,6 +104,10 @@ class MachineBatch < Chef::Provider::LWRPBase
         end
       end
     end
+  end
+
+  def by_id
+    @by_id ||= @machines.inject({}) { |hash,m| hash[m[:spec].id] = m; hash }
   end
 
   # TODO in many of these cases, the order of the results only matters because you
@@ -151,28 +164,32 @@ class MachineBatch < Chef::Provider::LWRPBase
         provider = Chef::Provider::Machine.new(machine_resource, machine_resource.run_context)
         provider.load_current_resource
         {
+          :resource => machine_resource,
           :spec => provider.machine_spec,
           :desired_driver => machine_resource.driver,
           :files => machine_resource.files,
-          :machine_options => proc { |driver| provider.machine_options(driver) }
+          :machine_options => proc { |driver| provider.machine_options(driver) },
+          :action_handler => Provisioning::AddPrefixActionHandler.new(action_handler, "[#{machine_resource.name}] ")
         }
-      elsif machine.is_a?(Chef::Provisioning::MachineSpec)
+      elsif machine.is_a?(Provisioning::MachineSpec)
         machine_spec = machine
         {
           :spec => machine_spec,
           :desired_driver => new_resource.driver,
           :files => new_resource.files,
-          :machine_options => proc { |driver| machine_options(driver) }
+          :machine_options => proc { |driver| machine_options(driver) },
+          :action_handler => Provisioning::AddPrefixActionHandler.new(action_handler, "[#{machine_spec.name}] ")
         }
       else
         name = machine
-        machine_spec = Chef::Provisioning::ChefMachineSpec.get(name, new_resource.chef_server) ||
-                       Chef::Provisioning::ChefMachineSpec.empty(name, new_resource.chef_server)
+        machine_spec = Provisioning::ChefMachineSpec.get(name, new_resource.chef_server) ||
+                       Provisioning::ChefMachineSpec.empty(name, new_resource.chef_server)
         {
           :spec => machine_spec,
           :desired_driver => new_resource.driver,
           :files => new_resource.files,
-          :machine_options => proc { |driver| machine_options(driver) }
+          :machine_options => proc { |driver| machine_options(driver) },
+          :action_handler => Provisioning::AddPrefixActionHandler.new(action_handler, "[#{name}] ")
         }
       end
     end.to_a

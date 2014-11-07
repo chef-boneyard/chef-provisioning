@@ -54,9 +54,17 @@ class Machine < Chef::Provider::LWRPBase
       machine_spec.save(action_handler)
       upload_files(machine)
       # If we were asked to converge, or anything changed, or if a converge has never succeeded, converge.
-      if new_resource.converge || (new_resource.converge.nil? && resource_updated?) ||
-         !machine_spec.node['automatic'] || machine_spec.node['automatic'].size == 0
+      if new_resource.converge
+        Chef::Log.info("Converging #{machine_spec.name} because 'converge true' is set ...")
         machine.converge(action_handler)
+      elsif new_resource.converge.nil? && resource_updated?
+        Chef::Log.info("Converging #{machine_spec.name} because the resource was updated ...")
+        machine.converge(action_handler)
+      elsif !machine_spec.node['automatic'] || machine_spec.node['automatic'].size == 0
+        Chef::Log.info("Converging #{machine_spec.name} because it has never been converged (automatic attributes are empty) ...")
+        machine.converge(action_handler)
+      elsif new_resource.converge == false
+        Chef::Log.debug("Not converging #{machine_spec.name} because 'converge false' is set.")
       end
     ensure
       machine.disconnect
