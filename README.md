@@ -122,7 +122,7 @@ Drivers each have their own repository.  Current drivers:
 
 **Virtualization:**
 - [Vagrant: VirtualBox, VMWare Fusion, etc.](https://github.com/opscode/chef-provisioning-vagrant)
-- [VSphere](https://github.com/RallySoftware-cookbooks/chef-provisioning-vsphere) (not yet up to date with 0.11)
+- [VSphere](https://github.com/RallySoftware-cookbooks/chef-metal-vsphere) (not yet up to date with 0.11)
 
 **Containers:**
 - [LXC](https://github.com/opscode/chef-provisioning-lxc) (not yet up to date with 0.11)
