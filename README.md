@@ -118,6 +118,8 @@ Drivers save their data in the Chef node itself, so that they will be accessible
 Drivers each have their own repository.  Current drivers:
 
 **Cloud:**
+- [AWS](https://github.com/opscode/chef-provisioning-aws)
+- [Azure](https://github.com/opscode/chef-provisioning-azure)
 - [FOG: EC2, DigitalOcean, OpenStack, etc.](https://github.com/opscode/chef-provisioning-fog)
 
 **Virtualization:**
@@ -125,10 +127,11 @@ Drivers each have their own repository.  Current drivers:
 - [VSphere](https://github.com/RallySoftware-cookbooks/chef-provisioning-vsphere) (not yet up to date with 0.11)
 
 **Containers:**
-- [LXC](https://github.com/opscode/chef-provisioning-lxc) (not yet up to date with 0.11)
 - [Docker](https://github.com/opscode/chef-provisioning-docker)
+- [LXC](https://github.com/opscode/chef-provisioning-lxc)
 
 **Bare Metal:**
+- [Hanlon](https://github.com/opscode/chef-provisioning-hanlon)
 - [OpenCrowbar](https://github.com/newgoliath/chef-provisioning-crowbar) OpenCrowbar controls your real metal.  It discovers, inventories, configs RAID & BIOS and networks, and installs your OS.  [OpenCrowbar website](http://www.opencrowbar.org) [OpenCrowbar github](https://github.com/opencrowbar/core)
 - [SSH (no PXE)](https://github.com/double-z/chef-provisioning-ssh) (not yet up to date with 0.11)
 
