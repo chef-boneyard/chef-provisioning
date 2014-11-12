@@ -129,6 +129,7 @@ Drivers each have their own repository.  Current drivers:
 - [Docker](https://github.com/opscode/chef-provisioning-docker)
 
 **Bare Metal:**
+- [OpenCrowbar](https://github.com/newgoliath/chef-provisioning-crowbar) OpenCrowbar controls your real metal.  It discovers, inventories, configs RAID & BIOS and networks, and installs your OS.  [OpenCrowbar website](http://www.opencrowbar.org) [OpenCrowbar github](https://github.com/opencrowbar/core)
 - [SSH (no PXE)](https://github.com/double-z/chef-provisioning-ssh) (not yet up to date with 0.11)
 
 ### Anatomy of a Recipe
