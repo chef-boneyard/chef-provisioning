@@ -63,6 +63,18 @@ module Provisioning
       raise "delete_file not overridden on #{self.class}"
     end
 
+    def upload_directory(action_handler, local_path, path)
+      raise "upload_directory not overridden on #{self.class}"
+    end
+
+    def download_directory(action_handler, path, local_path)
+      raise "download_directory not overridden on #{self.class}"
+    end
+
+    def delete_directory(action_handler, path)
+      raise "delete_directory not overridden on #{self.class}"
+    end
+
     # Return true if directory, false/nil if not
     def is_directory?(path)
       raise "is_directory? not overridden on #{self.class}"
@@ -76,6 +88,11 @@ module Provisioning
     # Return true or false depending on whether remote file differs from local path or content
     def files_different?(path, local_path, content=nil)
       raise "file_different? not overridden on #{self.class}"
+    end
+
+    # Return true or false depending on whether remote directory differents from the local directory
+    def folders_different?(path, local_path)
+      raise "folders_different? not overridden on #{self.class}"
     end
 
     # Set file attributes { mode, :owner, :group }

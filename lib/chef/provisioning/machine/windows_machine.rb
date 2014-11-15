@@ -22,12 +22,25 @@ module Provisioning
         end
       end
 
+      def delete_directory(action_handler, path)
+        if directory_exists?(path)
+          action_handler.perform_action "delete directory #{escape(path)} on #{machine_spec.name}" do
+            transport.execute("Remove-Item #{escape(path)}").error!
+          end
+        end
+      end
+
       def is_directory?(path)
         parse_boolean(transport.execute("Test-Path #{escape(path)} -pathtype container", :read_only => true).stdout)
       end
 
       # Return true or false depending on whether file exists
       def file_exists?(path)
+        parse_boolean(transport.execute("Test-Path #{escape(path)}", :read_only => true).stdout)
+      end
+
+      # Return true or false depending on whether the directory exists
+      def directory_exists?(path)
         parse_boolean(transport.execute("Test-Path #{escape(path)}", :read_only => true).stdout)
       end
 
@@ -65,6 +78,9 @@ EOM
           end
         end
         remote_sum != digest.hexdigest
+      end
+
+      def directories_different?()
       end
 
       def create_dir(action_handler, path)

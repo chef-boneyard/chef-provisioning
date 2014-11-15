@@ -71,6 +71,22 @@ module Provisioning
         end
       end
 
+      def upload_directory(action_handler, local_path, path, options = {})
+        if directories_different?(path, local_path)
+          action_handler.perform_action "upload directory #{local_path} to #{path} on #{machine_spec.name}" do
+            transport.upload_directory(local_path, path)
+          end
+        end
+      end
+
+      def download_directory(action_handler, path, local_path, options = {})
+        if directories_different?(local_path, path)
+          action_handler.perform_action "download directory #{path} on #{machine_spec.name} to #{local_path}" do
+            transport.download_directory(path, local_path)
+          end
+        end
+      end
+
       def make_url_available_to_remote(local_url)
         transport.make_url_available_to_remote(local_url)
       end

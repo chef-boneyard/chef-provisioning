@@ -25,6 +25,14 @@ module Provisioning
         end
       end
 
+      def delete_directory(action_handler, path)
+        if directory_exists?(path)
+          action_handler.perform_action "delete directory #{path} on #{machine_spec.name}" do
+            transport.execute("rm -rf #{path}").error!
+          end
+        end
+      end
+
       def is_directory?(path)
         result = transport.execute("stat -c '%F' #{path}", :read_only => true)
         return nil if result.exitstatus != 0
@@ -33,6 +41,12 @@ module Provisioning
 
       # Return true or false depending on whether file exists
       def file_exists?(path)
+        result = transport.execute("ls -d #{path}", :read_only => true)
+        result.exitstatus == 0 && result.stdout != ''
+      end
+
+      # Return true or false depending on whether file exists
+      def directory_exists?(path)
         result = transport.execute("ls -d #{path}", :read_only => true)
         result.exitstatus == 0 && result.stdout != ''
       end
@@ -59,6 +73,8 @@ module Provisioning
         end
         remote_sum != digest.hexdigest
       end
+
+      def directories_different?
 
       def create_dir(action_handler, path)
         if !file_exists?(path)
