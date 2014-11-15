@@ -42,6 +42,14 @@ module Provisioning
       write_file(path, IO.read(local_path))
     end
 
+    def upload_directory(local_path, path)
+      raise "upload_directory not overridden on #{self.class}"
+    end
+
+    def download_directory(path, local_path)
+      raise "download_directory not overridden on #{self.class}"
+    end
+
     def make_url_available_to_remote(local_url)
       raise "make_url_available_to_remote not overridden on #{self.class}"
     end

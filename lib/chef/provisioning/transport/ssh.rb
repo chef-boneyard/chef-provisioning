@@ -96,8 +96,53 @@ module Provisioning
       end
 
       def download_file(path, local_path)
-        Chef::Log.debug("Downloading file #{path} from #{username}@#{host} to local #{local_path}")
-        download(path, local_path)
+        if options[:prefix]
+          # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
+          remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
+          begin
+            Chef::Log.debug("Copying #{path} to #{remote_tempfile} on #{username}@#{host}")
+            execute("cp -R #{path} #{remote_tempfile}").error!
+            execute("chown #{username} #{remote_tempfile}").error!
+            do_download remote_tempfile, local_path
+          rescue => e
+              Chef::Log.error "Unable to download #{path} to #{local_path} on #{username}@#{host} -- #{e}"
+              nil
+          ensure
+            # Clean up afterwards
+            begin
+              execute("rm -R #{remote_tempfile}").error!
+            rescue => e
+              Chef::Log.warn "Unable to clean up #{remote_tempfile} on #{username}@#{host} -- #{e}"
+            end
+          end
+        else
+          do_download(path, local_path)
+        end
+      end
+
+      def download_directory(path, local_path)
+        if options[:prefix]
+          # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
+          remote_tempdir = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
+          begin
+            Chef::Log.debug("Copying #{path} to #{remote_tempdir} on #{username}@#{host}")
+            execute("cp -R #{path} #{remote_tempdir}").error!
+            execute("chown #{username} #{remote_tempdir}").error!
+            do_download remote_tempdir, local_path
+          rescue => e
+              Chef::Log.error "Unable to download #{path} to #{local_path} on #{username}@#{host} -- #{e}"
+              nil
+          ensure
+            # Clean up afterwards
+            begin
+              execute("rm -rf #{remote_tempdir}").error!
+            rescue => e
+              Chef::Log.warn "Unable to clean up #{remote_tempdir} on #{username}@#{host} -- #{e}"
+            end
+          end
+        else
+          do_download(path, local_path, {:recursive => true})
+        end
       end
 
       def write_file(path, content)
@@ -119,8 +164,7 @@ module Provisioning
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
           remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
-          Chef::Log.debug("Uploading #{local_path} to #{remote_tempfile} on #{username}@#{host}")
-          Net::SCP.new(session).upload!(local_path, remote_tempfile)
+          do_upload(local_path, remote_tempfile)
           begin
             execute("mv #{remote_tempfile} #{path}").error!
           rescue
@@ -128,8 +172,23 @@ module Provisioning
             execute("rm #{remote_tempfile}").error!
           end
         else
-          Chef::Log.debug("Uploading #{local_path} to #{path} on #{username}@#{host}")
-          Net::SCP.new(session).upload!(local_path, path)
+          do_upload(local_path, path)
+        end
+      end
+
+      def upload_directory(local_path, path)
+        if options[:prefix]
+          # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
+          remote_tempdir = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
+          do_upload(local_path, remote_tempdir)
+          begin
+            execute("mv #{remote_tempdir} #{path}").error!
+          rescue
+            # Clean up if we were unable to move
+            execute("rm -r #{remote_tempdir}").error!
+          end
+        else
+          do_upload(local_path, path, {:recusive => true})
         end
       end
 
@@ -195,33 +254,26 @@ module Provisioning
         end
       end
 
-      def download(path, local_path)
-        if options[:prefix]
-          # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-          remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
-          Chef::Log.debug("Downloading #{path} from #{remote_tempfile} to #{local_path} on #{username}@#{host}")
-          begin
-            execute("cp #{path} #{remote_tempfile}").error!
-            execute("chown #{username} #{remote_tempfile}").error!
-            do_download remote_tempfile, local_path
-          rescue => e
-              Chef::Log.error "Unable to download #{path} to #{local_path} on #{username}@#{host} -- #{e}"
-              nil
-          ensure
-            # Clean up afterwards
-            begin
-              execute("rm #{remote_tempfile}").error!
-            rescue => e
-              Chef::Log.warn "Unable to clean up #{remote_tempfile} on #{username}@#{host} -- #{e}"
-            end
-          end
-        else
-          do_download path, local_path
+      def do_upload(local_path, path, opts = {})
+        Chef::Log.debug("Uploading local #{path} to remote #{local_path} on #{username}@#{host}")
+        channel = Net::SCP.new(session).upload(local_path, opts)
+        begin
+          channel.wait
+          Chef::Log.debug "SCP completed for: #{local_path} to #{path}"
+        rescue Net::SCP::Error => e
+          Chef::Log.error "Error with SCP: #{e}"
+          nil
+        ensure
+          channel.close
+          channel.wait
         end
+
+        nil
       end
 
-      def do_download(path, local_path)
-        channel = Net::SCP.new(session).download(path, local_path)
+      def do_download(path, local_path, opts = {})
+        Chef::Log.debug("Downloading remote #{path} from #{username}@#{host} to local #{local_path}")
+        channel = Net::SCP.new(session).download(path, local_path, opts)
         begin
           channel.wait
           Chef::Log.debug "SCP completed for: #{path} to #{local_path}"
