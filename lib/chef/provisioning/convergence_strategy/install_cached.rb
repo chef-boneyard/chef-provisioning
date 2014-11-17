@@ -124,7 +124,7 @@ module Provisioning
         metadata = {}
         metadata_str.each_line do |line|
           key, value = line.split("\t", 2)
-          metadata[key] = value
+          metadata[key] = value.chomp
         end
         metadata
       end
