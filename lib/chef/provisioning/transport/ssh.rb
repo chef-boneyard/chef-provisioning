@@ -110,7 +110,7 @@ module Provisioning
           ensure
             # Clean up afterwards
             begin
-              execute("rm -R #{remote_tempfile}").error!
+              execute("rm #{remote_tempfile}").error!
             rescue => e
               Chef::Log.warn "Unable to clean up #{remote_tempfile} on #{username}@#{host} -- #{e}"
             end
@@ -185,7 +185,7 @@ module Provisioning
             execute("mv #{remote_tempdir} #{path}").error!
           rescue
             # Clean up if we were unable to move
-            execute("rm -r #{remote_tempdir}").error!
+            execute("rm -rf #{remote_tempdir}").error!
           end
         else
           do_upload(local_path, path, {:recusive => true})

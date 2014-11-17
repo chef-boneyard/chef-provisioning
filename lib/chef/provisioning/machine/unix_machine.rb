@@ -1,10 +1,13 @@
 require 'chef/provisioning/machine/basic_machine'
+require 'chef/mixin/shell_out'
 require 'digest'
 
 class Chef
 module Provisioning
   class Machine
     class UnixMachine < BasicMachine
+      include Chef::Mixin::ShellOut
+
       def initialize(machine_spec, transport, convergence_strategy)
         super
 
@@ -75,7 +78,7 @@ module Provisioning
         end
 
         # Get remote checksum of file
-        result = transport.execute("md5sum -b #{path}", :read_only => true)
+        result = transport.execute("#{md5_bin} -b #{path}", :read_only => true)
         result.error!
         remote_sum = result.stdout.split(' ')[0]
 
@@ -168,6 +171,21 @@ module Provisioning
     end
 
     private
+
+    # Platforms have different md5 binaries. This method will find the
+    # appropriate binary to run.
+    def md5_bin
+      result = <<EOM
+$(for binary in 'md5sum' 'md5'
+do
+  binary_path=`which $binary`
+  if [ $? -eq 0 ]
+  then
+    echo $binary_path
+  fi
+done)
+EOM
+    end
 
     def detect_sh
       result = <<EOM
