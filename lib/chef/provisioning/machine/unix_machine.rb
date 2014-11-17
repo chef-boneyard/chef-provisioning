@@ -51,6 +51,24 @@ module Provisioning
         result.exitstatus == 0 && result.stdout != ''
       end
 
+      def directories_different?(path, local_path)
+        if !directory_exists?(path) || !File.directory?(local_path)
+          return true
+        end
+
+        # Get the checksum for the remote directory
+        result = transport.execute("tar -cf - #{path} | #{md5_bin}")
+        result.error!
+        remote_sum = result.stdout.split("\n")[-1]
+
+        # Get the checksum for the local directory
+        result = shell_out!("tar -cf - #{local_path} | #{md5_bin}")
+        local_sum = result.stdout.split("\n")[-1]
+
+        # Do they match?
+        remote_sum != local_sum
+      end
+
       def files_different?(path, local_path, content=nil)
         if !file_exists?(path) || (local_path && !File.exists?(local_path))
           return true
@@ -73,8 +91,6 @@ module Provisioning
         end
         remote_sum != digest.hexdigest
       end
-
-      def directories_different?
 
       def create_dir(action_handler, path)
         if !file_exists?(path)

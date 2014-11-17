@@ -80,7 +80,7 @@ module Provisioning
       end
 
       def download_directory(action_handler, path, local_path, options = {})
-        if directories_different?(local_path, path)
+        if directories_different?(path, local_path)
           action_handler.perform_action "download directory #{path} on #{machine_spec.name} to #{local_path}" do
             transport.download_directory(path, local_path)
           end
