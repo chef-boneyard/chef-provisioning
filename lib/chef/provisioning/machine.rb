@@ -91,8 +91,8 @@ module Provisioning
     end
 
     # Return true or false depending on whether remote directory differents from the local directory
-    def folders_different?(path, local_path)
-      raise "folders_different? not overridden on #{self.class}"
+    def directories_different?(path, local_path)
+      raise "directories_different? not overridden on #{self.class}"
     end
 
     # Set file attributes { mode, :owner, :group }
