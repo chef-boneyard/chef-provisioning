@@ -171,9 +171,9 @@ module Provisioning
 
       def client_rb_content(chef_server_url, node_name)
         if chef_server_url.downcase.start_with?("https")
-          ssl_verify_mode = ':verify_none'
-        else
           ssl_verify_mode = ':verify_peer'
+        else
+          ssl_verify_mode = ':verify_none'
         end
 
         <<EOM
