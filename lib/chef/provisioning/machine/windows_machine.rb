@@ -80,7 +80,18 @@ EOM
         remote_sum != digest.hexdigest
       end
 
-      def directories_different?()
+      def directories_different?(path, local_path)
+        if !directory_exists?(path) || !File.directory?(local_path)
+          return true
+        end
+
+        # Get the checksum for the remote directory
+
+
+        # Get the checksum for the local directory
+
+        # Do they match?
+
       end
 
       def create_dir(action_handler, path)
