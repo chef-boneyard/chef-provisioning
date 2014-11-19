@@ -16,6 +16,7 @@ Date       | Blog
 
 Documentation
 -------------
+* [Chef Docs](https://docs.getchef.com/provisioning.html)
 * [Frequently Asked Questions](https://github.com/opscode/chef-provisioning/blob/master/docs/faq.md)
 * [Configuration](https://github.com/opscode/chef-provisioning/blob/master/docs/configuration.md#configuring-and-using-provisioning-drivers)
 * [Writing Drivers](https://github.com/opscode/chef-provisioning/blob/master/docs/building_drivers.md#writing-drivers)
