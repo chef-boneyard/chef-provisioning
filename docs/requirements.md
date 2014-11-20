@@ -1,6 +1,6 @@
-# Chef Metal Requirements
+# Chef Provisioning Requirements
 
-Chef Metal lets you describe and converge entire clusters of machines the same way you converge an individual machine: through Chef recipes and resources.  Its general use cases include:
+Chef Provisioning lets you describe and converge entire clusters of machines the same way you converge an individual machine: through Chef recipes and resources.  Its general use cases include:
 
 - Keeping clusters in source control (production, preproduction, etc.)
 - Spinning up a cluster
@@ -12,7 +12,7 @@ Chef Metal lets you describe and converge entire clusters of machines the same w
 
 ## Dramatis Personae
 
-Here are some of the sort of people we expect to use Chef Metal.  Any resemblance to persons either real or fictional is purely a resemblance to persons either real or fictional.
+Here are some of the sort of people we expect to use Chef Provisioning.  Any resemblance to persons either real or fictional is purely a resemblance to persons either real or fictional.
 
 BlingCo is a manufacturer of Bling, a client/server jewelry management system where earrings and necklaces run a client OS and a jewelry box is installed with a server OS that tracks the jewelry.  The jewelry, and the jewelry boxes, are not controlled by BlingCo and may run the server or the clients on a variety of different OS's.  BlingCo would like to release a product that is reliable and easy to use, on all these platforms.
 
@@ -38,7 +38,7 @@ Seth wants to support Jenna by running her tests automatically on every checkin,
 
 ### Full-Stack Install via LXC
 
-Jenna's task is to develop the test.  The first thing she does is get Metal to *start* the client and server, and get them talking to each other:
+Jenna's task is to develop the test.  The first thing she does is get Provisioning to *start* the client and server, and get them talking to each other:
 
 1. She installs LXC.
 
@@ -52,7 +52,7 @@ Jenna's task is to develop the test.  The first thing she does is get Metal to *
    ```
    It is worth noting that `client.rb` does a `search('tags:bling_server')`.
 
-3. She builds a Metal recipe, `client_server.rb`:
+3. She builds a Provisioning recipe, `client_server.rb`:
    ```ruby
    machine 'myserver' do
      recipe 'bling::server'
@@ -64,7 +64,7 @@ Jenna's task is to develop the test.  The first thing she does is get Metal to *
    end
    ```
 
-4. She builds a Metal recipe that describes LXC containers in 'lxc_ubuntu.rb':
+4. She builds a Provisioning recipe that describes LXC containers in 'lxc_ubuntu.rb':
    ```ruby
    require 'chef/provisioning/lxc'
    with_provisioner Chef::Provisioning::Provisioner::LXC.new
@@ -83,7 +83,7 @@ Jenna goes home and wants to work on her OS X machine.  This means developing us
 
 1. She installs vagrant and VirtualBox.
 
-2. She builds a Metal recipe that describes the vagrant options and architecture: 'vagrant_linux.rb':
+2. She builds a Provisioning recipe that describes the vagrant options and architecture: 'vagrant_linux.rb':
    ```ruby
    require 'chef/provisioning/vagrant'
    vagrant_cluster "#{Chef::Config.chef_repo_path}/vagrantboxes"
@@ -98,7 +98,7 @@ Jenna goes home and wants to work on her OS X machine.  This means developing us
 
 ### Writing System Tests With Kitchen
 
-Now that the instance is installed, Jenna needs to write the actual test.  This is where test kitchen comes in!  Using the Metal driver for test kitchen, Jenna wants to write a test that will:
+Now that the instance is installed, Jenna needs to write the actual test.  This is where test kitchen comes in!  Using the Provisioning driver for test kitchen, Jenna wants to write a test that will:
 
 1. Bring up the server and client (connected to one another)
 2. Verify that the earring is not on
@@ -107,12 +107,12 @@ Now that the instance is installed, Jenna needs to write the actual test.  This 
 
 To do all these things, she just sets up Kitchen with her recipes and runs an rspec test:
 
-1. Install the `kitchen-metal` driver.
+1. Install the `kitchen-provisioning` driver.
 
 2. Create a `kitchen.yml` file:
    ```yaml
    driver:
-     name: metal
+     name: provisioning
      layout: client_server.rb
 
    platforms:
@@ -158,13 +158,13 @@ Seth hooks up Jenna's test to Travis, using a traditional `.travis.yml` file tha
 script: bundle exec kitchen verify
 ```
 
-And creates a `Gemfile` including `test-kitchen` and `kitchen-metal`:
+And creates a `Gemfile` including `test-kitchen` and `kitchen-provisioning`:
 
 ```ruby
 source 'https://rubygems.org'
 
 gem 'test-kitchen'
-gem 'kitchen-metal'
+gem 'kitchen-provisioning'
 ```
 
 And we're done!  At this point, on every single checkin, Travis will bring up two LXC instances, run the server and client on them, and run the earring movement test.
