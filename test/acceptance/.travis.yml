@@ -1,0 +1,24 @@
+branches:
+  only:
+    - master
+
+language: ruby
+rvm:
+  - 2.1.1
+
+bundler_args: --binstubs
+
+script:
+  - rspec spec -t driver_family:cloud
+
+env:
+  global:
+    - secure: ""
+    - secure: ""
+    - secure: ""
+
+# notifications:
+#   hipchat:
+#     rooms:
+#       # QA
+#       - secure: ""
