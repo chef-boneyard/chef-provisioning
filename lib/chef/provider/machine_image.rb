@@ -38,7 +38,23 @@ class MachineImage < Chef::Provider::LWRPBase
   action :destroy do
   end
 
+  def local_mode?(chef_server_url)
+    /^http(s{0,1})\:\/\/(localhost|127.0.0.1)/ === chef_server_url
+  end
+
+  def create_image_data_bag_dir(data_bag_path)
+    path = "#{::File.expand_path(data_bag_path)}/images"
+    unless Dir.exists?(path)
+      Dir.mkdir(path)
+    end
+  end
+
   def create_image(image_spec)
+    # 0. Make sure the images data_bag directory exists
+    if local_mode?(run_context.config[:chef_server_url])
+      create_image_data_bag_dir(run_context.config[:data_bag_path])
+    end
+
     # 1. Create the exemplar machine
     machine_provider = Chef::Provider::Machine.new(new_resource, run_context)
     machine_provider.load_current_resource
