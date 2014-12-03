@@ -182,7 +182,8 @@ module Provisioning
       def session
         @session ||= begin
           ssh_start_opts = { timeout:10 }.merge(ssh_options)
-          Chef::Log.debug("Opening SSH connection to #{username}@#{host} with options #{ssh_start_opts.inspect}")
+          Chef::Log.debug("Opening SSH connection to #{username}@#{host} with options #{ssh_start_opts.dup.tap {
+                              |ssh| ssh.delete(:key_data) }.inspect}")
           # Small initial connection timeout (10s) to help us fail faster when server is just dead
           begin
             if gateway? then gateway.ssh(host, username, ssh_start_opts)
@@ -285,7 +286,8 @@ module Provisioning
         ssh_start_opts = { timeout:10 }.merge(ssh_options)
         ssh_start_opts[:port] = gw_port || 22
 
-        Chef::Log.debug("Opening SSH gateway to #{gw_user}@#{gw_host} with options #{ssh_start_opts.inspect}")
+        Chef::Log.debug("Opening SSH gateway to #{gw_user}@#{gw_host} with options #{ssh_start_opts.dup.tap {
+                            |ssh| ssh.delete(:key_data) }.inspect}")
         begin
           Net::SSH::Gateway.new(gw_host, gw_user, ssh_start_opts)
         rescue Errno::ETIMEDOUT
