@@ -60,6 +60,9 @@ module Provisioning
       _self = self
       _chef_server = _self.chef_server
       Chef::Provisioning.inline_resource(action_handler) do
+        # Create the data bag if needed
+        chef_data_bag 'images'
+        # Save the image
         chef_data_bag_item _self.name do
           data_bag 'images'
           chef_server _chef_server
