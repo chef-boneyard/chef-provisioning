@@ -1,4 +1,3 @@
-require 'pry'
 require 'chef/provisioning'
 require 'cheffish'
 require 'chef/provisioning/machine_spec'
