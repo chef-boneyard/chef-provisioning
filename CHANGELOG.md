@@ -1,4 +1,16 @@
 # Chef Provisioning Changelog
+
+## 0.17 (12/17/2014)
+
+- Make machine batch convergent 
+- Consolidate load balancer create and update
+- Update some URLs
+- SSL verification fix
+- Test suites
+- Auto-create image data bags
+- Remove some un-needed dependencies
+- Wipe out SSH keys in debug messages
+
 ## 0.16 (11/4/2014)
 
 - Make it work with Chef 12
