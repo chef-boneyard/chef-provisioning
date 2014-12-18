@@ -36,6 +36,14 @@ class MachineImage < Chef::Provider::LWRPBase
   end
 
   action :destroy do
+    # Get the image mapping on the server (from name to image-id)
+    image_spec = Chef::Provisioning::ChefImageSpec.get(new_resource.name, new_resource.chef_server) ||
+        Chef::Provisioning::ChefImageSpec.empty(new_resource.name, new_resource.chef_server)
+
+    if image_spec.location
+      new_driver.destroy_image(action_handler, image_spec, new_resource.image_options)
+      image_spec.delete(action_handler)
+    end
   end
 
   def create_image(image_spec)

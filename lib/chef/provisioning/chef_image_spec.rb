@@ -15,7 +15,7 @@ module Provisioning
     end
 
     #
-    # Get a ImageSpec from the chef server.  If the node does not exist on the
+    # Get a ImageSpec from the chef server.  If the image does not exist on the
     # server, it returns nil.
     #
     def self.get(name, chef_server = Cheffish.default_chef_server)
@@ -51,12 +51,12 @@ module Provisioning
     end
 
     #
-    # Save this node to the server.  If you have significant information that
+    # Save this image to the server.  If you have significant information that
     # could be lost, you should do this as quickly as possible.  Data will be
     # saved automatically for you after allocate_image and ready_image.
     #
     def save(action_handler)
-      # Save the node to the server.
+      # Save the image to the server.
       _self = self
       _chef_server = _self.chef_server
       Chef::Provisioning.inline_resource(action_handler) do
@@ -72,14 +72,14 @@ module Provisioning
     end
 
     def delete(action_handler)
-      # Save the node to the server.
+      # Delete the image from the server.
       _self = self
       _chef_server = _self.chef_server
       Chef::Provisioning.inline_resource(action_handler) do
         chef_data_bag_item _self.name do
           data_bag 'images'
           chef_server _chef_server
-          action :destroy
+          action :delete
         end
       end
     end
