@@ -280,8 +280,10 @@ module Provisioning
 
       def gateway
         gw_user, gw_host = options[:ssh_gateway].split('@')
+        # If we didn't have an '@' in the above, then the value is actually
+        # the hostname, not the username.
+        gw_host, gw_user = gw_user, gw_host if gw_host.nil?
         gw_host, gw_port = gw_host.split(':')
-        gw_user = ssh_options[:ssh_username] unless gw_user
 
         ssh_start_opts = { timeout:10 }.merge(ssh_options)
         ssh_start_opts[:port] = gw_port || 22
