@@ -176,12 +176,19 @@ module Provisioning
           ssl_verify_mode = ':verify_none'
         end
 
-        <<EOM
+        content = <<EOM
 chef_server_url #{chef_server_url.inspect}
 node_name #{node_name.inspect}
 client_key #{convergence_options[:client_pem_path].inspect}
 ssl_verify_mode #{ssl_verify_mode}
 EOM
+        unless convergence_options[:bootstrap_proxy].nil?
+          content << <<EOM
+http_proxy #{convergence_options[:bootstrap_proxy].inspect}
+https_proxy #{convergence_options[:bootstrap_proxy].inspect}
+EOM
+        end
+        content
       end
     end
   end
