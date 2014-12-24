@@ -170,17 +170,18 @@ module Provisioning
       end
 
       def client_rb_content(chef_server_url, node_name)
-        if chef_server_url.downcase.start_with?("https")
-          ssl_verify_mode = ':verify_peer'
-        else
-          ssl_verify_mode = ':verify_none'
-        end
+        ssl_verify_mode = convergence_options[:ssl_verify_mode]
+        ssl_verify_mode ||= if chef_server_url.downcase.start_with?("https")
+                              :verify_peer
+                            else
+                              :verify_none
+                            end
 
         content = <<EOM
 chef_server_url #{chef_server_url.inspect}
 node_name #{node_name.inspect}
 client_key #{convergence_options[:client_pem_path].inspect}
-ssl_verify_mode #{ssl_verify_mode}
+ssl_verify_mode #{ssl_verify_mode.to_sym.inspect}
 EOM
         unless convergence_options[:bootstrap_proxy].nil?
           content << <<EOM
