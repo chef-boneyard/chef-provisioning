@@ -24,7 +24,9 @@ module Provisioning
       #   - :ssh_pty_enable: set to false to disable pty (some instances don't
       #     support this, most do)
       #   - :ssh_gateway: the gateway to use, e.g. "jkeiser@145.14.51.45:222".
-      #     nil (the default) means no gateway.
+      #     nil (the default) means no gateway. If the username is omitted,
+      #     then the default username is used instead (i.e. the user running
+      #     chef, or the username configured in .ssh/config).
       # - global_config: an options hash that looks suspiciously similar to
       #   Chef::Config, containing at least the key :log_level.
       #
