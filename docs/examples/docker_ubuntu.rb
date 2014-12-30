@@ -1,7 +1,7 @@
-require 'chef/provisioning_docker'
+require 'chef/provisioning/docker_driver'
 
 machine 'wario' do
-  recipe 'apache'
+  recipe 'apache2'
 
   machine_options :docker_options => {
     :base_image => {
@@ -10,7 +10,7 @@ machine 'wario' do
         :tag => '14.04'
     },
 
-    :command => '/usr/sbin/httpd'
+    :command => 'service apache2 start'
   }
 
 end
