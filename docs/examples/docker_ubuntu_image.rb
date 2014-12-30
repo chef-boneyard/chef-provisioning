@@ -1,7 +1,7 @@
-require 'chef/provisioning_docker'
+require 'chef/provisioning/docker_driver'
 
 machine_image 'web_server' do
-  recipe 'apache'
+  recipe 'apache2'
 
   machine_options :docker_options => {
       :base_image => {
