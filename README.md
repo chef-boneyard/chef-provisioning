@@ -9,10 +9,13 @@ This library solves the problem of repeatably creating machines and infrastructu
 
 Date       | Blog
 -----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-6/3/2014   | [machine_batch and parallelization](https://github.com/opscode/chef-provisioning/blob/master/docs/blogs/2012-05-28-machine_batch.html.markdown#chef-provisioning-parallelization)
-6/3/2014   | [Chef Provisioning, Configuration and Drivers](https://github.com/opscode/chef-provisioning/blob/master/docs/blogs/2012-05-22-new-driver-interface.html.markdown#chef-provisioning-configuration-and-drivers)
-3/4/2014   | [Chef Metal 0.2: Overview](http://www.getchef.com/blog/2014/03/04/chef-metal-0-2-release/) - this is a pretty good overview (though dated).
-12/20/2013 | [Chef Metal Alpha](http://www.getchef.com/blog/2013/12/20/chef-metal-alpha/)
+2014-12-15 | [Using Chef Provisioning to Build Chef Server](https://www.chef.io/blog/2014/12/15/sysadvent-day-14-using-chef-provisioning-to-build-chef-server/)
+2014-11-12 | [Chef Launches Policy-Based Provisioning](https://www.chef.io/blog/2014/11/12/chef-launches-policy-based-provisioning/)
+2014-11-12 | [Chef Provisioning: Infrastructure As Code](https://www.chef.io/blog/2014/11/12/chef-provisioning-infrastructure-as-code/)
+2014-06-03 | [machine_batch and parallelization](https://github.com/opscode/chef-provisioning/blob/master/docs/blogs/2012-05-28-machine_batch.html.markdown#chef-provisioning-parallelization)
+2014-06-03 | [Chef Provisioning, Configuration and Drivers](https://github.com/opscode/chef-provisioning/blob/master/docs/blogs/2012-05-22-new-driver-interface.html.markdown#chef-provisioning-configuration-and-drivers)
+2014-03-04 | [Chef Metal 0.2: Overview](http://www.getchef.com/blog/2014/03/04/chef-metal-0-2-release/) - this is a pretty good overview (though dated).
+2014-12-20 | [Chef Metal Alpha](http://www.getchef.com/blog/2013/12/20/chef-metal-alpha/)
 
 Documentation
 -------------
@@ -260,6 +263,6 @@ Chef Provisioning also works with Test Kitchen, allowing you to test entire clus
 Bugs and The Plan
 -----------------
 
-Please submit bugs, gripes and feature requests at [https://github.com/opscode/chef-provisioning/issues](https://twitter.com/jkeiser2), contact jkeiser on Twitter at @jkeiser2, email at [jkeiser@getchef.com](mailto:jkeiser@getchef.com)
+Please submit bugs, gripes and feature requests at [https://github.com/opscode/chef-provisioning/issues](https://github.com/opscode/chef-provisioning/issues), contact John Keiser on Twitter at [@jkeiser2](https://twitter.com/jkeiser2), email at [jkeiser@getchef.com](mailto:jkeiser@getchef.com)
 
-To contribute, just make a PR in the appropriate repo--also, make sure you've [signed the Chef Contributor License Agreement](https://secure.echosign.com/public/hostedForm?formid=PJIF5694K6L) (quick couple of minutes online), since this is going into core Chef eventually. It takes some time to process, so if you've just done it, let me know in the PR :)  If you already signed this for a Chef contribution, you don't need to do so again--if you're not sure, you can check for your name [here](https://wiki.opscode.com/display/chef/Approved+Contributors)!
+To contribute, just make a PR in the appropriate repo--also, make sure you've [signed the Chef Contributor License Agreement](https://supermarket.chef.io) (through your Chef Supermarket profile), since this is going into core Chef eventually. If you already signed this for a Chef contribution, you don't need to do so again--if you're not sure, you can check for your name [here](https://supermarket.chef.io/contributors) or if you signed up long ago check the [old list](https://github.com/opscode/chef/blob/master/CLA_ARCHIVE.md)!
