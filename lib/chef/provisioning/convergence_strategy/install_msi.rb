@@ -9,7 +9,7 @@ module Provisioning
 
       def initialize(convergence_options, config)
         super
-        @install_msi_url = convergence_options[:install_msi_url] || 'http://www.chef.io/chef/install.msi'
+        @install_msi_url = convergence_options[:install_msi_url] || 'https://www.chef.io/chef/install.msi'
         @install_msi_path = convergence_options[:install_msi_path] || "$env:TEMP\\#{File.basename(@install_msi_url)}"
         @chef_client_timeout = convergence_options.has_key?(:chef_client_timeout) ? convergence_options[:chef_client_timeout] : 120*60 # Default: 2 hours
       end
