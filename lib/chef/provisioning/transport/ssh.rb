@@ -307,15 +307,16 @@ module Provisioning
       end
 
       # Forwards a port over the connection, and returns the
-      def forward_port(local_port, local_host, remote_port, remote_host)
+      def forward_port(local_port, local_host, remote_port, requested_remote_host)
         # This bit is from the documentation.
         if session.forward.respond_to?(:active_remote_destinations)
-          got_remote_port, remote_host = session.forward.active_remote_destinations[[local_port, local_host]]
+          got_remote_port, actual_remote_host = session.forward.active_remote_destinations[[local_port, local_host]]
           if !got_remote_port
             Chef::Log.debug("Forwarding local server #{local_host}:#{local_port} to #{username}@#{self.host}")
 
-            session.forward.remote(local_port, local_host, remote_port, remote_host) do |actual_remote_port|
-              got_remote_port = actual_remote_port || :error
+            session.forward.remote(local_port, local_host, remote_port, requested_remote_host) do |new_remote_port, new_remote_host|
+							actual_remote_host = new_remote_host
+              got_remote_port = new_remote_port || :error
               :no_exception # I'll take care of it myself, thanks
             end
             # Kick SSH until we get a response
@@ -324,7 +325,7 @@ module Provisioning
               return nil
             end
           end
-          [ got_remote_port, remote_host ]
+          [ got_remote_port, actual_remote_host ]
         else
           @forwarded_ports ||= {}
           remote_port, remote_host = @forwarded_ports[[local_port, local_host]]
