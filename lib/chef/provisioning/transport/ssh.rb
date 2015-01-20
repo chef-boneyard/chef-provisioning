@@ -307,26 +307,37 @@ module Provisioning
       end
 
       # Forwards a port over the connection, and returns the
-      def forward_port(local_port, local_host, remote_port, requested_remote_host)
+      def forward_port(local_port, local_host, remote_port, remote_host)
         # This bit is from the documentation.
         if session.forward.respond_to?(:active_remote_destinations)
-          got_remote_port, actual_remote_host = session.forward.active_remote_destinations[[local_port, local_host]]
-          if !got_remote_port
+          # active_remote_destinations tells us exactly what remotes the current
+          # ssh session is *actually* tracking.  If multiple people share this
+          # session and set up their own remotes, this will prevent us from
+          # overwriting them.
+
+          actual_remote_port, actual_remote_host = session.forward.active_remote_destinations[[local_port, local_host]]
+          if !actual_remote_port
             Chef::Log.debug("Forwarding local server #{local_host}:#{local_port} to #{username}@#{self.host}")
 
-            session.forward.remote(local_port, local_host, remote_port, requested_remote_host) do |new_remote_port, new_remote_host|
+            session.forward.remote(local_port, local_host, remote_port, remote_host) do |new_remote_port, new_remote_host|
 							actual_remote_host = new_remote_host
-              got_remote_port = new_remote_port || :error
+              actual_remote_port = new_remote_port || :error
               :no_exception # I'll take care of it myself, thanks
             end
             # Kick SSH until we get a response
-            session.loop { !got_remote_port }
-            if got_remote_port == :error
+            session.loop { !actual_remote_port }
+            if actual_remote_port == :error
               return nil
             end
           end
-          [ got_remote_port, actual_remote_host ]
+          [ actual_remote_port, actual_remote_host ]
         else
+          # If active_remote_destinations isn't on net-ssh, we stash our own list
+          # of ports *we* have forwarded on the connection, and hope that we are
+          # right.
+          # TODO let's remove this when net-ssh 2.9.2 is old enough, and
+          # bump the required net-ssh version.
+
           @forwarded_ports ||= {}
           remote_port, remote_host = @forwarded_ports[[local_port, local_host]]
           if !remote_port
