@@ -13,7 +13,7 @@ module Provisioning
           :client_pem_path => '/etc/chef/client.pem'
         })
         super(convergence_options, config)
-        @install_sh_url = convergence_options[:install_sh_url] || 'http://www.opscode.com/chef/install.sh'
+        @install_sh_url = convergence_options[:install_sh_url] || 'https://chef.io/chef/install.sh'
         @install_sh_path = convergence_options[:install_sh_path] || '/tmp/chef-install.sh'
         @bootstrap_env = convergence_options[:bootstrap_proxy] ? "http_proxy=#{convergence_options[:bootstrap_proxy]}" : ""
         @chef_client_timeout = convergence_options.has_key?(:chef_client_timeout) ? convergence_options[:chef_client_timeout] : 120*60 # Default: 2 hours
