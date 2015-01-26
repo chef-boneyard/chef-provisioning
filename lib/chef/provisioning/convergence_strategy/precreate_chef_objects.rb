@@ -176,6 +176,10 @@ module Provisioning
           ssl_verify_mode = ':verify_none'
         end
 
+        unless convergence_options[:ssl_verify_mode].nil?
+          ssl_verify_mode = convergence_options[:ssl_verify_mode].to_sym.inspect
+        end
+
         <<EOM
 chef_server_url #{chef_server_url.inspect}
 node_name #{node_name.inspect}
