@@ -1,8 +1,8 @@
 # -*- encoding: utf-8 -*-
 #
-# Author:: Douglas Triggs (<doug@getchef.com>)
+# Author:: Douglas Triggs (<doug@chef.io>)
 #
-# Copyright (C) 2014, Chef, Inc.
+# Copyright (C) 2014, Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
