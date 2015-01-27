@@ -194,7 +194,7 @@
 
 ## 0.8 (4/8/2014)
 
-- New machine_execute resource! (irving@getchef.com)
+- New machine_execute resource! (irving@chef.io)
 - Experimental "metal" command line: metal execute NODENAME COMMAND ARGS
 - Transport: Add ability to stream execute() for better nested chef-client debugging
 
@@ -209,14 +209,14 @@
 
 ## 0.5 (4/3/2014)
 
-* Provisioner interface changes designed to allow provisioners to be used outside of Chef (doubt@getchef.com)
+* Provisioner interface changes designed to allow provisioners to be used outside of Chef (doubt@chef.io)
   * All Provisioner and Machine methods now take "action_handler" instead of "driver."  It uses the ActionHandler interface described in action_handler.rb.  In short:
     - driver.run_context -> action_handler.recipe_context
     - driver.updated_by_last_action(true) -> action_handler.updated!
     - driver.converge_by -> action_handler.perform_action
     - driver.cookbook_name -> driver.debug_name
   * Convergence strategy: delete_chef_objects() -> cleanup_convergence()
-* Ability to get back to a machine from a node (another Provisioner interface change) (doubt@getchef.com):
+* Ability to get back to a machine from a node (another Provisioner interface change) (doubt@chef.io):
   * Provisioners must create a file named `chef_provisioning/provisioner_init/<scheme>_init.rb`.  It will be required when a node is encountered with that scheme.  It should call Chef::Provisioning.add_registered_provisioner_class(<scheme>, <provisioner class name>).  For the provisioner_url `fog:AWS:21348723432`, the scheme is "fog" and the file is `chef_provisioningprovisioner_init/fog_init.rb`.  It should call `Chef::Provisioning.add_registered_provisioner_class('fog', Chef::Provisioning::Provisioner::FogProvisioner)`.
   * Provisioner classes must implement the class method `inflate(node)`, which should create a Provisioner instance appropriate to the given `node` (generally by looking at `node['normal']['provisioner_output']`)
 * New `NoConverge` convergence strategy that creates a node but does not install Chef or converge.
