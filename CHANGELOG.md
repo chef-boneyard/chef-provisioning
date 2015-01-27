@@ -1,8 +1,16 @@
 # Chef Provisioning Changelog
 
+## 0.18 (1/27/2015)
+
+- Allow `ssl_verify_mode` to be overridden (@mivok)
+- Support `machine_options[:convergence_options][:bootstrap_proxy]` (@mivok)
+- Allow `machine_options[:ssh_gateway]` without username (no @) (@mivok)
+- Fix issue with net-ssh 2.9.2
+- Add `action :destroy` to `machine_image` (@miguelcnf)
+
 ## 0.17 (12/17/2014)
 
-- Make machine batch convergent 
+- Make machine batch convergent
 - Consolidate load balancer create and update
 - Update some URLs
 - SSL verification fix
