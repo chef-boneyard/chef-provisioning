@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Author:: Douglas Triggs (<doug@getchef.com>)
+# Author:: Douglas Triggs (<doug@chef.io>)
 #
 # Copyright (C) 2014, Chef, Inc.
 #
