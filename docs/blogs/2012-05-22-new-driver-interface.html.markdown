@@ -10,9 +10,9 @@ How you create machines has not changed from a *logical* standpoint, but from a 
 
 I'll talk a little bit about the user-level changes here, but you can read about these changes in depth in the docs/ section of the chef-provisioning repository:
 
-- [Configuring and using drivers](https://github.com/opscode/chef-provisioning/blob/master/docs/configuration.md#configuring-and-using-metal-drivers)
-- [Building drivers](https://github.com/opscode/chef-provisioning/blob/master/docs/building_drivers.md#writing-drivers)
-- [Using drivers in your own programs](https://github.com/opscode/chef-provisioning/blob/master/docs/embedding.md)
+- [Configuring and using drivers](https://github.com/chef/chef-provisioning/blob/master/docs/configuration.md#configuring-and-using-metal-drivers)
+- [Building drivers](https://github.com/chef/chef-provisioning/blob/master/docs/building_drivers.md#writing-drivers)
+- [Using drivers in your own programs](https://github.com/chef/chef-provisioning/blob/master/docs/embedding.md)
 
 I'll give an example of how to use chef-provisioning in Vagrant.  Many other clouds are supported.
 
@@ -44,9 +44,9 @@ Wallah!  Two EC2 machines, in parallel!
 
 ## Drivers, credentials and machine options
 
-Drivers are now identifiable entirely by a URL (like `fog:AWS:default` or `vagrant:~/vms`).  To choose a driver, you specify its URL and the driver will be automatically loaded.  URLs have a flexible format, and vary for what makes sense for each driver.  Examples of setting driver URLs are [here.](https://github.com/opscode/chef-provisioning/blob/master/docs/configuration.md#setting-the-driver-with-a-driver-url)
+Drivers are now identifiable entirely by a URL (like `fog:AWS:default` or `vagrant:~/vms`).  To choose a driver, you specify its URL and the driver will be automatically loaded.  URLs have a flexible format, and vary for what makes sense for each driver.  Examples of setting driver URLs are [here.](https://github.com/chef/chef-provisioning/blob/master/docs/configuration.md#setting-the-driver-with-a-driver-url)
 
-Credentials for drivers can be specified, and Chef Metal makes it easy to specify these while keeping them out of your recipes (or anything likely to be checked in to source control!).  There are many ways to specify them--see the [documentation](https://github.com/opscode/chef-provisioning/blob/master/docs/configuration.md#credentials-configuration-in-chef) for examples.
+Credentials for drivers can be specified, and Chef Metal makes it easy to specify these while keeping them out of your recipes (or anything likely to be checked in to source control!).  There are many ways to specify them--see the [documentation](https://github.com/chef/chef-provisioning/blob/master/docs/configuration.md#credentials-configuration-in-chef) for examples.
 
 Absolutely everything that is not credentials should be specified in machine_options.  These are how you specify the OS you want to lay down, the keys you want to use to access the machine remotely, mount points, and everything else.  machine_options are generally specified in recipes, but may also be specified in configuration; details are [here]().
 

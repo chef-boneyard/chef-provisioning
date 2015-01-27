@@ -1,5 +1,5 @@
 ## Chef Metal Drivers
-https://github.com/opscode?query=chef-metal
+https://github.com/chef?query=chef-metal
 “opscode”
 ### cloud drivers
 remember:  cloud drivers cost money!

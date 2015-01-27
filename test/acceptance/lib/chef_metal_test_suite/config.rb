@@ -19,7 +19,7 @@ module ChefMetalTestSuite
     default :test_recipes, []
 
     def self.validate(raise_error = false)
-      # future reference https://github.com/opscode/chef/blob/master/lib/chef/mixin/params_validate.rb
+      # future reference https://github.com/chef/chef/blob/master/lib/chef/mixin/params_validate.rb
       errors = []
       supported_servers = [:zero] #[:zero, :server, :hosted]
       supported_drivers = [:vagrant, :fog, :aws]

@@ -127,7 +127,7 @@ There will be easier ways to specify this as Chef profiles and configuration evo
 
 ## Machine options
 
-### Provider specific options [here](https://github.com/opscode/chef-provisioning/blob/master/docs/providers)
+### Provider specific options [here](https://github.com/chef/chef-provisioning/blob/master/docs/providers)
 
 Machine options can be specified in Chef configuration or in recipes.  For example:
 

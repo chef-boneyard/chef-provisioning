@@ -103,7 +103,7 @@ module Provisioning
         #
         # Figure out the URL to the metadata
         #
-        metadata_url="https://www.opscode.com/chef/metadata"
+        metadata_url="https://www.chef.io/chef/metadata"
         metadata_url << "?v=#{@chef_version}"
         metadata_url << "&prerelease=#{@prerelease ? 'true' : 'false'}"
         metadata_url << "&p=#{platform.strip}"

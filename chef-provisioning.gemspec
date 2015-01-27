@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.summary = 'A library for creating machines and infrastructures idempotently in Chef.'
   s.description = s.summary
   s.author = 'John Keiser'
-  s.email = 'jkeiser@opscode.com'
-  s.homepage = 'http://wiki.opscode.com/display/chef'
+  s.email = 'jkeiser@chef.io'
+  s.homepage = 'http://github.com/chef/chef-provisioning/README.md'
 
   s.add_dependency 'net-ssh', '~> 2.0'
   s.add_dependency 'net-scp', '~> 1.0'
