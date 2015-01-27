@@ -46,7 +46,7 @@ If you have an AWS account, you can spin up a machine there like this:
 
 ```
 gem install chef-provisioning chef-provisioning-fog
-export CHEF_DRIVER=fog:AWS
+export CHEF_DRIVER=aws
 chef-client -z simple.rb
 ```
 
