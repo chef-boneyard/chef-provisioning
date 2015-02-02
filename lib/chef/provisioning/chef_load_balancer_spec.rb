@@ -76,7 +76,7 @@ module Provisioning
         chef_data_bag_item _self.name do
           data_bag 'loadbalancers'
           chef_server _chef_server
-          action :destroy
+          action :delete
         end
       end
     end
