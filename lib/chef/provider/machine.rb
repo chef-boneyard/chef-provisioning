@@ -137,7 +137,8 @@ class Machine < Chef::Provider::LWRPBase
           :private_key_options,
           :ohai_hints,
           :public_key_path, :public_key_format,
-          :admin, :validator
+          :admin, :validator,
+          :chef_config
         ].inject({}) do |result, key|
           result[key] = new_resource.send(key)
           result

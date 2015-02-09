@@ -6,10 +6,6 @@ class Chef
 module Provisioning
   class ConvergenceStrategy
     class NoConverge < ConvergenceStrategy
-      def initialize(convergence_options, config)
-        super
-      end
-
       def chef_server
         @chef_server ||= convergence_options[:chef_server] || Cheffish.default_chef_server(config)
       end

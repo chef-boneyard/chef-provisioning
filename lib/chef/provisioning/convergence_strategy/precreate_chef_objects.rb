@@ -6,10 +6,6 @@ class Chef
 module Provisioning
   class ConvergenceStrategy
     class PrecreateChefObjects < ConvergenceStrategy
-      def initialize(convergence_options, config)
-        super
-      end
-
       def chef_server
         @chef_server ||= convergence_options[:chef_server] || Cheffish.default_chef_server(config)
       end
@@ -177,18 +173,19 @@ module Provisioning
                               :verify_none
                             end
 
-        content = <<EOM
-chef_server_url #{chef_server_url.inspect}
-node_name #{node_name.inspect}
-client_key #{convergence_options[:client_pem_path].inspect}
-ssl_verify_mode #{ssl_verify_mode.to_sym.inspect}
-EOM
-        unless convergence_options[:bootstrap_proxy].nil?
-          content << <<EOM
-http_proxy #{convergence_options[:bootstrap_proxy].inspect}
-https_proxy #{convergence_options[:bootstrap_proxy].inspect}
-EOM
+        content = <<-EOM
+          chef_server_url #{chef_server_url.inspect}
+          node_name #{node_name.inspect}
+          client_key #{convergence_options[:client_pem_path].inspect}
+          ssl_verify_mode #{ssl_verify_mode.to_sym.inspect}
+        EOM
+        if convergence_options[:bootstrap_proxy]
+          content << <<-EOM
+            http_proxy #{convergence_options[:bootstrap_proxy].inspect}
+            https_proxy #{convergence_options[:bootstrap_proxy].inspect}
+          EOM
         end
+        content << convergence_options[:chef_config] if convergence_options[:chef_config]
         content
       end
     end
