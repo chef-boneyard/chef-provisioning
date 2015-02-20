@@ -86,9 +86,10 @@ Chef Provisioning has two major abstractions: the machine resource, and drivers.
 
 You declare what your machines do (recipes, tags, etc.) with the `machine` resource, the fundamental unit of Chef Provisioning.  You will typically declare `machine` resources in a separate, OS/provisioning-independent file that declares the *topology* of your app--your machines and the recipes that will run on them.
 
-The machine resources from the example [myapp::small](https://github.com/chef/chef-provisioning/blob/master/cookbooks/myapp/recipes/small.rb) are pretty straightforward.  Here's a copy/paste:
+The machine resources from the [cluster.rb example](https://github.com/chef/chef-provisioning/blob/master/docs/examples/cluster.rb) are pretty straightforward.  Here's a copy/paste:
 
 ```ruby
+# Database!
 machine 'mario' do
   recipe 'postgresql'
   recipe 'mydb'
@@ -97,6 +98,7 @@ end
 
 num_webservers = 1
 
+# Web servers!
 1.upto(num_webservers) do |i|
   machine "luigi#{i}" do
     recipe 'apache'
