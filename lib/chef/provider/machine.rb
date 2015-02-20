@@ -19,11 +19,11 @@ class Machine < Chef::Provider::LWRPBase
   end
 
   action :allocate do
-    if current_driver && current_driver.driver_url != new_driver.driver_url
-      raise "Cannot move '#{machine_spec.name}' from #{current_driver.driver_url} to #{new_driver.driver_url}: machine moving is not supported.  Destroy and recreate."
-    end
     if !new_driver
       raise "Driver not specified for machine #{machine_spec.name}"
+    end
+    if current_driver && current_driver.driver_url != new_driver.driver_url
+      raise "Cannot move '#{machine_spec.name}' from #{current_driver.driver_url} to #{new_driver.driver_url}: machine moving is not supported.  Destroy and recreate."
     end
     new_driver.allocate_machine(action_handler, machine_spec, new_machine_options)
     machine_spec.save(action_handler)
