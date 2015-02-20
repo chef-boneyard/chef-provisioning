@@ -144,7 +144,7 @@ prerelease="false"
 project="chef"
 
 report_bug() {
-echo "Please file a bug report at http://tickets.opscode.com"
+echo "Please file a bug report at https://github.com/chef/chef-provisioning/issues"
 echo "Project: Chef"
 echo "Component: Packages"
 echo "Label: Omnibus"
