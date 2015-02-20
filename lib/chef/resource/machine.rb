@@ -51,6 +51,9 @@ class Machine < Chef::Resource::LWRPBase
   # e.g. ohai_hint 'ec2' => { 'a' => 'b' } creates file ec2.json with json contents { 'a': 'b' }
   attribute :ohai_hints, :kind_of => Hash
 
+  # A string containing extra configuration for the machine
+  attribute :chef_config, :kind_of => String
+
   # Allows you to turn convergence off in the :create action by writing "converge false"
   # or force it with "true"
   attribute :converge, :kind_of => [TrueClass, FalseClass]
