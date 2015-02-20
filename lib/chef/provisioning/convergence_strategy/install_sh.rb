@@ -18,7 +18,7 @@ module Provisioning
         @chef_version = convergence_options[:chef_version]
         @prerelease = convergence_options[:prerelease]
         @install_sh_arguments = convergence_options[:install_sh_arguments]
-        @bootstrap_env = convergence_options[:bootstrap_proxy] ? "http_proxy=#{convergence_options[:bootstrap_proxy]}" : ""
+        @bootstrap_env = convergence_options[:bootstrap_proxy] ? "http_proxy=#{convergence_options[:bootstrap_proxy]} https_proxy=$http_proxy " : ""
         @chef_client_timeout = convergence_options.has_key?(:chef_client_timeout) ? convergence_options[:chef_client_timeout] : 120*60 # Default: 2 hours
       end
 
