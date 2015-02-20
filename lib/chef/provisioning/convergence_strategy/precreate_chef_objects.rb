@@ -185,6 +185,7 @@ module Provisioning
             https_proxy #{convergence_options[:bootstrap_proxy].inspect}
           EOM
         end
+        content.gsub!(/^\s+/, "")
         content << convergence_options[:chef_config] if convergence_options[:chef_config]
         content
       end
