@@ -25,7 +25,7 @@ class Chef
                   Chef::Provisioning::ChefLoadBalancerSpec.empty(new_resource.name)
 
         Chef::Log.debug "Creating load balancer: #{new_resource.name}; loaded #{lb_spec.inspect}"
-        machine_specs = new_resource.machines ? new_resource.machines.map { |machine| get_machine_spec(machine) } : nil
+        machine_specs = new_resource.machines ? new_resource.machines.map { |machine| get_machine_spec(machine) } : []
 
         new_driver.allocate_load_balancer(action_handler, lb_spec, lb_options, machine_specs)
         lb_spec.save(action_handler)
