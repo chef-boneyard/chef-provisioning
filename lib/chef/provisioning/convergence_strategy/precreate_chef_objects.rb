@@ -12,9 +12,9 @@ module Provisioning
 
       def setup_convergence(action_handler, machine)
         # Create keys on machine
-        public_key = create_keys(action_handler, machine)
+        private_key, public_key = create_keys(action_handler, machine)
         # Create node and client on chef server
-        create_chef_objects(action_handler, machine, public_key)
+        create_chef_objects(action_handler, machine, private_key, public_key)
 
         # If the chef server lives on localhost, tunnel the port through to the guest
         # (we need to know what got tunneled!)
@@ -89,7 +89,8 @@ module Provisioning
           machine.write_file(action_handler, convergence_options[:client_pem_path], server_private_key.to_pem, :ensure_dir => true)
         end
 
-        server_private_key.public_key
+        # We shouldn't be returning this: see https://github.com/chef/chef-provisioning/issues/292
+        [ server_private_key, server_private_key.public_key ]
       end
 
       def is_localhost(host)
@@ -121,7 +122,7 @@ module Provisioning
         end
       end
 
-      def create_chef_objects(action_handler, machine, public_key)
+      def create_chef_objects(action_handler, machine, private_key, public_key)
         _convergence_options = convergence_options
         _chef_server = chef_server
         # Save the node and create the client keys and client.
@@ -146,21 +147,41 @@ module Provisioning
 
         # If using enterprise/hosted chef, fix acls
         if chef_server[:chef_server_url] =~ /\/+organizations\/.+/
-          grant_client_node_permissions(action_handler, chef_server, machine.name, ["read", "update"])
+          grant_client_node_permissions(action_handler, chef_server, machine, ["read", "update"], private_key)
         end
       end
 
       # Grant the client permissions to the node
       # This procedure assumes that the client name and node name are the same
-      def grant_client_node_permissions(action_handler, chef_server, node_name, perms)
+      def grant_client_node_permissions(action_handler, chef_server, machine, perms, private_key)
+        node_name = machine.name
         api = Cheffish.chef_server_api(chef_server)
         node_perms = api.get("/nodes/#{node_name}/_acl")
-        perms.each do |p|
-          if !node_perms[p]['actors'].include?(node_name)
-            action_handler.perform_action "Add #{node_name} to client #{p} ACLs" do
-              node_perms[p]['actors'] << node_name
-              api.put("/nodes/#{node_name}/_acl/#{p}", p => node_perms[p])
+
+        begin
+          perms.each do |p|
+            if !node_perms[p]['actors'].include?(node_name)
+              action_handler.perform_action "Add #{node_name} to client #{p} ACLs" do
+                node_perms[p]['actors'] << node_name
+                api.put("/nodes/#{node_name}/_acl/#{p}", p => node_perms[p])
+              end
             end
+          end
+        rescue Net::HTTPServerException => e
+          if e.response.code == "400"
+            action_handler.perform_action "Delete #{node_name} and recreate as client #{node_name}" do
+              api.delete("/nodes/#{node_name}")
+              as_user = chef_server.dup
+              as_user[:options] = as_user[:options].merge(
+                client_name: node_name,
+                signing_key_filename: nil,
+                raw_key: private_key.to_pem
+              )
+              as_user_api = Cheffish.chef_server_api(as_user)
+              as_user_api.post("/nodes", machine.node)
+            end
+          else
+            raise
           end
         end
       end
