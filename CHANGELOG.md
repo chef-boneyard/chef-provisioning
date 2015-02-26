@@ -1,5 +1,22 @@
 # Chef Provisioning Changelog
 
+## 0.19 (2/25/2015)
+
+- Support for different versions of Chef with the :chef_version and :prerelease arguments (`machine_options convergence_options: { chef_version: '12.0.1' }` or `prerelease: true`)
+- Support HTTPS proxy (@causton1)
+- Automatically configure HTTPS proxy when specifying `machine_options convergence_options: { http_proxy: '...' }`
+- Support for arbitrary configuration using `machine_options convergence_options: { chef_config: "anything you want dumped in /etc/chef/client.rb (will be appended to the standard options already placed in the file)" }`
+
+- Make load_balancer :destroy work (@lynchc)
+- Default to SSL for Chef install download (@xeon22)
+- Fix Chef overwriting attributes on first converge in `machine_batch` (#209)
+- Fix node permissions on Hosted / Enterprise Chef: no more adding your clients to the `admins` group (ewww).  (#59)
+- Always pass an array (never nil) to the driver, even when there are no machines to add to it (partial fix for chef/chef-provisioning-aws#81)
+-
+
+
+915eac3 (origin/jk/install-sh-version, jk/install-sh-version) Add chef_version, prerelease and install_sh_arguments to InstallSh
+
 ## 0.18 (1/27/2015)
 
 - Allow `ssl_verify_mode` to be overridden (@mivok)
