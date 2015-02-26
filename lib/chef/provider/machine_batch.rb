@@ -54,15 +54,12 @@ class MachineBatch < Chef::Provider::LWRPBase
       if m[:resource] && m[:resource].converge
         Chef::Log.info("Converging #{m[:spec].name} because 'converge true' is set ...")
         m[:machine].converge(m[:action_handler])
-        m[:spec].save(m[:action_handler])
       elsif (!m[:resource] || m[:resource].converge.nil?) && m[:action_handler].locally_updated
         Chef::Log.info("Converging #{m[:spec].name} because the resource was updated ...")
         m[:machine].converge(m[:action_handler])
-        m[:spec].save(m[:action_handler])
       elsif !m[:spec].node['automatic'] || m[:spec].node['automatic'].size == 0
         Chef::Log.info("Converging #{m[:spec].name} because it has never been converged (automatic attributes are empty) ...")
         m[:machine].converge(m[:action_handler])
-        m[:spec].save(m[:action_handler])
       elsif m[:resource] && m[:resource].converge == false
         Chef::Log.debug("Not converging #{m[:spec].name} because 'converge false' is set.")
       end
