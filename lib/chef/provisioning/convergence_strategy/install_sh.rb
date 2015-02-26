@@ -37,10 +37,10 @@ module Provisioning
       end
 
       def setup_convergence(action_handler, machine)
-        super
-
         # Install chef-client.  TODO check and update version if not latest / not desired
         if machine.execute_always('chef-client -v').exitstatus != 0
+          super
+          
           # TODO ssh verification of install.sh before running arbtrary code would be nice?
           @@install_sh_cache[install_sh_url] ||= Net::HTTP.get(URI(install_sh_url))
           machine.write_file(action_handler, install_sh_path, @@install_sh_cache[install_sh_url], :ensure_dir => true)
