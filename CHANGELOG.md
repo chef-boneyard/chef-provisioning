@@ -12,10 +12,6 @@
 - Fix Chef overwriting attributes on first converge in `machine_batch` (#209)
 - Fix node permissions on Hosted / Enterprise Chef: no more adding your clients to the `admins` group (ewww).  (#59)
 - Always pass an array (never nil) to the driver, even when there are no machines to add to it (partial fix for chef/chef-provisioning-aws#81)
--
-
-
-915eac3 (origin/jk/install-sh-version, jk/install-sh-version) Add chef_version, prerelease and install_sh_arguments to InstallSh
 
 ## 0.18 (1/27/2015)
 
