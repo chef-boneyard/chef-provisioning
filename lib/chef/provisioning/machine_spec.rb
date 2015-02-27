@@ -1,27 +1,22 @@
+require 'chef/provisioning/generic_spec'
+
 class Chef
 module Provisioning
   #
   # Specification for a machine. Sufficient information to find and contact it
   # after it has been set up.
   #
-  class MachineSpec
-    def initialize(node)
-      @node = node
+  class MachineSpec < GenericSpec
+    def initialize(spec_registry, type, name, node)
+      super(spec_registry, :machine, name, node)
+      node['name'] ||= name
       # Upgrade from metal to chef_provisioning ASAP.
       if node['normal'] && !node['normal']['chef_provisioning'] && node['normal']['metal']
         node['normal']['chef_provisioning'] = node['normal'].delete('metal')
       end
     end
 
-    attr_reader :node
-
-    #
-    # Globally unique identifier for this machine. Does not depend on the machine's
-    # location or existence.
-    #
-    def id
-      raise "id unimplemented"
-    end
+    alias :node :data
 
     #
     # Name of the machine. Corresponds to the name in "machine 'name' do" ...
@@ -50,18 +45,11 @@ module Provisioning
       set_chef_provisioning_attr('location', value)
     end
 
-    # URL to the driver.  Convenience for location['driver_url']
-    def driver_url
-      location ? location['driver_url'] : nil
+    def from_image
+      chef_provisioning_attr('from_image')
     end
-
-    #
-    # Save this node to the server.  If you have significant information that
-    # could be lost, you should do this as quickly as possible.  Data will be
-    # saved automatically for you after allocate_machine and ready_machine.
-    #
-    def save(action_handler)
-      raise "save unimplemented"
+    def from_image=(value)
+      set_chef_provisioning_attr('from_image', value)
     end
 
     protected

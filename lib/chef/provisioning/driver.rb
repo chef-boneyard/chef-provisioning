@@ -166,27 +166,30 @@ module Provisioning
     # Allocate an image. Returns quickly with an ID that tracks the image.
     #
     # @param [Chef::Provisioning::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [Chef::Provisioning::ImageSpec] image_spec A machine specification representing this machine.
-    # @param [Hash] image_options A set of options representing the desired state of the machine
-    def allocate_image(action_handler, image_spec, image_options, machine_spec)
+    # @param [Chef::Provisioning::MachineImageSpec] image_spec An image specification representing this image.
+    # @param [Hash] image_options A set of options representing the desired state of the image
+    # @param [Hash] machine_options A set of options representing the desired state of the machine used to create the image
+    def allocate_image(action_handler, image_spec, image_options, machine_spec, machine_options)
       raise "#{self.class} does not implement create_image"
     end
 
     # Ready an image, waiting till the point where it is ready to be used.
     #
     # @param [Chef::Provisioning::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [Chef::Provisioning::ImageSpec] image_spec A machine specification representing this machine.
-    # @param [Hash] image_options A set of options representing the desired state of the machine
-    def ready_image(action_handler, image_spec, image_options)
+    # @param [Chef::Provisioning::MachineImageSpec] image_spec An image specification representing this image.
+    # @param [Hash] image_options A set of options representing the desired state of the image
+    # @param [Hash] machine_options A set of options representing the desired state of the machine used to create the image
+    def ready_image(action_handler, image_spec, image_options, machine_options)
       raise "#{self.class} does not implement ready_image"
     end
 
     # Destroy an image using this service.
     #
     # @param [Chef::Provisioning::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [Chef::Provisioning::ImageSpec] image_spec A machine specification representing this machine.
-    # @param [Hash] image_options A set of options representing the desired state of the machine
-    def destroy_image(action_handler, image_spec, image_options)
+    # @param [Chef::Provisioning::MachineImageSpec] image_spec An image specification representing this image.
+    # @param [Hash] image_options A set of options representing the desired state of the image
+    # @param [Hash] machine_options A set of options representing the desired state of the machine used to create the image
+    def destroy_image(action_handler, image_spec, image_options, machine_options)
       raise "#{self.class} does not implement destroy_image"
     end
 
@@ -267,8 +270,8 @@ module Provisioning
     end
 
     # Allocate a load balancer
-    # @param [ChefMetal::ActionHandler] action_handler The action handler
-    # @param [ChefMetal::LoadBalancerSpec] lb_spec Frozen LB specification
+    # @param [Chef::Provisioning::ActionHandler] action_handler The action handler
+    # @param [Chef::Provisioning::GenericSpec] lb_spec Frozen LB specification
     # @param [Hash] lb_options A hash of options to pass the LB
     # @param [Array[ChefMetal::MachineSpec]] machine_specs An array of machine specs
     #        the load balancer should have.  `nil` indicates "leave the set of machines
@@ -277,8 +280,8 @@ module Provisioning
     end
 
     # Make the load balancer ready
-    # @param [ChefMetal::ActionHandler] action_handler The action handler
-    # @param [ChefMetal::LoadBalancerSpec] lb_spec Frozen LB specification
+    # @param [Chef::Provisioning::ActionHandler] action_handler The action handler
+    # @param [Chef::Provisioning::GenericSpec] lb_spec Frozen LB specification
     # @param [Hash] lb_options A hash of options to pass the LB
     # @param [Array[ChefMetal::MachineSpec]] machine_specs An array of machine specs
     #        the load balancer should have.  `nil` indicates "leave the set of machines
