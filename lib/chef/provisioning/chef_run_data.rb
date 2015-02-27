@@ -17,7 +17,6 @@ module Provisioning
     attr_accessor :current_machine_options
     attr_accessor :current_load_balancer_options
     attr_accessor :current_image_options
-    attr_accessor :current_data_center
 
     def with_machine_options(value)
       old_value = self.current_machine_options
@@ -43,24 +42,19 @@ module Provisioning
       end
     end
 
-    def with_data_center(value)
-      old_value = self.current_data_center
-      self.current_data_center = value
-      if block_given?
-        begin
-          yield
-        ensure
-          self.current_data_center = old_value
-        end
-      end
-    end
-
     def with_driver(driver, options = nil, &block)
       if drivers[driver] && options
         raise "Driver #{driver} has already been created, options #{options} would be ignored!"
       end
-      @current_driver = driver
-      @current_driver_options = options
+      old_driver, old_options = @current_driver, @current_driver_options
+      @current_driver, @current_driver_options = driver, options
+      if block_given?
+        begin
+          yield
+        ensure
+          @current_driver, @current_driver_options = old_driver, old_options
+        end
+      end
     end
 
     def current_driver
