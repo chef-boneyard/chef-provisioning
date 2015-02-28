@@ -3,7 +3,7 @@ require 'chef/provisioning/recipe_dsl'
 require 'chef/server_api'
 require 'cheffish/basic_chef_client'
 require 'cheffish/merged_config'
-require 'chef/provisioning/chef_spec_registry'
+require 'chef/provisioning/chef_managed_entry_store'
 
 class Chef
 module Provisioning
@@ -86,7 +86,7 @@ module Provisioning
   def self.connect_to_machine(machine_spec, config = Cheffish.profiled_config)
     chef_server = Cheffish.default_chef_server(config)
     if machine_spec.is_a?(String)
-      machine_spec = chef_spec_registry(chef_server).get(:machine, machine_spec)
+      machine_spec = chef_managed_entry_store(chef_server).get(:machine, machine_spec)
     end
     driver = driver_for_url(machine_spec.driver_url, config)
     if driver
@@ -98,8 +98,8 @@ module Provisioning
     end
   end
 
-  def self.chef_spec_registry(chef_server = Cheffish.default_chef_server)
-    Provisioning::ChefSpecRegistry.new(chef_server)
+  def self.chef_managed_entry_store(chef_server = Cheffish.default_chef_server)
+    Provisioning::ChefManagedEntryStore.new(chef_server)
   end
 end
 end

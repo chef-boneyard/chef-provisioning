@@ -22,6 +22,7 @@ class Chef
 
       # Driver attributes
       attribute :driver
+      attribute :chef_server
       attribute :load_balancer_options
       attribute :name, :kind_of => String, :name_attribute => true
       attribute :machines

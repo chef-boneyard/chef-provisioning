@@ -22,7 +22,7 @@ class MachineBatch < Chef::Resource::LWRPBase
   attribute :max_simultaneous, :kind_of => [ Integer ]
   attribute :from_recipe
 
-  # These four attributes are for when you pass names or MachineSpecs to
+  # These four attributes are for when you pass names or ManagedEntrys to
   # "machines".  Not used for auto-batch or explicit inline machine declarations.
   attribute :driver
   attribute :chef_server
@@ -58,7 +58,7 @@ class MachineBatch < Chef::Resource::LWRPBase
       end
     end
     machine_names = @machines.map do |m|
-      if m.is_a?(Chef::Provisioning::MachineSpec)
+      if m.is_a?(Chef::Provisioning::ManagedEntry)
         m.name
       elsif m.is_a?(Chef::Resource::Machine)
         m.name

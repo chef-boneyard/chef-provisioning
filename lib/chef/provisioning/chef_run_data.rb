@@ -85,10 +85,10 @@ module Provisioning
     end
 
     def connect_to_machine(name, chef_server = nil)
-      if name.is_a?(MachineSpec)
+      if name.is_a?(ManagedEntry)
         machine_spec = name
       else
-        machine_spec = Provisioning.chef_spec_registry(chef_server).get(:machine, name)
+        machine_spec = Provisioning.chef_managed_entry_store(chef_server).get(:machine, name)
       end
       Chef::Provisioning.connect_to_machine(machine_spec, config)
     end

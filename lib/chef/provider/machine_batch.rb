@@ -169,7 +169,7 @@ class MachineBatch < Chef::Provider::LWRPBase
           :machine_options => proc { |driver| provider.machine_options(driver) },
           :action_handler => Provisioning::AddPrefixActionHandler.new(action_handler, "[#{machine_resource.name}] ")
         }
-      elsif machine.is_a?(Provisioning::MachineSpec)
+      elsif machine.is_a?(Provisioning::ManagedEntry)
         machine_spec = machine
         {
           :spec => machine_spec,
@@ -180,8 +180,7 @@ class MachineBatch < Chef::Provider::LWRPBase
         }
       else
         name = machine
-        machine_spec = chef_spec_registry.get(:machine, name) ||
-                       chef_spec_registry.new_spec(:machine, name)
+        machine_spec = chef_managed_entry_store.get_or_new(:machine, name)
         {
           :spec => machine_spec,
           :desired_driver => new_resource.driver,
@@ -193,8 +192,8 @@ class MachineBatch < Chef::Provider::LWRPBase
     end.to_a
   end
 
-  def chef_spec_registry
-    @chef_spec_registry ||= Provisioning.chef_spec_registry(new_resource.chef_server)
+  def chef_managed_entry_store
+    @chef_managed_entry_store ||= Provisioning.chef_managed_entry_store(new_resource.chef_server)
   end
 
   def machine_options(driver)
