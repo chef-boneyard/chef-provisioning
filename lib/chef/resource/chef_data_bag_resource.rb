@@ -10,8 +10,6 @@ class Chef::Resource::ChefDataBagResource < Chef::Resource::LWRPBase
   class << self
     # The name of the databag to store the item in.
     attr_reader :databag_name
-    # A list of attributes to be persisted into the databag.
-    attr_reader :stored_attributes
   end
 
   def initialize(name, run_context=nil)
@@ -20,6 +18,7 @@ class Chef::Resource::ChefDataBagResource < Chef::Resource::LWRPBase
     self.hydrate
   end
 
+  # A list of attributes to be persisted into the databag.
   # @return [Array] List of attributes that are stored in the databag
   def self.stored_attributes
     @stored_attributes || []
