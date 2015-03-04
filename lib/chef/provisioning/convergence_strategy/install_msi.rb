@@ -28,15 +28,27 @@ module Provisioning
 
         super
 
-        # Install chef-client.  TODO check and update version if not latest / not desired
-        if machine.execute_always('chef-client -v').exitstatus != 0
-          # TODO ssh verification of install.msi before running arbtrary code would be nice?
-          # TODO find a way to cache this on the host like with the Unix stuff.
-          # Limiter is we don't know how to efficiently upload large files to
-          # the remote machine with WMI.
-          machine.execute(action_handler, "(New-Object System.Net.WebClient).DownloadFile(#{machine.escape(install_msi_url)}, #{machine.escape(install_msi_path)})")
-          machine.execute(action_handler, "msiexec /qn /i #{machine.escape(install_msi_path)}")
+        # Check for existing chef client.
+        version = machine.execute_always('chef-client -v')
+
+        # Don't do install/upgrade if a chef client exists and
+        # no chef version is defined by user configs or
+        # the chef client's version already matches user config
+        if version.exitstatus == 0
+          if !chef_version
+            return
+          elsif version.stdout.strip =~ /Chef: #{chef_version}$/
+            return
+          end
         end
+
+        # Install chef client
+        # TODO ssh verification of install.msi before running arbtrary code would be nice?
+        # TODO find a way to cache this on the host like with the Unix stuff.
+        # Limiter is we don't know how to efficiently upload large files to
+        # the remote machine with WMI.
+        machine.execute(action_handler, "(New-Object System.Net.WebClient).DownloadFile(#{machine.escape(install_msi_url)}, #{machine.escape(install_msi_path)})")
+        machine.execute(action_handler, "msiexec /qn /i #{machine.escape(install_msi_path)}")
       end
 
       def converge(action_handler, machine)
