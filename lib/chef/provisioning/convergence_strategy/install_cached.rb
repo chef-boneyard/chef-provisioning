@@ -42,14 +42,15 @@ module Provisioning
       def setup_convergence(action_handler, machine)
         super
 
-        # Install chef-client.  TODO check and update version if not latest / not desired
-        if machine.execute_always('chef-client -v').exitstatus != 0
-          platform, platform_version, machine_architecture = machine.detect_os(action_handler)
-          package_file = download_package_for_platform(action_handler, machine, platform, platform_version, machine_architecture)
-          remote_package_file = "#{@tmp_dir}/#{File.basename(package_file)}"
-          machine.upload_file(action_handler, package_file, remote_package_file)
-          install_package(action_handler, machine, remote_package_file)
-        end
+        # Install chef-client.
+        version = machine.execute_always('chef-client -v')
+        return if version.exitstatus == 0 and version.stdout().strip().include?(" #{chef_version}")
+
+        platform, platform_version, machine_architecture = machine.detect_os(action_handler)
+        package_file = download_package_for_platform(action_handler, machine, platform, platform_version, machine_architecture)
+        remote_package_file = "#{@tmp_dir}/#{File.basename(package_file)}"
+        machine.upload_file(action_handler, package_file, remote_package_file)
+        install_package(action_handler, machine, remote_package_file)
       end
 
       def converge(action_handler, machine)

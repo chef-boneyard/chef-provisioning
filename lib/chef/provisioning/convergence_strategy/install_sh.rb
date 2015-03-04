@@ -39,13 +39,15 @@ module Provisioning
       def setup_convergence(action_handler, machine)
         super
 
-        # Install chef-client.  TODO check and update version if not latest / not desired
-        if machine.execute_always('chef-client -v').exitstatus != 0
-          # TODO ssh verification of install.sh before running arbtrary code would be nice?
-          @@install_sh_cache[install_sh_url] ||= Net::HTTP.get(URI(install_sh_url))
-          machine.write_file(action_handler, install_sh_path, @@install_sh_cache[install_sh_url], :ensure_dir => true)
-          machine.execute(action_handler, install_sh_command_line)
-        end
+        # Install chef-client.
+        version = machine.execute_always('chef-client -v')
+        return if version.exitstatus == 0 and version.stdout().strip().include?(" #{chef_version}")
+
+        # TODO ssh verification of install.sh before running arbtrary code would be nice?
+        @@install_sh_cache[install_sh_url] ||= Net::HTTP.get(URI(install_sh_url))
+        machine.write_file(action_handler, install_sh_path, @@install_sh_cache[install_sh_url], :ensure_dir => true)
+        # TODO handle bad version case better
+        machine.execute(action_handler, install_sh_command_line)
       end
 
       def converge(action_handler, machine)
