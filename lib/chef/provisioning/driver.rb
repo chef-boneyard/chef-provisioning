@@ -271,7 +271,8 @@ module Provisioning
     # @param [ChefMetal::LoadBalancerSpec] lb_spec Frozen LB specification
     # @param [Hash] lb_options A hash of options to pass the LB
     # @param [Array[ChefMetal::MachineSpec]] machine_specs An array of machine specs
-    #        the load balancer should have
+    #        the load balancer should have.  `nil` indicates "leave the set of machines
+    #        alone," or for new LBs, it means "no machines."
     def allocate_load_balancer(action_handler, lb_spec, lb_options, machine_specs)
     end
 
@@ -279,6 +280,9 @@ module Provisioning
     # @param [ChefMetal::ActionHandler] action_handler The action handler
     # @param [ChefMetal::LoadBalancerSpec] lb_spec Frozen LB specification
     # @param [Hash] lb_options A hash of options to pass the LB
+    # @param [Array[ChefMetal::MachineSpec]] machine_specs An array of machine specs
+    #        the load balancer should have.  `nil` indicates "leave the set of machines
+    #        alone," or for new LBs, it means "no machines."
     def ready_load_balancer(action_handler, lb_spec, lb_options, machine_specs)
     end
 
