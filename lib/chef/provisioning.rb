@@ -53,6 +53,9 @@ module Provisioning
       end
     end
     driver_class = @@registered_driver_classes[scheme]
+    if !driver_class
+      raise "chef/provisioning/driver_init/#{scheme} did not register a driver class for #{scheme.inspect}!  Perhaps you have the case (uppercase or lowercase) wrong?"
+    end
 
     #
     # Merge in any driver-specific config
