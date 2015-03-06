@@ -19,7 +19,7 @@ class MachineExecute < Chef::Resource::LWRPBase
 
   attribute :command, :kind_of => String, :name_attribute => true
   attribute :machine, :kind_of => String
-  attribute :show_output, :kind_of => [TrueClass,FalseClass], :default => false
+  attribute :live_stream, :kind_of => [TrueClass,FalseClass], :default => false
 
   attribute :chef_server, :kind_of => Hash
   attribute :driver, :kind_of => Chef::Provisioning::Driver

@@ -27,7 +27,7 @@ class MachineExecute < Chef::Provider::LWRPBase
   end
 
   action :run do
-    machine.execute(action_handler, new_resource.command, :stream => new_resource.show_output)
+    machine.execute(action_handler, new_resource.command, :stream => new_resource.live_stream)
   end
 
 end
