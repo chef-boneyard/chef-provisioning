@@ -39,10 +39,18 @@ module Provisioning
       def setup_convergence(action_handler, machine)
         super
 
-        # Install chef-client.
+        # Check for existing chef client.
         version = machine.execute_always('chef-client -v')
-        return if version.exitstatus == 0 and version.stdout().strip().include?(" #{chef_version}")
 
+        if version.exitstatus == 0
+          if chef_version and version.stdout.strip =~ /Chef: #{chef_version}([^0-9]|$)/
+            return
+          elsif !chef_version
+            return
+          end
+        end
+
+        # Install chef client
         # TODO ssh verification of install.sh before running arbtrary code would be nice?
         @@install_sh_cache[install_sh_url] ||= Net::HTTP.get(URI(install_sh_url))
         machine.write_file(action_handler, install_sh_path, @@install_sh_cache[install_sh_url], :ensure_dir => true)

@@ -42,10 +42,18 @@ module Provisioning
       def setup_convergence(action_handler, machine)
         super
 
-        # Install chef-client.
+        # Check for existing chef client.
         version = machine.execute_always('chef-client -v')
-        return if version.exitstatus == 0 and version.stdout().strip().include?(" #{chef_version}")
 
+        if version.exitstatus == 0
+          if chef_version and version.stdout.strip =~ /Chef: #{chef_version}([^0-9]|$)/
+            return
+          elsif !chef_version
+            return
+          end
+        end
+
+        # Install chef client
         platform, platform_version, machine_architecture = machine.detect_os(action_handler)
         package_file = download_package_for_platform(action_handler, machine, platform, platform_version, machine_architecture)
         remote_package_file = "#{@tmp_dir}/#{File.basename(package_file)}"

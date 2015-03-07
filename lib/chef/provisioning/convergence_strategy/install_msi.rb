@@ -28,10 +28,18 @@ module Provisioning
 
         super
 
-        # Install chef-client.
+        # Check for existing chef client.
         version = machine.execute_always('chef-client -v')
-        return if version.exitstatus == 0 and version.stdout().strip().include?(" #{chef_version}")
 
+        if version.exitstatus == 0
+          if chef_version and version.stdout.strip =~ /Chef: #{chef_version}([^0-9]|$)/
+            return
+          elsif !chef_version
+            return
+          end
+        end
+
+        # Install chef client
         # TODO ssh verification of install.msi before running arbtrary code would be nice?
         # TODO find a way to cache this on the host like with the Unix stuff.
         # Limiter is we don't know how to efficiently upload large files to
