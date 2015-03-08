@@ -42,10 +42,13 @@ module Provisioning
         # Check for existing chef client.
         version = machine.execute_always('chef-client -v')
 
+        # Don't do install/upgrade if a chef client exists and
+        # no chef version is defined by user configs or
+        # the chef client's version already matches user config
         if version.exitstatus == 0
-          if chef_version and version.stdout.strip =~ /Chef: #{chef_version}([^0-9]|$)/
+          if !chef_version
             return
-          elsif !chef_version
+          elsif version.stdout.strip =~ /Chef: #{chef_version}([^0-9]|$)/
             return
           end
         end
