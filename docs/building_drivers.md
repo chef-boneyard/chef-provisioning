@@ -8,7 +8,7 @@ The Driver interface is a set of 4 objects that allow provisioning programs to c
 
 - `Driver`: Represents a "machine warehouse"--an AWS account, a set of vagrant machines, a PXE machine registry. You can ask it for new machines, power machines on and off, and get rid of machines you are no longer using.
 - `Machine`: Represents a ready, connectable machine.  The machine interface lets you run commands, upload and download files, and converge recipes.  This is returned by Driver methods that create and connect to machines.
-- `MachineSpec`: Represents the saved information about a Machine.  Drivers use this to save information about how to locate and manipulate individual machines (like the AWS instance ID, PXE MAC address, or Vagrantfile location).
+- `ManagedEntry`: Represents the saved information about a Machine.  Drivers use this to save information about how to locate and manipulate individual machines (like the AWS instance ID, PXE MAC address, or Vagrantfile location).
 - `ActionHandler`: this is how Chef communicates back to the host provisioning program (like the machine resource, test-kitchen, or knife command line). It primarily uses it to report actions it performs and progress, so that the host can print pretty output informing the user.
 
 ## Picking a URL scheme
@@ -73,27 +73,27 @@ Please feel free to work with any files or environment variables that drivers ty
 
 Allocate machine is the first method called when creating a machine.  Its job is to reserve the machine, and to return quickly.  It may start the machine spinning up in the background, but it should not block waiting for that to happen.
 
-allocate_machine takes an action_handler, machine_spec, and a machine_options argument.  action_handler is where the method should report any changes it makes.  machine_spec.location will contain the current known machine information, loaded from persistent storage (like from the node).  machine_options contains the desired options for creating the machine.  Both machine_spec.location and machine_options are freeform hashes owned by the driver.  You should document what options the user can pass in your driver's documentation.
+allocate_machine takes an action_handler, machine_spec, and a machine_options argument.  action_handler is where the method should report any changes it makes.  machine_spec.reference will contain the current known machine information, loaded from persistent storage (like from the node).  machine_options contains the desired options for creating the machine.  Both machine_spec.reference and machine_options are freeform hashes owned by the driver.  You should document what options the user can pass in your driver's documentation.
 
-Note: `machine_spec.location` *must* contain a `driver_url` key with the canonical driver URL in it, so that Chef can tell where the machine came from.
+Note: `machine_spec.reference` *must* contain a `driver_url` key with the canonical driver URL in it, so that Chef can tell where the machine came from.
 
-By the time the method is finished, the machine should be reserved and its information stored in machine_spec.location.  If it is not feasible to do this quickly, then it is acceptable to defer this to ready_machine.
+By the time the method is finished, the machine should be reserved and its information stored in machine_spec.reference.  If it is not feasible to do this quickly, then it is acceptable to defer this to ready_machine.
 
 ```ruby
   def allocate_machine(action_handler, machine_spec, machine_options)
-    if machine_spec.location
-      if !the_ultimate_cloud.server_exists?(machine_spec.location['server_id'])
+    if machine_spec.reference
+      if !the_ultimate_cloud.server_exists?(machine_spec.reference['server_id'])
         # It doesn't really exist
-        action_handler.perform_action "Machine #{machine_spec.location['server_id']} does not really exist.  Recreating ..." do
-          machine_spec.location = nil
+        action_handler.perform_action "Machine #{machine_spec.reference['server_id']} does not really exist.  Recreating ..." do
+          machine_spec.reference = nil
         end
       end
     end
-    if !machine_spec.location
+    if !machine_spec.reference
       action_handler.perform_action "Creating server #{machine_spec.name} with options #{machine_options}" do
         private_key = get_private_key('bootstrapkey')
         server_id = the_ultimate_cloud.create_server(machine_spec.name, machine_options, :bootstrap_ssh_key => private_key)
-        machine_spec.location = {
+        machine_spec.reference = {
           'driver_url' => driver_url,
           'driver_version' => MyDriver::VERSION,
           'server_id' => server_id,
@@ -122,7 +122,7 @@ ready_machine is the other half of the machine creation story. This method will 
 
 ```ruby
   def ready_machine(action_handler, machine_spec, machine_options)
-    server_id = machine_spec.location['server_id']
+    server_id = machine_spec.reference['server_id']
     if the_ultimate_cloud.machine_status(server_id) == 'stopped'
       action_handler.perform_action "Powering up machine #{server_id}" do
         the_ultimate_cloud.power_on(server_id)
@@ -140,7 +140,7 @@ ready_machine is the other half of the machine creation story. This method will 
   end
 ```
 
-ready_machine takes the same arguments as allocate_machine, and machine_spec.location will contain any information that was placed in allocate_machine.
+ready_machine takes the same arguments as allocate_machine, and machine_spec.reference will contain any information that was placed in allocate_machine.
 
 ### Creating the Machine object
 
@@ -152,7 +152,7 @@ require 'chef/provisioning/convergence_strategy/install_cached'
 require 'chef/provisioning/machine/unix_machine'
 
   def machine_for(machine_spec, machine_options)
-    server_id = machine_spec.location['server_id']
+    server_id = machine_spec.reference['server_id']
     hostname = the_ultimate_cloud.get_hostname()
     ssh_options = {
       :auth_methods => ['publickey'],
@@ -172,11 +172,11 @@ The destroy_machine function is fairly straightforward:
 
 ```ruby
   def destroy_machine(action_handler, machine_spec, machine_options)
-    if machine_spec.location
-      server_id = machine_spec.location['server_id']
+    if machine_spec.reference
+      server_id = machine_spec.reference['server_id']
       action_handler.perform_action "Destroy machine #{server_id}" do
         the_ultimate_cloud.destroy_machine(server_id)
-        machine_spec.location = nil
+        machine_spec.reference = nil
       end
     end
   end
@@ -188,8 +188,8 @@ Same with stop_machine:
 
 ```ruby
   def stop_machine(action_handler, machine_spec, machine_options)
-    if machine_spec.location
-      server_id = machine_spec.location['server_id']
+    if machine_spec.reference
+      server_id = machine_spec.reference['server_id']
       action_handler.perform_action "Power off machine #{server_id}" do
         the_ultimate_cloud.power_off(server_id)
       end
@@ -232,7 +232,7 @@ By default Chef Provisioning provides parallelism on top of your driver by calli
     servers = []
     server_names = []
     specs_and_options.each do |machine_spec, machine_options|
-      if !machine_spec.location
+      if !machine_spec.reference
         servers << [ machine_spec.name, machine_options, :bootstrap_ssh_key => private_key]
         server_names << machine_spec.name
       end

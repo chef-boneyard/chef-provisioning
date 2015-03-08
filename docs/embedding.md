@@ -74,20 +74,19 @@ class MyActionHandler < Chef::Provisioning::ActionHandler
 end
 ```
 
-### Storing machine data: implementing MachineSpec
+### Storing machine data: implementing ManagedEntry
 
-`MachineSpec` is the way you communicate the persisted state of a machine to Chef (including save and load).
+`ManagedEntry` is the way you communicate the persisted state of a machine to Chef (including save and load).
 
-MachineSpec has a save() method that saves the machine location data (like its instance ID or Vagrantfile) to persistent storage for later retrieval. For chef-client, this location is a Chef node. For other applications, you may prefer to store this sort of persistent data elsewhere (test-kitchen has its own server state storage). To do that, you will override `MachineSpec` and implement the `save` method (as well as create a method to instantiate YourMachineSpec by loading it back in).
+ManagedEntry has a save() method that saves the machine location data (like its instance ID or Vagrantfile) to persistent storage for later retrieval. For chef-client, this location is a Chef node. For other applications, you may prefer to store this sort of persistent data elsewhere (test-kitchen has its own server state storage). To do that, you will override `ManagedEntry` and implement the `save` method (as well as create a method to instantiate YourManagedEntry by loading it back in).
 
-If you are OK with just storing the nodes in the Chef server, then you can just use the `ChefMachineSpec` to take care of saving and loading:
+If you are OK with just storing the nodes in the Chef server, then you can just use the `ChefManagedEntryStore` to take care of saving and loading:
 
 ```ruby
-require 'cheffish'
-require 'chef/provisioning/chef_machine_spec'
+require 'chef/provisioning'
 
 chef_server = Cheffish.default_chef_server(config)
-machine_spec = Chef::Provisioning::ChefMachineSpec.new(machine_name, chef_server)
+machine_spec = Chef::Provisioning.chef_managed_entry_store(chef_server).get(:machine, machine_name)
 ```
 
 ### Instantiating a driver

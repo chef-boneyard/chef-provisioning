@@ -2,7 +2,6 @@ require 'chef/provider/lwrp_base'
 require 'chef/provider/chef_node'
 require 'openssl'
 require 'chef/provisioning/chef_provider_action_handler'
-require 'chef/provisioning/chef_machine_spec'
 
 class Chef
 class Provider
@@ -10,6 +9,9 @@ class Machine < Chef::Provider::LWRPBase
 
   def action_handler
     @action_handler ||= Chef::Provisioning::ChefProviderActionHandler.new(self)
+  end
+  def action_handler=(value)
+    @action_handler = value
   end
 
   use_inline_resources
@@ -26,6 +28,8 @@ class Machine < Chef::Provider::LWRPBase
       raise "Cannot move '#{machine_spec.name}' from #{current_driver.driver_url} to #{new_driver.driver_url}: machine moving is not supported.  Destroy and recreate."
     end
     new_driver.allocate_machine(action_handler, machine_spec, new_machine_options)
+    machine_spec.from_image ||= new_resource.from_image if new_resource.from_image
+    machine_spec.driver_url ||= new_driver.driver_url
     machine_spec.save(action_handler)
   end
 
@@ -107,7 +111,7 @@ class Machine < Chef::Provider::LWRPBase
   def from_image_spec
     @from_image_spec ||= begin
       if new_resource.from_image
-        Chef::Provisioning::ChefImageSpec.get(new_resource.from_image, new_resource.chef_server)
+        chef_managed_entry_store.get!(:machine_image, new_resource.from_image)
       else
         nil
       end
@@ -124,10 +128,6 @@ class Machine < Chef::Provider::LWRPBase
 
   def machine_options(driver)
     configs = []
-
-    if from_image_spec && from_image_spec.machine_options
-      configs << from_image_spec.machine_options
-    end
 
     configs << {
       :convergence_options =>
@@ -155,7 +155,11 @@ class Machine < Chef::Provider::LWRPBase
     node_driver.load_current_resource
     json = node_driver.new_json
     json['normal']['chef_provisioning'] = node_driver.current_json['normal']['chef_provisioning']
-    @machine_spec = Chef::Provisioning::ChefMachineSpec.new(json, new_resource.chef_server)
+    @machine_spec = chef_managed_entry_store.new_entry(:machine, new_resource.name, json)
+  end
+
+  def chef_managed_entry_store
+    @chef_managed_entry_store ||= Provisioning.chef_managed_entry_store(new_resource.chef_server)
   end
 
   def self.upload_files(action_handler, machine, files)

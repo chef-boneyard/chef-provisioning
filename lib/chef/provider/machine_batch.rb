@@ -4,7 +4,6 @@ require 'chef/provider/machine'
 require 'chef/provisioning/chef_provider_action_handler'
 require 'chef/provisioning/add_prefix_action_handler'
 require 'chef/provisioning/machine_spec'
-require 'chef/provisioning/chef_machine_spec'
 
 class Chef
 class Provider
@@ -28,6 +27,8 @@ class MachineBatch < Chef::Provider::LWRPBase
     by_new_driver.each do |driver, specs_and_options|
       driver.allocate_machines(action_handler, specs_and_options, parallelizer) do |machine_spec|
         m = by_id[machine_spec.id]
+        machine_spec.from_image ||= m[:resource].from_image if m[:resource] && m[:resource].from_image
+        machine_spec.driver_url ||= driver.driver_url
         machine_spec.save(m[:action_handler])
       end
     end
@@ -168,7 +169,7 @@ class MachineBatch < Chef::Provider::LWRPBase
           :machine_options => proc { |driver| provider.machine_options(driver) },
           :action_handler => Provisioning::AddPrefixActionHandler.new(action_handler, "[#{machine_resource.name}] ")
         }
-      elsif machine.is_a?(Provisioning::MachineSpec)
+      elsif machine.is_a?(Provisioning::ManagedEntry)
         machine_spec = machine
         {
           :spec => machine_spec,
@@ -179,8 +180,7 @@ class MachineBatch < Chef::Provider::LWRPBase
         }
       else
         name = machine
-        machine_spec = Provisioning::ChefMachineSpec.get(name, new_resource.chef_server) ||
-                       Provisioning::ChefMachineSpec.empty(name, new_resource.chef_server)
+        machine_spec = chef_managed_entry_store.get_or_new(:machine, name)
         {
           :spec => machine_spec,
           :desired_driver => new_resource.driver,
@@ -190,6 +190,10 @@ class MachineBatch < Chef::Provider::LWRPBase
         }
       end
     end.to_a
+  end
+
+  def chef_managed_entry_store
+    @chef_managed_entry_store ||= Provisioning.chef_managed_entry_store(new_resource.chef_server)
   end
 
   def machine_options(driver)

@@ -59,7 +59,7 @@ module Provisioning
 
     #
     # A URL representing the driver and the place where machines come from.
-    # This will be stuffed in machine_spec.location['driver_url'] so that the
+    # This will be stuffed in machine_spec.reference['driver_url'] so that the
     # machine can be re-inflated.  URLs must have a unique scheme identifying the
     # driver class, and enough information to identify the place where created
     # machines can be found.  For AWS, this is the account number; for lxc and
@@ -94,7 +94,7 @@ module Provisioning
 
     # Allocate a machine from the underlying service.  This method
     # does not need to wait for the machine to boot or have an IP, but it must
-    # store enough information in machine_spec.location to find the machine
+    # store enough information in machine_spec.reference to find the machine
     # later in ready_machine.
     #
     # If a machine is powered off or otherwise unusable, this method may start
@@ -102,11 +102,11 @@ module Provisioning
     # gears moving, but the job doesn't need to be done :)
     #
     # @param [Chef::Provisioning::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [Chef::Provisioning::MachineSpec] machine_spec A machine specification representing this machine.
+    # @param [Chef::Provisioning::ManagedEntry] machine_spec A machine specification representing this machine.
     # @param [Hash] machine_options A set of options representing the desired options when
     # constructing the machine
     #
-    # @return [Chef::Provisioning::MachineSpec] Modifies the passed-in machine_spec.  Anything in here will be saved
+    # @return [Chef::Provisioning::ManagedEntry] Modifies the passed-in machine_spec.  Anything in here will be saved
     # back after allocate_machine completes.
     #
     def allocate_machine(action_handler, machine_spec, machine_options)
@@ -121,7 +121,7 @@ module Provisioning
     #
     #
     # @param [Chef::Provisioning::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [Chef::Provisioning::MachineSpec] machine_spec A machine specification representing this machine.
+    # @param [Chef::Provisioning::ManagedEntry] machine_spec A machine specification representing this machine.
     # @param [Hash] machine_options A set of options representing the desired state of the machine
     #
     # @return [Machine] A machine object pointing at the machine, allowing useful actions like setup,
@@ -134,7 +134,7 @@ module Provisioning
     # Connect to a machine without allocating or readying it.  This method will
     # NOT make any changes to anything, or attempt to wait.
     #
-    # @param [Chef::Provisioning::MachineSpec] machine_spec MachineSpec representing this machine.
+    # @param [Chef::Provisioning::ManagedEntry] machine_spec ManagedEntry representing this machine.
     # @param [Hash] machine_options
     # @return [Machine] A machine object pointing at the machine, allowing useful actions like setup,
     # converge, execute, file and directory.
@@ -148,7 +148,7 @@ module Provisioning
     # returning things to the state before allocate_machine was called.
     #
     # @param [Chef::Provisioning::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [Chef::Provisioning::MachineSpec] machine_spec A machine specification representing this machine.
+    # @param [Chef::Provisioning::ManagedEntry] machine_spec A machine specification representing this machine.
     # @param [Hash] machine_options A set of options representing the desired state of the machine
     def destroy_machine(action_handler, machine_spec, machine_options)
       raise "#{self.class} does not implement destroy_machine"
@@ -157,7 +157,7 @@ module Provisioning
     # Stop the given machine.
     #
     # @param [Chef::Provisioning::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [Chef::Provisioning::MachineSpec] machine_spec A machine specification representing this machine.
+    # @param [Chef::Provisioning::ManagedEntry] machine_spec A machine specification representing this machine.
     # @param [Hash] machine_options A set of options representing the desired state of the machine
     def stop_machine(action_handler, machine_spec, machine_options)
       raise "#{self.class} does not implement stop_machine"
@@ -166,17 +166,19 @@ module Provisioning
     # Allocate an image. Returns quickly with an ID that tracks the image.
     #
     # @param [Chef::Provisioning::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [Chef::Provisioning::ImageSpec] image_spec A machine specification representing this machine.
-    # @param [Hash] image_options A set of options representing the desired state of the machine
-    def allocate_image(action_handler, image_spec, image_options, machine_spec)
+    # @param [Chef::Provisioning::ManagedEntry] image_spec An image specification representing this image.
+    # @param [Hash] image_options A set of options representing the desired state of the image
+    # @param [Chef::Provisioning::ManagedEntry] machine_spec A machine specification representing this machine.
+    # @param [Hash] machine_options A set of options representing the desired state of the machine used to create the image
+    def allocate_image(action_handler, image_spec, image_options, machine_spec, machine_options)
       raise "#{self.class} does not implement create_image"
     end
 
     # Ready an image, waiting till the point where it is ready to be used.
     #
     # @param [Chef::Provisioning::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [Chef::Provisioning::ImageSpec] image_spec A machine specification representing this machine.
-    # @param [Hash] image_options A set of options representing the desired state of the machine
+    # @param [Chef::Provisioning::ManagedEntry] image_spec An image specification representing this image.
+    # @param [Hash] image_options A set of options representing the desired state of the image
     def ready_image(action_handler, image_spec, image_options)
       raise "#{self.class} does not implement ready_image"
     end
@@ -184,9 +186,10 @@ module Provisioning
     # Destroy an image using this service.
     #
     # @param [Chef::Provisioning::ActionHandler] action_handler The action_handler object that is calling this method
-    # @param [Chef::Provisioning::ImageSpec] image_spec A machine specification representing this machine.
-    # @param [Hash] image_options A set of options representing the desired state of the machine
-    def destroy_image(action_handler, image_spec, image_options)
+    # @param [Chef::Provisioning::ManagedEntry] image_spec An image specification representing this image.
+    # @param [Hash] image_options A set of options representing the desired state of the image
+    # @param [Hash] machine_options A set of options representing the desired state of the machine used to create the image
+    def destroy_image(action_handler, image_spec, image_options, machine_options)
       raise "#{self.class} does not implement destroy_image"
     end
 
@@ -267,8 +270,8 @@ module Provisioning
     end
 
     # Allocate a load balancer
-    # @param [ChefMetal::ActionHandler] action_handler The action handler
-    # @param [ChefMetal::LoadBalancerSpec] lb_spec Frozen LB specification
+    # @param [Chef::Provisioning::ActionHandler] action_handler The action handler
+    # @param [Chef::Provisioning::ManagedEntry] lb_spec Frozen LB specification
     # @param [Hash] lb_options A hash of options to pass the LB
     # @param [Array[ChefMetal::MachineSpec]] machine_specs An array of machine specs
     #        the load balancer should have.  `nil` indicates "leave the set of machines
@@ -277,8 +280,8 @@ module Provisioning
     end
 
     # Make the load balancer ready
-    # @param [ChefMetal::ActionHandler] action_handler The action handler
-    # @param [ChefMetal::LoadBalancerSpec] lb_spec Frozen LB specification
+    # @param [Chef::Provisioning::ActionHandler] action_handler The action handler
+    # @param [Chef::Provisioning::ManagedEntry] lb_spec Frozen LB specification
     # @param [Hash] lb_options A hash of options to pass the LB
     # @param [Array[ChefMetal::MachineSpec]] machine_specs An array of machine specs
     #        the load balancer should have.  `nil` indicates "leave the set of machines
