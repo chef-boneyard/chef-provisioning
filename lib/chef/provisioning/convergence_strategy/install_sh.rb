@@ -48,7 +48,10 @@ module Provisioning
         if version.exitstatus == 0
           if !chef_version
             return
-          elsif version.stdout.strip =~ /Chef: #{chef_version}([^0-9]|$)/
+          # This logic doesn't cover the case for a client with 12.0.1.dev.0 => 12.0.1
+          # so we decided to just use exact version for the time being (see comments in PR 303)
+          #elsif version.stdout.strip =~ /Chef: #{chef_version}([^0-9]|$)/
+          elsif version.stdout.strip =~ /Chef: #{chef_version}$/
             return
           end
         end

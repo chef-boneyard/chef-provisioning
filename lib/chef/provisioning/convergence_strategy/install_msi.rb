@@ -37,7 +37,7 @@ module Provisioning
         if version.exitstatus == 0
           if !chef_version
             return
-          elsif version.stdout.strip =~ /Chef: #{chef_version}([^0-9]|$)/
+          elsif version.stdout.strip =~ /Chef: #{chef_version}$/
             return
           end
         end
