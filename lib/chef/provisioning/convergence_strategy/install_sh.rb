@@ -46,13 +46,19 @@ module Provisioning
         # no chef version is defined by user configs or
         # the chef client's version already matches user config
         if version.exitstatus == 0
+          version = version.stdout.strip
           if !chef_version
             return
           # This logic doesn't cover the case for a client with 12.0.1.dev.0 => 12.0.1
           # so we decided to just use exact version for the time being (see comments in PR 303)
           #elsif version.stdout.strip =~ /Chef: #{chef_version}([^0-9]|$)/
-          elsif version.stdout.strip =~ /Chef: #{chef_version}$/
+          elsif version =~ /Chef: #{chef_version}$/
+            Chef::Log.debug "Already installed chef version #{version}"
             return
+          elsif version.include?(chef_version)
+            Chef::Log.warn "Installed chef version #{version} contains desired version #{chef_version}.  " +
+              "If you see this message on consecutive chef runs tighten your desired version constraint to prevent " +
+              "multiple convergence."
           end
         end
 
