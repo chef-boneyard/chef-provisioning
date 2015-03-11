@@ -39,13 +39,29 @@ module Provisioning
       def setup_convergence(action_handler, machine)
         super
 
-        # Install chef-client.  TODO check and update version if not latest / not desired
-        if machine.execute_always('chef-client -v').exitstatus != 0
-          # TODO ssh verification of install.sh before running arbtrary code would be nice?
-          @@install_sh_cache[install_sh_url] ||= Net::HTTP.get(URI(install_sh_url))
-          machine.write_file(action_handler, install_sh_path, @@install_sh_cache[install_sh_url], :ensure_dir => true)
-          machine.execute(action_handler, install_sh_command_line)
+        # Check for existing chef client.
+        version = machine.execute_always('chef-client -v')
+
+        # Don't do install/upgrade if a chef client exists and
+        # no chef version is defined by user configs or
+        # the chef client's version already matches user config
+        if version.exitstatus == 0
+          if !chef_version
+            return
+          # This logic doesn't cover the case for a client with 12.0.1.dev.0 => 12.0.1
+          # so we decided to just use exact version for the time being (see comments in PR 303)
+          #elsif version.stdout.strip =~ /Chef: #{chef_version}([^0-9]|$)/
+          elsif version.stdout.strip =~ /Chef: #{chef_version}$/
+            return
+          end
         end
+
+        # Install chef client
+        # TODO ssh verification of install.sh before running arbtrary code would be nice?
+        @@install_sh_cache[install_sh_url] ||= Net::HTTP.get(URI(install_sh_url))
+        machine.write_file(action_handler, install_sh_path, @@install_sh_cache[install_sh_url], :ensure_dir => true)
+        # TODO handle bad version case better
+        machine.execute(action_handler, install_sh_command_line)
       end
 
       def converge(action_handler, machine)
