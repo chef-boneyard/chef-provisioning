@@ -42,14 +42,32 @@ module Provisioning
       def setup_convergence(action_handler, machine)
         super
 
-        # Install chef-client.  TODO check and update version if not latest / not desired
-        if machine.execute_always('chef-client -v').exitstatus != 0
-          platform, platform_version, machine_architecture = machine.detect_os(action_handler)
-          package_file = download_package_for_platform(action_handler, machine, platform, platform_version, machine_architecture)
-          remote_package_file = "#{@tmp_dir}/#{File.basename(package_file)}"
-          machine.upload_file(action_handler, package_file, remote_package_file)
-          install_package(action_handler, machine, remote_package_file)
+        # Check for existing chef client.
+        version = machine.execute_always('chef-client -v')
+
+        # Don't do install/upgrade if a chef client exists and
+        # no chef version is defined by user configs or
+        # the chef client's version already matches user config
+        if version.exitstatus == 0
+          version = version.stdout.strip
+          if !chef_version
+            return
+          elsif version =~ /Chef: #{chef_version}$/
+            Chef::Log.debug "Already installed chef version #{version}"
+            return
+          elsif version.include?(chef_version)
+            Chef::Log.warn "Installed chef version #{version} contains desired version #{chef_version}.  " +
+              "If you see this message on consecutive chef runs tighten your desired version constraint to prevent " +
+              "multiple convergence."
+          end
         end
+
+        # Install chef client
+        platform, platform_version, machine_architecture = machine.detect_os(action_handler)
+        package_file = download_package_for_platform(action_handler, machine, platform, platform_version, machine_architecture)
+        remote_package_file = "#{@tmp_dir}/#{File.basename(package_file)}"
+        machine.upload_file(action_handler, package_file, remote_package_file)
+        install_package(action_handler, machine, remote_package_file)
       end
 
       def converge(action_handler, machine)
