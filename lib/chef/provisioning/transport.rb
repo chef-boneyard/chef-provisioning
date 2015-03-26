@@ -67,18 +67,23 @@ module Provisioning
         options[:stream].call(stdout_chunk, stderr_chunk)
       else
         if stdout_chunk
-          if options[:stream_stdout]
-            options[:stream_stdout].print stdout_chunk
+          if options.has_key?(:stream_stdout)
+            stream = options[:stream_stdout]
           elsif options[:stream] || config[:log_level] == :debug
-            STDOUT.print stdout_chunk
+            stream = config[:stdout] || STDOUT
           end
+
+          stream.print stdout_chunk if stream
         end
+
         if stderr_chunk
-          if options[:stream_stderr]
-            options[:stream_stderr].print stderr_chunk
+          if options.has_key?(:stream_stderr)
+            stream = options[:stream_stderr]
           elsif options[:stream] || config[:log_level] == :debug
-            STDERR.print stderr_chunk
+            stream = config[:stderr] || STDERR
           end
+
+          stream.print stderr_chunk if stream
         end
       end
     end
