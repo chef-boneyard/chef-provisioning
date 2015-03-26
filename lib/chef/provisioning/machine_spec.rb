@@ -24,13 +24,6 @@ module Provisioning
     end
 
     #
-    # Name of the machine. Corresponds to the name in "machine 'name' do" ...
-    #
-    def name
-      data['name']
-    end
-
-    #
     # Location of this machine. This should be a freeform hash, with enough
     # information for the driver to look it up and create a Machine object to
     # access it.
