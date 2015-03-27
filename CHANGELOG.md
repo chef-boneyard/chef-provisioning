@@ -164,6 +164,7 @@
     machines 'a', 'b', 'c'
     action :destroy
   end
+  ```
 - fix issue setting Hosted Chef ACLs on nodes
 - fix local mode forwarding in mixed IPv4/IPv6 environments
 
