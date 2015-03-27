@@ -46,7 +46,7 @@ module Provisioning
         raise "Driver #{driver} has already been created, options #{options} would be ignored!"
       end
       old_driver, old_options = @current_driver, @current_driver_options
-      @current_driver, @current_driver_options = driver, options
+      @current_driver, @current_driver_options = driver_for(driver), options
       if block_given?
         begin
           yield
@@ -57,7 +57,7 @@ module Provisioning
     end
 
     def current_driver
-      @current_driver || config[:driver]
+      @current_driver || driver_for(config[:driver])
     end
 
     def current_machine_options

@@ -1,30 +1,28 @@
-require 'chef/resource/lwrp_base'
 require 'cheffish'
-require 'chef/provisioning'
+require 'chef/provisioning/provisioning_resource'
 require 'cheffish/merged_config'
 
 class Chef
 class Resource
-class Machine < Chef::Resource::LWRPBase
-
-  self.resource_name = 'machine'
+class Machine < Chef::Provisioning::ProvisioningResource
 
   def initialize(*args)
     super
     @chef_environment = run_context.cheffish.current_environment
-    @chef_server = run_context.cheffish.current_chef_server
-    @driver = run_context.chef_provisioning.current_driver
     @machine_options = run_context.chef_provisioning.current_machine_options
   end
 
   actions :allocate, :ready, :setup, :converge, :converge_only, :destroy, :stop
   default_action :converge
 
-  # Driver attributes
-  attribute :driver
-
   # Machine options
-  attribute :machine_options
+  attribute :machine_options, must_be: Hash,
+    initial_value: lazy { run_context ? run_context.chef_provisioning.current_machine_options : NO_VALUE }
+    default_value: lazy { {} }
+
+  attribute :chef_environment, must_be: String,
+    initial_value: lazy { run_context ? run_context.chef_provisioning.current_machine_options : NO_VALUE }
+    default_value: '_default'
 
   # Node attributes
   Cheffish.node_attributes(self)
