@@ -1,6 +1,6 @@
 # Chef Provisioning Changelog
 
-## 0.20 (2/25/2015)
+## 0.20 (3/27/2015)
 
 - Marking machines `nil` in a load_balancer does not affect existing machines ([#299][])
 - `with_driver` now optionally accepts a block.  If passed, it is only active in that block.  If not passed, existing behavior is unchanged.  ([#296][])
