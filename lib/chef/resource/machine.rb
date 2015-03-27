@@ -48,7 +48,7 @@ class Machine < Chef::Resource::LWRPBase
   attribute :validator, :kind_of => [TrueClass, FalseClass]
 
   # Client Ohai hints, allows machine to enable hints
-  # e.g. ohai_hint 'ec2' => { 'a' => 'b' } creates file ec2.json with json contents { 'a': 'b' }
+  # e.g. ohai_hints 'ec2' => { 'a' => 'b' } creates file ec2.json with json contents { 'a': 'b' }
   attribute :ohai_hints, :kind_of => Hash
 
   # A string containing extra configuration for the machine
