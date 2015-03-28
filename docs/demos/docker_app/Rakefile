@@ -1,0 +1,30 @@
+root = File.expand_path('..', __FILE__)
+
+require 'bundler'
+require 'fileutils'
+
+task :init do
+  FileUtils.mkdir_p("#{root}/vendored")
+  system('berks install')
+  system("berks vendor #{root}/vendored/cookbooks")
+end
+task :maybe_init do
+  if !Dir.exist?("#{root}/vendored/cookbooks")
+    FileUtils.mkdir_p("#{root}/vendored")
+    system('berks install')
+    system("berks vendor #{root}/vendored/cookbooks")    
+  end
+end
+
+task :aws => :maybe_init do
+  FileUtils.mkdir_p("#{root}/aws_repo/nodes")
+  FileUtils.mkdir_p("#{root}/aws_repo/clients")
+  FileUtils.mkdir_p("#{root}/aws_repo/data_bags")
+  system('chef-client -z -o "myapp::aws,myapp::cluster"')
+end
+task :azure => :maybe_init do
+  FileUtils.mkdir_p("#{root}/azure_repo/nodes")
+  FileUtils.mkdir_p("#{root}/azure_repo/clients")
+  FileUtils.mkdir_p("#{root}/azure_repo/data_bags")
+  system('chef-client -z -o "myapp::aws,myapp::cluster"')
+end

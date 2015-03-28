@@ -1,0 +1,15 @@
+source 'https://rubygems.org'
+gemfile
+
+chef_provisioning_root = File.expand_path("../../../..", __FILE__)
+
+gem 'chef'
+gem 'berkshelf'
+gem 'chef-zero', github: 'chef/chef-zero'
+gem 'cheffish', github: 'chef/cheffish'
+gem 'stuartpreston-azure-sdk-for-ruby', github: 'jkeiser/azure-sdk-for-ruby', branch: 'accept-certificates-in-memory'
+
+gem 'chef-provisioning',        github: 'chef/chef-provisioning'
+gem 'chef-provisioning-azure',  github: 'chef/chef-provisioning-azure', branch: 'jk/azure_profile'
+gem 'chef-provisioning-aws',    github: 'chef/chef-provisioning-aws'
+gem 'chef-provisioning-docker', github: 'chef/chef-provisioning-docker'
