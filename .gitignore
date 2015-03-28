@@ -9,3 +9,4 @@ Gemfile.lock
 .idea
 docs/examples/nodes
 docs/examples/clients
+docs/examples/data_bags
