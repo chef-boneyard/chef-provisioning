@@ -135,13 +135,16 @@ module Provisioning
         end
       end
 
-      def make_url_available_to_remote(local_url)
+      def make_url_available_to_remote(local_url, bind_to: 'localhost')
         uri = URI(local_url)
         if is_local_machine(uri.host)
-          port, host = forward_port(uri.port, uri.host, uri.port, 'localhost')
+          port, host = forward_remote_port(uri.port, uri.host, uri.port, bind_to)
           if !port
-            # Try harder if the port is already taken
-            port, host = forward_port(uri.port, uri.host, 0, 'localhost')
+            # Try harder--see if we can get any other ports--if the given port
+            # is already taken.  The reason we don't just do this first is, some
+            # versions of SSH have bugs where they don't report the actual
+            # bound port back to you if you use port 0 (any port mode).
+            port, host = forward_remote_port(uri.port, uri.host, 0, bind_to)
             if !port
               raise "Error forwarding port: could not forward #{uri.port} or 0"
             end
@@ -152,6 +155,26 @@ module Provisioning
         Chef::Log.info("Port forwarded: local URL #{local_url} is available to #{self.host} as #{uri.to_s} for the duration of this SSH connection.")
         uri.to_s
       end
+
+      def make_remote_url_available_locally(remote_url, bind_to: 'localhost')
+        uri = URI(remote_url)
+        if is_remote_machine(uri.host)
+          # First we try to get the same port, if it's available--easier to read
+          # things that way.
+          port, host = forward_local_port(uri.port, bind_to, uri.port, uri.host)
+          if !port
+            port, host = forward_local_port(0, bind_to, uri.port, uri.host)
+            if !port
+              raise "Error forwarding port: could not forward #{uri.port} or 0"
+            end
+          end
+          uri.host = host
+          uri.port = port
+        end
+        Chef::Log.info("Port forwarded: remote URL #{remote_url} on #{self.username}@#{self.host} is available locally as #{uri.to_s} for the duration of this SSH connection.")
+        uri.to_s
+      end
+
 
       def disconnect
         if @session
@@ -310,21 +333,31 @@ module Provisioning
         end
       end
 
-      # Forwards a port over the connection, and returns the
-      def forward_port(local_port, local_host, remote_port, remote_host)
+      def is_remote_machine(host)
+        remote_addrs = Addrinfo.getaddrinfo(host, nil) + Addrinfo.getaddrinfo('localhost', nil)
+        host_addrs = Addrinfo.getaddrinfo(host, nil)
+        remote_addrs.any? do |remote_addr|
+          host_addrs.any? do |host_addr|
+            remote_addr.ip_address == host_addr.ip_address
+          end
+        end
+      end
+
+      # Forwards packets from remote clients to a local server.
+      def forward_remote_port(local_port, local_host, remote_port, remote_host)
         # This bit is from the documentation.
         if session.forward.respond_to?(:active_remote_destinations)
           # active_remote_destinations tells us exactly what remotes the current
           # ssh session is *actually* tracking.  If multiple people share this
           # session and set up their own remotes, this will prevent us from
           # overwriting them.
-
           actual_remote_port, actual_remote_host = session.forward.active_remote_destinations[[local_port, local_host]]
+
           if !actual_remote_port
-            Chef::Log.debug("Forwarding local server #{local_host}:#{local_port} to #{username}@#{self.host}")
+            Chef::Log.debug("Forwarding local server #{local_host}:#{local_port} to #{remote_host}:#{remote_port} on #{username}@#{self.host}")
 
             session.forward.remote(local_port, local_host, remote_port, remote_host) do |new_remote_port, new_remote_host|
-							actual_remote_host = new_remote_host
+  						actual_remote_host = new_remote_host
               actual_remote_port = new_remote_port || :error
               :no_exception # I'll take care of it myself, thanks
             end
@@ -335,6 +368,7 @@ module Provisioning
             end
           end
           [ actual_remote_port, actual_remote_host ]
+
         else
           # If active_remote_destinations isn't on net-ssh, we stash our own list
           # of ports *we* have forwarded on the connection, and hope that we are
@@ -342,18 +376,48 @@ module Provisioning
           # TODO let's remove this when net-ssh 2.9.2 is old enough, and
           # bump the required net-ssh version.
 
-          @forwarded_ports ||= {}
-          remote_port, remote_host = @forwarded_ports[[local_port, local_host]]
-          if !remote_port
-            Chef::Log.debug("Forwarding local server #{local_host}:#{local_port} to #{username}@#{self.host}")
+          @forwarded_remote_ports ||= {}
+          actual_remote_port, actual_remote_host = @forwarded_remote_ports[[local_port, local_host]]
+          if !actual_remote_port
+            Chef::Log.debug("Forwarding local server #{local_host}:#{local_port} to #{remote_host}:#{remote_port} on #{username}@#{self.host}")
             old_active_remotes = session.forward.active_remotes
-            session.forward.remote(local_port, local_host, local_port)
+            session.forward.remote(local_port, local_host, remote_port, remote_host)
             session.loop { !(session.forward.active_remotes.length > old_active_remotes.length) }
-            remote_port, remote_host = (session.forward.active_remotes - old_active_remotes).first
-            @forwarded_ports[[local_port, local_host]] = [ remote_port, remote_host ]
+            actual_remote_port, actual_remote_host = (session.forward.active_remotes - old_active_remotes).first
+            @forwarded_remote_ports[[local_port, local_host]] = [ actual_remote_port, actual_remote_host ]
           end
-          [ remote_port, remote_host ]
+          [ actual_remote_port, actual_remote_host ]
         end
+      end
+
+      # Forwards packets from local clients to a remote server.
+      def forward_local_port(local_port, local_host, remote_port, remote_host)
+        # This bit is from the documentation.
+        if session.forward.respond_to?(:active_local_destinations)
+          # active_local_destinations tells us exactly what locals the current
+          # ssh session is *actually* tracking.  If multiple people share this
+          # session and set up their own locals, this will prevent us from
+          # overwriting them.
+
+          actual_local_port, actual_local_host = session.forward.active_local_destinations[[local_port, local_host]]
+        else
+          # If active_local_destinations isn't on net-ssh, we stash our own list
+          # of ports *we* have forwarded on the connection, and hope that we are
+          # right.
+          # TODO let's remove this when net-ssh 2.9.2 is old enough, and
+          # bump the required net-ssh version.
+          @forwarded_remote_ports ||= {}
+          actual_local_port, actual_local_host = @forwarded_remote_ports[[remote_port, remote_host]]
+        end
+
+        if !actual_local_port
+          Chef::Log.debug("Forwarding #{local_host}:#{local_port} to remote server #{remote_host}:#{remote_port} on #{username}@#{self.host}")
+          actual_local_host = local_host
+          actual_local_port = session.forward.local(local_port, local_host, remote_port, remote_host)
+          @forwarded_remote_ports[[remote_port, remote_host]] = [ actual_local_port, actual_local_host ] if @forwarded_remote_ports
+          Chef::Log.info("Forwarded #{actual_local_host}:#{actual_local_port} to remote server #{remote_host}:#{remote_port} on #{username}@#{self.host}")
+        end
+        [ actual_local_port, actual_local_host ]
       end
     end
   end

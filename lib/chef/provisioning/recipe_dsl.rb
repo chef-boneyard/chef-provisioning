@@ -43,6 +43,12 @@ class Chef
         run_context.chef_provisioning.current_image_options
       end
 
+      def at_converge_time(description=nil, &recipe)
+        ruby_block "create docker containers" do
+          block(&recipe)
+        end
+      end
+
       NOT_PASSED = Object.new
 
       @@next_machine_batch_index = 0

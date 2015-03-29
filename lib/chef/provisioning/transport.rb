@@ -42,8 +42,12 @@ module Provisioning
       write_file(path, IO.read(local_path))
     end
 
-    def make_url_available_to_remote(local_url)
+    def make_url_available_to_remote(local_url, **options)
       raise "make_url_available_to_remote not overridden on #{self.class}"
+    end
+
+    def make_remote_url_available_locally(remote_url, **options)
+      raise "make_remote_url_available_locally not overridden on #{self.class}"
     end
 
     def disconnect
