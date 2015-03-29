@@ -9,7 +9,9 @@ gem 'chef-zero', github: 'chef/chef-zero'
 gem 'cheffish', github: 'chef/cheffish'
 gem 'stuartpreston-azure-sdk-for-ruby', github: 'jkeiser/azure-sdk-for-ruby', branch: 'accept-certificates-in-memory'
 
-gem 'chef-provisioning',        github: 'chef/chef-provisioning'
+#gem 'chef-provisioning', path: chef_provisioning_root
+#gem 'chef-provisioning-docker', path: "#{chef_provisioning_root}/../chef-provisioning-docker"
+gem 'chef-provisioning',        github: 'chef/chef-provisioning', branch: 'jk/demo'
 gem 'chef-provisioning-azure',  github: 'chef/chef-provisioning-azure', branch: 'jk/azure_profile'
 gem 'chef-provisioning-aws',    github: 'chef/chef-provisioning-aws'
-gem 'chef-provisioning-docker', github: 'chef/chef-provisioning-docker'
+gem 'chef-provisioning-docker', github: 'chef/chef-provisioning-docker', branch: 'jk/demo'
