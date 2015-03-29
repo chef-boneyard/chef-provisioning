@@ -1,23 +1,22 @@
 # Create the hosts
-machine_batch 'docker hosts' do
-  machine "dockerhost1" do
-    recipe "docker"
-    attribute %w(docker host), 'tcp://localhost:5555'
-  end
-  machine "dockerhost2" do
-    recipe "docker"
-    attribute %w(docker host), 'tcp://localhost:5555'
-  end
-end
+# machine_batch 'docker hosts' do
+#   machine "dockerhost1" do
+#     recipe "docker"
+#     attribute %w(docker host), 'tcp://127.0.0.1:5555'
+#   end
+#   machine "dockerhost2" do
+#     recipe "docker"
+#     attribute %w(docker host), 'tcp://127.0.0.1:5555'
+#   end
+# end
 
 require 'chef/provisioning/docker_driver'
 
 at_converge_time "create docker containers" do
   with_docker_host 'dockerhost1' do |chef_server_url|
+    with_machine_options convergence_options: { extra_config: "chef_server_url #{chef_server_url.inspect}" }
+ 
     machine 'web1' do
-      machine_options(
-        convergence_options: { extra_config: "chef_server_url #{chef_server_url.inspect}" }
-      )
     end
   end
 end
