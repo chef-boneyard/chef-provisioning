@@ -231,18 +231,21 @@ module Provisioning
             Chef::Log.debug("Timed out connecting to SSH: #{$!}")
             raise InitialConnectTimeout.new($!)
           end
+          @session_mutex ||= Mutex.new
           @session_thread ||= Thread.new do
             while @session
               # If others are doing SSH things, we let them handle processing; this
               # increases the chances they will receive appropriate exceptions.
               if @using_session == 0
-                begin
-                  # If there was something to process, keep processing
-                  next if @session.process?(0)
-                rescue
-                  # If there is an error, we save it off so that a real thread can capture it.
-                  @session_thread_errors << $!
-                  next
+                @session_mutex.synchronize do
+                  begin
+                    # If there was something to process, keep processing
+                    next if @session.process?(0)
+                  rescue
+                    # If there is an error, we save it off so that a real thread can capture it.
+                    @session_thread_errors << $!
+                    next
+                  end
                 end
                 sleep(0.1)
               end
@@ -261,11 +264,14 @@ module Provisioning
       #
       def with_session(&block)
         raise_unhandled_errors
-        @using_session += 1
-        begin
-          block.call(session)
-        ensure
-          @using_session -= 1
+        session
+        @session_mutex.synchronize do
+          @using_session += 1
+          begin
+            block.call(session)
+          ensure
+            @using_session -= 1
+          end
         end
       end
 
