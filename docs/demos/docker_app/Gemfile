@@ -14,8 +14,10 @@ gem 'chef-provisioning-aws',    github: 'chef/chef-provisioning-aws'
 gem 'chef-provisioning-docker', github: 'chef/chef-provisioning-docker', branch: 'jk/demo'
 
 # Uncomment if you want to use local paths instead
-# chef_provisioning_root = File.expand_path("../../../..", __FILE__)
-# src_root = File.expand_path('..', chef_provisioning_root)
-# gem 'chef-provisioning', path: chef_provisioning_root
-# gem 'chef-provisioning-docker', path: "#{src_root}/chef-provisioning-docker"
+ chef_provisioning_root = File.expand_path("../../../..", __FILE__)
+ src_root = File.expand_path('..', chef_provisioning_root)
+#gem 'chef-provisioning', path: chef_provisioning_root
+#gem 'chef-provisioning-docker', path: "#{src_root}/chef-provisioning-docker"
 # gem 'net-ssh', path: "#{src_root}/net-ssh"
+#gem 'docker-api', path: "#{src_root}/docker-api"
+#gem 'excon', path: "#{src_root}/excon"
