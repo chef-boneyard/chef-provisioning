@@ -72,7 +72,11 @@ module Provisioning
       end
 
       def make_url_available_to_remote(local_url, **options)
-        transport.make_url_available_to_remote(local_url, **options)
+        if options.empty?
+          transport.make_url_available_to_remote(local_url)
+        else
+          transport.make_url_available_to_remote(local_url, **options)
+        end
       end
 
       def make_remote_url_available_locally(local_url, **options)
