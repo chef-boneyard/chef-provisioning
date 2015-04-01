@@ -66,7 +66,7 @@ class MachineImage < Chef::Provider::LWRPBase
                                 machine_provider.machine_spec, machine_options)
     rescue ArgumentError
       # Backcompat kludge - remove in later version.
-      Chef::Log.warn("Driver #{new_driver.driver_url} does not accept machine_options.  This will be deprecated before Provisioning 1.0.")
+      Chef::Log.warn("Driver #{new_driver.driver_url}.allocate_image does not accept machine_options.  This will be deprecated before Provisioning 1.0.")
       machine_provider.machine_spec.instance_eval { @machine_options = machine_options }
       new_driver.allocate_image(action_handler, image_spec, new_image_options,
                                 machine_provider.machine_spec)

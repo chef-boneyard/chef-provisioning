@@ -25,12 +25,13 @@ module Provisioning
         create_ohai_files(action_handler, machine)
 
         # Create client.rb and client.pem on machine
-        content = client_rb_content(chef_server_url, machine.node['name'])
-        machine.write_file(action_handler, convergence_options[:client_rb_path], content, :ensure_dir => true)
+        content = client_rb_content(chef_server_url, machine)
+        machine.write_file(action_handler, client_rb_path(machine), content, :ensure_dir => true)
       end
 
       def converge(action_handler, machine)
         machine.make_url_available_to_remote(chef_server[:chef_server_url])
+        run_chef(action_handler, machine)
       end
 
       def cleanup_convergence(action_handler, machine_spec)
@@ -47,10 +48,26 @@ module Provisioning
         end
       end
 
+      attr_reader :chef_client_path
+
       protected
 
+      def run_chef(action_handler, machine)
+        action_handler.open_stream(machine.node['name']) do |stdout|
+          action_handler.open_stream(machine.node['name']) do |stderr|
+            command_line = chef_client_path
+            command_line << " -l #{config[:log_level].to_s}" if config[:log_level]
+            command_line << " -c \"#{client_rb_path(machine)}\""
+            machine.execute(action_handler, command_line,
+              :stream_stdout => stdout,
+              :stream_stderr => stderr,
+              :timeout => @chef_client_timeout)
+          end
+        end
+      end
+
       def create_keys(action_handler, machine)
-        server_private_key = machine.read_file(convergence_options[:client_pem_path])
+        server_private_key = machine.read_file(client_pem_path(machine))
         if server_private_key
           begin
             server_private_key, format = Cheffish::KeyFormatter.decode(server_private_key)
@@ -64,7 +81,7 @@ module Provisioning
             # If the server private key does not match our source key, overwrite it
             server_private_key = source_key
             if convergence_options[:allow_overwrite_keys]
-              machine.write_file(action_handler, convergence_options[:client_pem_path], server_private_key.to_pem, :ensure_dir => true)
+              machine.write_file(action_handler, client_pem_path(machine), server_private_key.to_pem, :ensure_dir => true)
             else
               raise "Private key on machine #{machine.name} does not match desired input key."
             end
@@ -86,7 +103,7 @@ module Provisioning
             end
           end
 
-          machine.write_file(action_handler, convergence_options[:client_pem_path], server_private_key.to_pem, :ensure_dir => true)
+          machine.write_file(action_handler, client_pem_path(machine), server_private_key.to_pem, :ensure_dir => true)
         end
 
         # We shouldn't be returning this: see https://github.com/chef/chef-provisioning/issues/292
@@ -186,7 +203,19 @@ module Provisioning
         end
       end
 
-      def client_rb_content(chef_server_url, node_name)
+      def client_rb_path(machine)
+        convergence_options[:client_rb_path] || (machine.is_a?(Machine::WindowsMachine) ? "#{machine.system_driver}\\chef\\client.rb" : "/etc/chef/client.rb")
+      end
+
+      def client_pem_path(machine)
+        convergence_options[:client_pem_path] || (machine.is_a?(Machine::WindowsMachine) ? "#{machine.system_drive}\\chef\\client.rb" : "/etc/chef/client.rb")
+      end
+
+      def ohai_hint_path
+      end
+
+      def client_rb_content(chef_server_url, machine)
+        node_name = machine.node['name']
         ssl_verify_mode = convergence_options[:ssl_verify_mode]
         ssl_verify_mode ||= if chef_server_url.downcase.start_with?("https")
                               :verify_peer
@@ -197,7 +226,7 @@ module Provisioning
         content = <<-EOM
           chef_server_url #{chef_server_url.inspect}
           node_name #{node_name.inspect}
-          client_key #{convergence_options[:client_pem_path].inspect}
+          client_key #{client_pem_path(machine).inspect}
           ssl_verify_mode #{ssl_verify_mode.to_sym.inspect}
         EOM
         if convergence_options[:bootstrap_proxy]

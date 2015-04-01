@@ -265,12 +265,15 @@ module Provisioning
       def with_session(&block)
         raise_unhandled_errors
         session
+        puts "with_session! #{caller[0]}"
+        @using_session += 1
         @session_mutex.synchronize do
-          @using_session += 1
+          puts "in session! #{caller[0]}"
           begin
             block.call(session)
           ensure
             @using_session -= 1
+            puts "Done session! #{caller[0]}"
           end
         end
       end

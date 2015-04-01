@@ -8,11 +8,7 @@ module Provisioning
       @@install_sh_cache = {}
 
       def initialize(convergence_options, config)
-        convergence_options = Cheffish::MergedConfig.new(convergence_options, {
-          :client_rb_path => '/etc/chef/client.rb',
-          :client_pem_path => '/etc/chef/client.pem'
-        })
-        super(convergence_options, config)
+        super
         @install_sh_url = convergence_options[:install_sh_url] || 'https://www.chef.io/chef/install.sh'
         @install_sh_path = convergence_options[:install_sh_path] || '/tmp/chef-install.sh'
         @chef_version = convergence_options[:chef_version]
@@ -68,21 +64,6 @@ module Provisioning
         machine.write_file(action_handler, install_sh_path, @@install_sh_cache[install_sh_url], :ensure_dir => true)
         # TODO handle bad version case better
         machine.execute(action_handler, install_sh_command_line)
-      end
-
-      def converge(action_handler, machine)
-        super
-
-        action_handler.open_stream(machine.node['name']) do |stdout|
-          action_handler.open_stream(machine.node['name']) do |stderr|
-            command_line = "chef-client"
-            command_line << " -l #{config[:log_level].to_s}" if config[:log_level]
-            machine.execute(action_handler, command_line,
-              :stream_stdout => stdout,
-              :stream_stderr => stderr,
-              :timeout => @chef_client_timeout)
-          end
-        end
       end
     end
   end

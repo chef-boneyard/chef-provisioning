@@ -1,31 +1,38 @@
+# machine 'mario' do
+#   action :destroy
+# end
+# machine 'mario' do
+# end
+
 # Create the hosts
 machine_batch 'docker hosts' do
-  machine "dockerhost1" do
-    recipe "docker"
-    attribute %w(docker host), 'tcp://localhost:5555'
-  end
-  machine "dockerhost2" do
-    recipe "docker"
-    attribute %w(docker host), 'tcp://localhost:5555'
+  1.upto(2) do |i|
+    machine "dockerhost#{i}" do
+      recipe "docker"
+      attribute %w(docker host), 'tcp://localhost:5555'
+    end
   end
 end
 
 require 'chef/provisioning/docker_driver'
 
 at_converge_time "create docker containers" do
-  with_docker_host 'dockerhost1' do |chef_server_url|
-    with_machine_options(
-      docker_options: {
-        base_image: {
-          name: 'ubuntu',
-          repository: 'ubuntu',
-          tag: '14.04'
-        }
-      },
-      convergence_options: { extra_config: "chef_server_url #{chef_server_url.inspect}" }
-    )
-    machine 'web1' do
+
+  with_docker_host 'dockerhost1' do
+
+    machine "web1" do
     end
+    machine "web2" do
+    end
+
+
+  end
+
+  with_docker_host "dockerhost2" do
+
+    machine "web3" do
+    end
+
   end
 end
 

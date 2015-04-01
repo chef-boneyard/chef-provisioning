@@ -83,6 +83,13 @@ EOM
 #      def get_attributes(path)
 #      end
 
+      def system_drive
+        'C:'
+#        Not sure it's worth the trouble to grab this ...
+#        @system_drive ||= execute_always('$env:SystemDrive').stdout.strip
+      end
+
+
       def dirname_on_machine(path)
         path.split(/[\\\/]/)[0..-2].join('\\')
       end

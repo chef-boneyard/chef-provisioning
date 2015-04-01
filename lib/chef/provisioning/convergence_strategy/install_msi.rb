@@ -18,14 +18,6 @@ module Provisioning
       attr_reader :install_msi_path
 
       def setup_convergence(action_handler, machine)
-        if !convergence_options.has_key?(:client_rb_path) || !convergence_options.has_key?(:client_pem_path)
-          system_drive = machine.execute_always('$env:SystemDrive').stdout.strip
-          @convergence_options = Cheffish::MergedConfig.new(convergence_options, {
-            :client_rb_path => "#{system_drive}\\chef\\client.rb",
-            :client_pem_path => "#{system_drive}\\chef\\client.pem"
-          })
-        end
-
         super
 
         # Check for existing chef client.
