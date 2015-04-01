@@ -1,5 +1,5 @@
 class Chef
 module Provisioning
-  VERSION = '0.20'
+  VERSION = '1.0.0.rc.1'
 end
 end

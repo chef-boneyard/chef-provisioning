@@ -1,5 +1,6 @@
 # Chef Provisioning Changelog
 
+## 1.0.rc.1 (3/31/2015)
 ## 0.20 (3/27/2015)
 
 - Marking machines `nil` in a load_balancer does not affect existing machines ([#299][])
