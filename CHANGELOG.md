@@ -1,6 +1,10 @@
 # Chef Provisioning Changelog
 
-## 1.0.rc.1 (3/31/2015)
+## 1.0.0.rc.2 (4/1/2015)
+
+- Fix an issue with vagrant second-converge failing
+
+## 1.0.0.rc.1 (3/31/2015)
 ## 0.20 (3/27/2015)
 
 - Marking machines `nil` in a load_balancer does not affect existing machines ([#299][])
