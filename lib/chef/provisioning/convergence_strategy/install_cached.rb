@@ -38,6 +38,8 @@ module Provisioning
 
       attr_reader :client_rb_path
       attr_reader :client_pem_path
+      attr_reader :chef_version
+      attr_reader :prerelease
 
       def setup_convergence(action_handler, machine)
         super
