@@ -1,5 +1,6 @@
 # Chef Provisioning Changelog
 
+## 1.0.0 (4/2/2015)
 ## 1.0.0.rc.2 (4/1/2015)
 
 - Fix an issue with vagrant second-converge failing
