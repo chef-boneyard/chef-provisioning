@@ -262,6 +262,12 @@ Kitchen
 
 Chef Provisioning also works with Test Kitchen, allowing you to test entire clusters, not just machines!  The repository for the kitchen-metal gem is https://github.com/doubt72/kitchen-metal.
 
+
+Fixing conflict with chef-zero 3.2.1 and ~> 4.0 
+-----------------------------------------------
+
+If you run into the error `Unable to activate cheffish-1.0.0, because chef-zero-3.2.1 conflicts with chef-zero (~> 4.0)` you'll need to update the version of the chef gem included in the ChefDK.  Follow the instructions @ [https://github.com/fnichol/chefdk-update-app](https://github.com/fnichol/chefdk-update-app) and update chef to ~>12.2.1 
+
 Bugs and The Plan
 -----------------
 
