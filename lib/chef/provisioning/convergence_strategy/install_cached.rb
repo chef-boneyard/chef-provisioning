@@ -20,6 +20,7 @@ module Provisioning
       # - :chef_client_timeout
       # - :client_rb_path, :client_pem_path
       # - :chef_version, :prerelease, :package_cache_path
+      # - :package_metadata
       def initialize(convergence_options, config)
         convergence_options = Cheffish::MergedConfig.new(convergence_options, {
           :client_rb_path => '/etc/chef/client.rb',
@@ -34,6 +35,7 @@ module Provisioning
         @chef_client_timeout = convergence_options.has_key?(:chef_client_timeout) ? convergence_options[:chef_client_timeout] : 120*60 # Default: 2 hours
         FileUtils.mkdir_p(@package_cache_path)
         @package_cache_lock = Mutex.new
+        @package_metadata ||= convergence_options[:package_metadata]
       end
 
       attr_reader :client_rb_path
@@ -101,11 +103,16 @@ module Provisioning
             #
             # Grab metadata
             #
-            metadata = download_metadata_for_platform(machine, platform, platform_version, machine_architecture)
+            metadata = @package_metadata
+            if !metadata
+              Chef::Log.info("No metadata supplied, downloading it...")
+              metadata = download_metadata_for_platform(machine, platform, platform_version, machine_architecture)
+            end
 
             # Download actual package desired by metadata
             package_file = "#{@package_cache_path}/#{URI(metadata['url']).path.split('/')[-1]}"
 
+            Chef::Log.debug("Package metadata: #{metadata}")
             Chef::Provisioning.inline_resource(action_handler) do
               remote_file package_file do
                 source metadata['url']
@@ -153,7 +160,12 @@ module Provisioning
         extension = File.extname(remote_package_file)
         result = case extension
         when '.rpm'
-          machine.execute(action_handler, "rpm -Uvh --oldpackage --replacepkgs \"#{remote_package_file}\"")
+          # Use yum if available, rpm if not
+          if machine.execute_always("command -v yum").exitstatus == 0
+            machine.execute(action_handler, "yum install -yv \"#{remote_package_file}\"")
+          else
+            machine.execute(action_handler, "rpm -Uvh --oldpackage --replacepkgs \"#{remote_package_file}\"")
+          end
         when '.deb'
           machine.execute(action_handler, "dpkg -i \"#{remote_package_file}\"")
         when '.solaris'

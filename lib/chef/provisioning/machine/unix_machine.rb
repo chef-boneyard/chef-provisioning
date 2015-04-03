@@ -226,6 +226,10 @@ elif test "x$os" = "xAIX"; then
 platform="aix"
 platform_version=`uname -v`
 machine="ppc"
+# Linux supporting /etc/os-release
+elif test -f "/etc/os-release"; then
+platform=`awk -F'=' '/^ID=/ { print $2 }' /etc/os-release`
+platform_version=`awk -F'=' '/^VERSION_ID=/ { print $2 }' /etc/os-release`
 fi
 
 if test "x$platform" = "x"; then
