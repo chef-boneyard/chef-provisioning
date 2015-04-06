@@ -94,6 +94,7 @@ class Machine < Chef::Provider::LWRPBase
     if current_driver
       current_driver.destroy_machine(action_handler, machine_spec, current_machine_options)
     end
+    machine_spec.delete(action_handler)
   end
 
   attr_reader :machine_spec

@@ -77,6 +77,9 @@ class MachineBatch < Chef::Provider::LWRPBase
   action :destroy do
     parallel_do(by_current_driver) do |driver, specs_and_options|
       driver.destroy_machines(action_handler, specs_and_options, parallelizer)
+      parallel_do(specs_and_options.keys).each do |machine_spec|
+        machine_spec.delete(action_handler)
+      end
     end
   end
 
