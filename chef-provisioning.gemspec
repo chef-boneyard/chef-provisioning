@@ -12,16 +12,17 @@ Gem::Specification.new do |s|
   s.email = 'jkeiser@chef.io'
   s.homepage = 'http://github.com/chef/chef-provisioning/README.md'
 
+  s.add_dependency 'chef', '>= 11.16.4'
   s.add_dependency 'net-ssh', '~> 2.0'
   s.add_dependency 'net-scp', '~> 1.0'
   s.add_dependency 'net-ssh-gateway', '~> 1.2.0'
   s.add_dependency 'inifile', '~> 2.0'
   s.add_dependency 'cheffish', '~> 1.0'
   s.add_dependency 'winrm', '~> 1.2.0'
-#  s.add_dependency 'ruby-lxc'
 
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rake'
+  s.add_development_dependency 'pry'
 
   s.bindir       = "bin"
   s.executables  = %w( )
