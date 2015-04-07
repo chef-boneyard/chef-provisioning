@@ -1,5 +1,10 @@
 # Chef Provisioning Changelog
 
+## 1.0.1 (4/7/2015)
+
+- Clean up dependencies ([#316][])
+- Updating to latest Cheffish
+
 ## 1.0.0 (4/2/2015)
 ## 1.0.0.rc.2 (4/1/2015)
 
@@ -274,6 +279,7 @@
 [#297]: https://github.com/chef/chef-provisioning/issues/297
 [#299]: https://github.com/chef/chef-provisioning/issues/299
 [#303]: https://github.com/chef/chef-provisioning/issues/303
+[#316]: https://github.com/chef/chef-provisioning/issues/316
 [@MrMMorris]: https://github.com/MrMMorris
 [@causton1]: https://github.com/causton1
 [@chef]: https://github.com/chef
