@@ -1,5 +1,9 @@
 # Chef Provisioning Changelog
 
+## Master
+
+- Fix machine_batch :destroy ([#319][])
+
 ## 1.0.1 (4/7/2015)
 
 - Clean up dependencies ([#316][])
