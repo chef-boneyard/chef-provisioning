@@ -90,6 +90,7 @@ module Provisioning
         SSHResult.new(command, execute_options, stdout, stderr, exitstatus)
       end
 
+      # TODO why does #read_file download it to the target host?
       def read_file(path)
         Chef::Log.debug("Reading file #{path} from #{username}@#{host}")
         result = StringIO.new
@@ -208,7 +209,7 @@ module Provisioning
             execute("chown #{username} #{remote_tempfile}").error!
             do_download remote_tempfile, local_path
           rescue => e
-              Chef::Log.error "Unable to download #{path} to #{local_path} on #{username}@#{host} -- #{e}"
+              Chef::Log.error "Unable to download #{path} to #{remote_tempfile} on #{username}@#{host} -- #{e}"
               nil
           ensure
             # Clean up afterwards
