@@ -1,6 +1,6 @@
 # Chef Provisioning Changelog
 
-## 1.1.0
+## 1.1.0 (4/16/2015)
 
 - Fix machine_batch :destroy, no longer creating extra threads ([#321][])
 - Allow user to specify a custom stdout in `Chef::Config[:stdout]` ([#311][])
