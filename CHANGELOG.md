@@ -1,8 +1,10 @@
 # Chef Provisioning Changelog
 
-## Master
+## 1.1.0
 
-- Fix machine_batch :destroy ([#319][])
+- Fix machine_batch :destroy, no longer creating extra threads ([#321][])
+- Allow user to specify a custom stdout in `Chef::Config[:stdout]` ([#311][])
+- If `convergence_options[:bootstrap_proxy]` is populated use it to download chef ([#317][])
 
 ## 1.0.1 (4/7/2015)
 
@@ -283,7 +285,10 @@
 [#297]: https://github.com/chef/chef-provisioning/issues/297
 [#299]: https://github.com/chef/chef-provisioning/issues/299
 [#303]: https://github.com/chef/chef-provisioning/issues/303
+[#311]: https://github.com/chef/chef-provisioning/issues/311
 [#316]: https://github.com/chef/chef-provisioning/issues/316
+[#317]: https://github.com/chef/chef-provisioning/issues/317
+[#321]: https://github.com/chef/chef-provisioning/issues/321
 [@MrMMorris]: https://github.com/MrMMorris
 [@causton1]: https://github.com/causton1
 [@chef]: https://github.com/chef
