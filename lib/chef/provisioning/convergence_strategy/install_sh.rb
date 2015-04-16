@@ -64,17 +64,19 @@ module Provisioning
 
         # Install chef client
         # TODO ssh verification of install.sh before running arbtrary code would be nice?
-        if bootstrap_env.empty?
+        if convergence_options[:bootstrap_proxy].empty?
           @@install_sh_cache[install_sh_url] ||= Net::HTTP.get(URI(install_sh_url))
         else
-          proxy_uri = URI.parse(convergence_options[:bootstrap_proxy])
-          chef_uri  = URI.parse(@install_sh_url)
-          proxy     = Net::HTTP::Proxy(proxy_uri.host, proxy_uri.port, proxy_uri.user, proxy_uri.password)
-          req       = Net::HTTP::Get.new(chef_uri.path)
-          script    = proxy.start(chef_uri.host, :use_ssl => proxy_uri.scheme == 'https') do |http|
-            http.request(req)
+          @@install_sh_cache[install_sh_url] ||= begin
+            proxy_uri = URI.parse(convergence_options[:bootstrap_proxy])
+            chef_uri  = URI.parse(@install_sh_url)
+            proxy     = Net::HTTP::Proxy(proxy_uri.host, proxy_uri.port, proxy_uri.user, proxy_uri.password)
+            req       = Net::HTTP::Get.new(chef_uri.path)
+            script    = proxy.start(chef_uri.host, :use_ssl => proxy_uri.scheme == 'https') do |http|
+              http.request(req)
+            end
+            script.body
           end
-          @@install_sh_cache[install_sh_url] ||= script.body
         end
         machine.write_file(action_handler, install_sh_path, @@install_sh_cache[install_sh_url], :ensure_dir => true)
         # TODO handle bad version case better
