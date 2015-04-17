@@ -64,7 +64,7 @@ module Provisioning
 
         # Install chef client
         # TODO ssh verification of install.sh before running arbtrary code would be nice?
-        if convergence_options[:bootstrap_proxy].empty?
+        if !convergence_options[:bootstrap_proxy] || convergence_options[:bootstrap_proxy].empty?
           @@install_sh_cache[install_sh_url] ||= Net::HTTP.get(URI(install_sh_url))
         else
           @@install_sh_cache[install_sh_url] ||= begin
