@@ -1,5 +1,9 @@
 # Chef Provisioning Changelog
 
+## 1.1.1 (4/19/2015)
+
+- Fixed undefined method on nil class error inside setup-convergence ([@tyler-ball][])
+
 ## 1.1.0 (4/16/2015)
 
 - Fix machine_batch :destroy, no longer creating extra threads ([#321][])
@@ -304,5 +308,6 @@
 [@mivok]: https://github.com/mivok
 [@mwrock]: https://github.com/mwrock
 [@segv]: https://github.com/segv
+[@tyler-ball]: https://github.com/tyler-ball
 [@xeon22]: https://github.com/xeon22
 [@xorl]: https://github.com/xorl
