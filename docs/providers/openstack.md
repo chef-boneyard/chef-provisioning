@@ -23,7 +23,8 @@
 :updated     :type => :time   
 :tenant_id   
 :user_id   
-:key_name   
+:key_name
+:key_path
 :fault   
 :config_drive   
 :os_dcf_disk_config   
