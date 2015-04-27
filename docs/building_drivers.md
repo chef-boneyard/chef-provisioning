@@ -154,12 +154,13 @@ require 'chef/provisioning/machine/unix_machine'
   def machine_for(machine_spec, machine_options)
     server_id = machine_spec.reference['server_id']
     hostname = the_ultimate_cloud.get_hostname()
+    username = the_ultimate_cloud.get_user()
     ssh_options = {
       :auth_methods => ['publickey'],
       :keys => [ get_key('bootstrapkey') ],
     }
-    transport = Chef::Provisioning::Transport::SSHTransport.new(the_ultimate_cloud.get_hostname(server_id), ssh_options, {}, config)
-    convergence_strategy = Chef::Provisioning::ConvergenceStrategy::InstallCached.new(machine_options[:convergence_options])
+    transport = Chef::Provisioning::Transport::SSH.new(the_ultimate_cloud.get_hostname(server_id), username, ssh_options, {}, config)
+    convergence_strategy = Chef::Provisioning::ConvergenceStrategy::InstallCached.new(machine_options[:convergence_options], {})
     Chef::Provisioning::Machine::UnixMachine.new(machine_spec, transport, convergence_strategy)
   end
 ```
