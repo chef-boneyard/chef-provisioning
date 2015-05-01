@@ -61,16 +61,8 @@ class MachineImage < Chef::Provider::LWRPBase
 
     # 2. Create the image
     machine_options = new_machine_options
-    begin
-      new_driver.allocate_image(action_handler, image_spec, new_image_options,
-                                machine_provider.machine_spec, machine_options)
-    rescue ArgumentError
-      # Backcompat kludge - remove in later version.
-      Chef::Log.warn("Driver #{new_driver.driver_url} does not accept machine_options.  This will be deprecated before Provisioning 1.0.")
-      machine_provider.machine_spec.instance_eval { @machine_options = machine_options }
-      new_driver.allocate_image(action_handler, image_spec, new_image_options,
-                                machine_provider.machine_spec)
-    end
+    new_driver.allocate_image(action_handler, image_spec, new_image_options,
+                              machine_provider.machine_spec, machine_options)
     image_spec.driver_url ||= new_driver.driver_url
     image_spec.from_image ||= new_resource.from_image if new_resource.from_image
     image_spec.run_list   ||= machine_provider.machine_spec.node['run_list']
