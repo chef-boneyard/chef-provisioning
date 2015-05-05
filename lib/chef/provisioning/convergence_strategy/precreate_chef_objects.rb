@@ -1,6 +1,7 @@
 require 'chef/provisioning/convergence_strategy'
 require 'pathname'
 require 'cheffish'
+require 'chef_zero/socketless_server_map'
 
 class Chef
 module Provisioning
@@ -187,6 +188,25 @@ module Provisioning
       end
 
       def client_rb_content(chef_server_url, node_name)
+        # Chef stores a 'port registry' of chef zero URLs.  If we set the remote host's
+        # chef_server_url to a `chefzero` url it will fail because it does not know
+        # about the workstation's chef zero server
+        uri = URI.parse(chef_server_url)
+        if uri.scheme == 'chefzero' && uri.host == 'localhost'
+          if !Chef::Config[:listen]
+            raise "The remote host is configured to access the local chefzero host, but " +
+              "the local chefzero host is not configured to listen.  Provide --listen or " +
+              "set `listen true` in the chef config."
+          end
+          # Once chef and chef-dk are using chef-zero which supports this, we can
+          # remove the else block and the if check
+          if ChefZero::SocketlessServerMap.respond_to?(:server_on_port)
+            chef_server_url = ChefZero::SocketlessServerMap.server_on_port(uri.port).url
+          else
+            chef_server_url = chef_server_url.gsub(/^chefzero/, 'http')
+          end
+        end
+
         ssl_verify_mode = convergence_options[:ssl_verify_mode]
         ssl_verify_mode ||= if chef_server_url.downcase.start_with?("https")
                               :verify_peer
