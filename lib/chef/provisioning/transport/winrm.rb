@@ -86,12 +86,12 @@ $file.Close
         # If you can't pwd within 10 seconds, you can't pwd
         execute('pwd', :timeout => 10)
         true
-      rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, ::WinRM::WinRMHTTPTransportError, ::WinRM::WinRMWebServiceError, ::WinRM::WinRMWSManFault
-        Chef::Log.debug("unavailable: network connection failed or broke: #{$!.inspect}")
-        disconnect
-        false
       rescue ::WinRM::WinRMAuthorizationError
         Chef::Log.debug("unavailable: winrm authentication error: #{$!.inspect} ")
+        disconnect
+        false
+      rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, ::WinRM::WinRMError
+        Chef::Log.debug("unavailable: network connection failed or broke: #{$!.inspect}")
         disconnect
         false
       end
