@@ -1,5 +1,7 @@
 # Chef Provisioning Changelog
 
+- Added support for `options[:scp_temp_dir]` to permit specifying a directory other than `/tmp` to copy files to via SCP.
+
 ## 1.1.1 (4/19/2015)
 
 - Fixed undefined method on nil class error inside setup-convergence ([@tyler-ball][])

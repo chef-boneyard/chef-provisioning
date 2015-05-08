@@ -27,6 +27,9 @@ module Provisioning
       #     nil (the default) means no gateway. If the username is omitted,
       #     then the default username is used instead (i.e. the user running
       #     chef, or the username configured in .ssh/config).
+      #   - :scp_temp_dir: a directory to use as the temporary location for
+      #     files that are copied to the host via SCP.
+      #     Only used if :prefix is set. Default is '/tmp' if unspecified.
       # - global_config: an options hash that looks suspiciously similar to
       #   Chef::Config, containing at least the key :log_level.
       #
@@ -38,6 +41,7 @@ module Provisioning
         @username = username
         @ssh_options = ssh_options
         @options = options
+        @scp_temp_dir = options.fetch(:scp_temp_dir, '/tmp')
         @config = global_config
       end
 
@@ -107,7 +111,7 @@ module Provisioning
         execute("mkdir -p #{File.dirname(path)}").error!
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-          remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
+          remote_tempfile = "#{@scp_temp_dir}/#{File.basename(path)}.#{Random.rand(2**32)}"
           Chef::Log.debug("Writing #{content.length} bytes to #{remote_tempfile} on #{username}@#{host}")
           Net::SCP.new(session).upload!(StringIO.new(content), remote_tempfile)
           execute("mv #{remote_tempfile} #{path}").error!
@@ -121,7 +125,7 @@ module Provisioning
         execute("mkdir -p #{File.dirname(path)}").error!
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-          remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
+          remote_tempfile = "#{@scp_temp_dir}#{File.basename(path)}.#{Random.rand(2**32)}"
           Chef::Log.debug("Uploading #{local_path} to #{remote_tempfile} on #{username}@#{host}")
           Net::SCP.new(session).upload!(local_path, remote_tempfile)
           begin
@@ -202,7 +206,7 @@ module Provisioning
       def download(path, local_path)
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-          remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
+          remote_tempfile = "#{@scp_temp_dir}#{File.basename(path)}.#{Random.rand(2**32)}"
           Chef::Log.debug("Downloading #{path} from #{remote_tempfile} to #{local_path} on #{username}@#{host}")
           begin
             execute("cp #{path} #{remote_tempfile}").error!
