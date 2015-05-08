@@ -125,7 +125,7 @@ module Provisioning
         execute("mkdir -p #{File.dirname(path)}").error!
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-          remote_tempfile = "#{@scp_temp_dir}#{File.basename(path)}.#{Random.rand(2**32)}"
+          remote_tempfile = "#{@scp_temp_dir}/#{File.basename(path)}.#{Random.rand(2**32)}"
           Chef::Log.debug("Uploading #{local_path} to #{remote_tempfile} on #{username}@#{host}")
           Net::SCP.new(session).upload!(local_path, remote_tempfile)
           begin
@@ -206,7 +206,7 @@ module Provisioning
       def download(path, local_path)
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-          remote_tempfile = "#{@scp_temp_dir}#{File.basename(path)}.#{Random.rand(2**32)}"
+          remote_tempfile = "#{@scp_temp_dir}/#{File.basename(path)}.#{Random.rand(2**32)}"
           Chef::Log.debug("Downloading #{path} from #{remote_tempfile} to #{local_path} on #{username}@#{host}")
           begin
             execute("cp #{path} #{remote_tempfile}").error!
