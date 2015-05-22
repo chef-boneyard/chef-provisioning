@@ -94,6 +94,7 @@
 ## 0.14 (8/18/2014)
 
 - FEATURE: Add the machine_image resource ([@jkeiser][], [@johnewart][]):
+
   ```ruby
   machine_image 'base' do
     machine_options :bootstrap_options => { :image_id => 'ami-1234798123431', :ssh_username => 'root' }
