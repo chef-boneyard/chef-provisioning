@@ -1,5 +1,10 @@
 # Chef Provisioning Changelog
 
+## 1.2.0 (5/27/2015)
+
+- Updating for newly introduced Socketless mode.  If the local chef-zero url is `chefzero://...` then we replace it with `http://...` on the target VM ([#337][])
+- Bumped winrm dependency to 1.3.0 ([#332][])
+
 ## 1.1.1 (4/19/2015)
 
 - Fixed undefined method on nil class error inside setup-convergence ([@tyler-ball][])
@@ -294,6 +299,8 @@
 [#316]: https://github.com/chef/chef-provisioning/issues/316
 [#317]: https://github.com/chef/chef-provisioning/issues/317
 [#321]: https://github.com/chef/chef-provisioning/issues/321
+[#332]: https://github.com/chef/chef-provisioning/issues/332
+[#337]: https://github.com/chef/chef-provisioning/issues/337
 [@MrMMorris]: https://github.com/MrMMorris
 [@causton1]: https://github.com/causton1
 [@chef]: https://github.com/chef
