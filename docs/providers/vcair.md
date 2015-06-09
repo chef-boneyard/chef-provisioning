@@ -8,39 +8,37 @@ It it also required that your nodes be able to download chef-client and reach yo
 * ssh authentication happens via ssh and public_key is not available in initial images
 * Only CentOS64-64Bit images currently function, Ubuntu, CentOS63-* and 32BIT versions do not set passwords correctly
 
-## machine_options
-
-### :ssh_options
+## machine_options /  :ssh_options
 
 Setting the password is required as inital ssh key authentication is not available in vCloud Air.
 
-#### :auth_methods
+### :auth_methods
 
 Must be set to ```[ 'password' ]```
 
-#### :password
+### :password
 
 Set to something random and secure.
 
-#### :user_known_hosts_file
+### :user_known_hosts_file
 
 Set to ```/dev/null``` as we have no way to retrieve the ssh-host fingerprint before connecting.
 
-### :bootstrap_options   
+## machine_options / :bootstrap_options   
 
-#### :memory
+### :memory
 
 in megabytes
 
-#### :cpus
+### :cpus
 
 count of virtual cpus
 
-####  :use_private_ip_for_ssh
+###  :use_private_ip_for_ssh
 
 Necessary to find the right ip
 
-#### :image_name
+### :image_name
 
 ```
 $ knife vcair image list
