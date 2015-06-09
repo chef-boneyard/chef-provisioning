@@ -167,8 +167,8 @@ module Provisioning
       end
 
       def available?
-        # If you can't pwd within 10 seconds, you can't pwd
-        execute('pwd', :timeout => 10)
+        # If you can't pwd within 20 seconds, you can't pwd
+        execute('pwd', :timeout => 20)
         true
       rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ENETUNREACH, Errno::EHOSTDOWN, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, Net::SSH::Disconnect
         Chef::Log.debug("#{username}@#{host} unavailable: network connection failed or broke: #{$!.inspect}")
