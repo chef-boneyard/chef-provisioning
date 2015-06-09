@@ -40,5 +40,5 @@ machine 'provisioning-machine' do
   recipe 'my_infrastructure'
 end
 chef_group 'provisioners' do
-  client 'provisioning-machine'
+  clients 'provisioning-machine'
 end
