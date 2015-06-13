@@ -48,7 +48,7 @@ This will create two vagrant precise64 linux boxes, "mario" and "luigi1", in `~/
 If you have an AWS account, you can spin up a machine there like this:
 
 ```
-gem install chef-provisioning chef-provisioning-fog
+gem install chef-provisioning chef-provisioning-aws
 export CHEF_DRIVER=aws
 chef-client -z simple.rb
 ```
