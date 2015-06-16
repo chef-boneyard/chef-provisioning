@@ -189,7 +189,7 @@ module Provisioning
     # @param [Chef::Provisioning::ManagedEntry] image_spec An image specification representing this image.
     # @param [Hash] image_options A set of options representing the desired state of the image
     # @param [Hash] machine_options A set of options representing the desired state of the machine used to create the image
-    def destroy_image(action_handler, image_spec, image_options, machine_options)
+    def destroy_image(action_handler, image_spec, image_options, machine_options={})
       raise "#{self.class} does not implement destroy_image"
     end
 
