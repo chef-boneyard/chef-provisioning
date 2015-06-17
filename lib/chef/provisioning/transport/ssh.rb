@@ -50,6 +50,7 @@ module Provisioning
       attr_reader :ssh_options
       attr_reader :options
       attr_reader :config
+      attr_reader :scp_temp_dir
 
       def execute(command, execute_options = {})
         Chef::Log.info("Executing #{options[:prefix]}#{command} on #{username}@#{host}")
@@ -107,11 +108,15 @@ module Provisioning
         download(path, local_path)
       end
 
+      def remote_tempfile(path)
+        File.join(scp_temp_dir, "#{File.basename(path)}.#{Random.rand(2**32)}")
+      end
+
       def write_file(path, content)
         execute("mkdir -p #{File.dirname(path)}").error!
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-          remote_tempfile = "#{@scp_temp_dir}/#{File.basename(path)}.#{Random.rand(2**32)}"
+          remote_tempfile = remote_tempfile(path)
           Chef::Log.debug("Writing #{content.length} bytes to #{remote_tempfile} on #{username}@#{host}")
           Net::SCP.new(session).upload!(StringIO.new(content), remote_tempfile)
           execute("mv #{remote_tempfile} #{path}").error!
@@ -125,7 +130,7 @@ module Provisioning
         execute("mkdir -p #{File.dirname(path)}").error!
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-          remote_tempfile = "#{@scp_temp_dir}/#{File.basename(path)}.#{Random.rand(2**32)}"
+          remote_tempfile = remote_tempfile(path)
           Chef::Log.debug("Uploading #{local_path} to #{remote_tempfile} on #{username}@#{host}")
           Net::SCP.new(session).upload!(local_path, remote_tempfile)
           begin
@@ -206,7 +211,7 @@ module Provisioning
       def download(path, local_path)
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-          remote_tempfile = "#{@scp_temp_dir}/#{File.basename(path)}.#{Random.rand(2**32)}"
+          remote_tempfile = remote_tempfile(path)
           Chef::Log.debug("Downloading #{path} from #{remote_tempfile} to #{local_path} on #{username}@#{host}")
           begin
             execute("cp #{path} #{remote_tempfile}").error!
