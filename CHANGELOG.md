@@ -1,5 +1,7 @@
 # Chef Provisioning Changelog
 
+- Added support for `options[:scp_temp_dir]` to permit specifying a directory other than `/tmp` to copy files to via SCP.
+
 ## 1.2.0 (5/27/2015)
 
 - Updating for newly introduced Socketless mode.  If the local chef-zero url is `chefzero://...` then we replace it with `http://...` on the target VM ([#337][])

@@ -27,6 +27,9 @@ module Provisioning
       #     nil (the default) means no gateway. If the username is omitted,
       #     then the default username is used instead (i.e. the user running
       #     chef, or the username configured in .ssh/config).
+      #   - :scp_temp_dir: a directory to use as the temporary location for
+      #     files that are copied to the host via SCP.
+      #     Only used if :prefix is set. Default is '/tmp' if unspecified.
       # - global_config: an options hash that looks suspiciously similar to
       #   Chef::Config, containing at least the key :log_level.
       #
@@ -103,14 +106,18 @@ module Provisioning
         download(path, local_path)
       end
 
+      def remote_tempfile(path)
+        File.join(scp_temp_dir, "#{File.basename(path)}.#{Random.rand(2**32)}")
+      end
+
       def write_file(path, content)
         execute("mkdir -p #{File.dirname(path)}").error!
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-          remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
-          Chef::Log.debug("Writing #{content.length} bytes to #{remote_tempfile} on #{username}@#{host}")
-          Net::SCP.new(session).upload!(StringIO.new(content), remote_tempfile)
-          execute("mv #{remote_tempfile} #{path}").error!
+          tempfile = remote_tempfile(path)
+          Chef::Log.debug("Writing #{content.length} bytes to #{tempfile} on #{username}@#{host}")
+          Net::SCP.new(session).upload!(StringIO.new(content), tempfile)
+          execute("mv #{tempfile} #{path}").error!
         else
           Chef::Log.debug("Writing #{content.length} bytes to #{path} on #{username}@#{host}")
           Net::SCP.new(session).upload!(StringIO.new(content), path)
@@ -121,14 +128,14 @@ module Provisioning
         execute("mkdir -p #{File.dirname(path)}").error!
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-          remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
-          Chef::Log.debug("Uploading #{local_path} to #{remote_tempfile} on #{username}@#{host}")
-          Net::SCP.new(session).upload!(local_path, remote_tempfile)
+          tempfile = remote_tempfile(path)
+          Chef::Log.debug("Uploading #{local_path} to #{tempfile} on #{username}@#{host}")
+          Net::SCP.new(session).upload!(local_path, tempfile)
           begin
-            execute("mv #{remote_tempfile} #{path}").error!
+            execute("mv #{tempfile} #{path}").error!
           rescue
             # Clean up if we were unable to move
-            execute("rm #{remote_tempfile}").error!
+            execute("rm #{tempfile}").error!
           end
         else
           Chef::Log.debug("Uploading #{local_path} to #{path} on #{username}@#{host}")
@@ -202,21 +209,21 @@ module Provisioning
       def download(path, local_path)
         if options[:prefix]
           # Make a tempfile on the other side, upload to that, and sudo mv / chown / etc.
-          remote_tempfile = "/tmp/#{File.basename(path)}.#{Random.rand(2**32)}"
-          Chef::Log.debug("Downloading #{path} from #{remote_tempfile} to #{local_path} on #{username}@#{host}")
+          tempfile = remote_tempfile(path)
+          Chef::Log.debug("Downloading #{path} from #{tempfile} to #{local_path} on #{username}@#{host}")
           begin
-            execute("cp #{path} #{remote_tempfile}").error!
-            execute("chown #{username} #{remote_tempfile}").error!
-            do_download remote_tempfile, local_path
+            execute("cp #{path} #{tempfile}").error!
+            execute("chown #{username} #{tempfile}").error!
+            do_download tempfile, local_path
           rescue => e
-              Chef::Log.error "Unable to download #{path} to #{remote_tempfile} on #{username}@#{host} -- #{e}"
+              Chef::Log.error "Unable to download #{path} to #{tempfile} on #{username}@#{host} -- #{e}"
               nil
           ensure
             # Clean up afterwards
             begin
-              execute("rm #{remote_tempfile}").error!
+              execute("rm #{tempfile}").error!
             rescue => e
-              Chef::Log.warn "Unable to clean up #{remote_tempfile} on #{username}@#{host} -- #{e}"
+              Chef::Log.warn "Unable to clean up #{tempfile} on #{username}@#{host} -- #{e}"
             end
           end
         else
@@ -276,6 +283,10 @@ module Provisioning
       end
 
       private
+
+      def scp_temp_dir
+        @scp_temp_dir ||= options.fetch(:scp_temp_dir, '/tmp')
+      end
 
       def gateway?
         options.key?(:ssh_gateway) and ! options[:ssh_gateway].nil?
