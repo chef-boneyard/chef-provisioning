@@ -194,10 +194,6 @@ with_chef_server 'https://api.opscode.com/organizations/vulk',
 machine 'linuxdemoapp1' do
   action :destroy
 end
-
-machine 'linuxdemodb1' do
-  action :destroy
-end
 ```
 
 #### vcair-windows.rb
@@ -222,7 +218,7 @@ vcair_opts = {
     protocol: 'winrm',
     image_name: 'W2K12-STD-64BIT',
     net: 'M511664989-4904-default-routed',
-    memory: '1024', cpus: '1',
+    memory: '4096', cpus: '2',
     customization_script: File.absolute_path("#{current_dir}/install-winrm-vcair.bat"),
     use_private_ip_for_ssh: true
   },
@@ -230,16 +226,10 @@ vcair_opts = {
   start_timeout: 600
 }
 
-machine 'windowsdemoapp1' do
+machine 'windowsdemoiis1' do
   tag 'demo1'
   recipe 'iis'
   machine_options vcair_opts
-end
-
-machine 'windowsdemodb1' do
-  tag 'demo1'
-  recipe 'mysql-windows'
-  machine_options vcair_opts.merge({ memory: '4096', cpus: '2'})
 end
 
 ```
@@ -255,11 +245,7 @@ with_chef_server 'https://api.opscode.com/organizations/vulk',
   :client_name => Chef::Config[:node_name],
   :signing_key_filename => Chef::Config[:client_key]
 
-machine 'windowsdemoapp1' do
-  action :destroy
-end
-
-machine 'windowsdemodb1' do
+machine 'windowsdemoiis1' do
   action :destroy
 end
 ```
