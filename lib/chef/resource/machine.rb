@@ -26,7 +26,8 @@ class Machine < Chef::Resource::LWRPBase
   # Machine options
   attribute :machine_options
 
-  # Node attributes
+  # This includes attributes from the Cheffish::Node resources - allows us
+  # to specify things like `run_list`, `chef_server`, etc.
   Cheffish.node_attributes(self)
 
   # Client keys
