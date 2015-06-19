@@ -70,7 +70,7 @@ M511664989-4904-default-isolated  192.168.99.1   192.168.99.2    192.168.99.100 
 M511664989-4904-default-routed    192.168.109.1  192.168.109.2   192.168.109.100  This routed network was created with Create VDC.  
 ```
 
-## video walkthru
+## linux vm video walkthru
 
 * 0:10 [knife.rb options](https://youtu.be/js9R-ebjV7g?t=10)
 * 0:30 [vmwaredemo.rb chef-provisioning recipe](https://youtu.be/js9R-ebjV7g?t=30)
@@ -92,7 +92,20 @@ M511664989-4904-default-routed    192.168.109.1  192.168.109.2   192.168.109.100
 * 10:00 [app1 and db1 vms and nodes destroyed](https://youtu.be/js9R-ebjV7g?t=600)
 * 10:36 [knife node list shows db1 and app1](https://youtu.be/js9R-ebjV7g?t=636)
 
-### files from walkthru
+## windows vm video walkthru
+
+* 0:00 [install-winrm-vcair.bat](https://www.youtube.com/watch?v=W8_XvXVsZaQ&t=0)
+* 0:20 [vcair-windows.rb](https://www.youtube.com/watch?v=W8_XvXVsZaQ&t=20)
+* 0:30 [chef-client -z vcair-windows.rb](https://www.youtube.com/watch?v=W8_XvXVsZaQ&t=30)
+* 2:30 [windows vm boots](https://www.youtube.com/watch?v=W8_XvXVsZaQ&t=150)
+* 2:30 [windows vm boots](https://www.youtube.com/watch?v=W8_XvXVsZaQ&t=150)
+* 4:20 [Log into VM](https://www.youtube.com/watch?v=W8_XvXVsZaQ&t=260)
+* 4:40 [Winrm is reachable, chef is installed](https://www.youtube.com/watch?v=W8_XvXVsZaQ&t=280)
+* 6:00 [Showing that iis is not install](https://www.youtube.com/watch?v=W8_XvXVsZaQ&t=360)
+* 6:12 [Showing that iis is installed and running](https://www.youtube.com/watch?v=W8_XvXVsZaQ&t=360)
+
+
+### files from walkthrus
 
 #### environment_variables
 
@@ -183,6 +196,70 @@ machine 'linuxdemoapp1' do
 end
 
 machine 'linuxdemodb1' do
+  action :destroy
+end
+```
+
+#### vcair-windows.rb
+
+
+```ruby
+require 'chef/provisioning'
+
+with_driver 'fog:Vcair'
+
+with_chef_server 'https://api.opscode.com/organizations/vulk',
+  :client_name => Chef::Config[:node_name],
+  :signing_key_filename => Chef::Config[:client_key]
+
+current_dir = File.dirname(__FILE__)
+vcair_opts = {
+  is_windows: true,
+  winrm_options: {
+    password: ENV['VCAIR_WINRM_PASSWORD'], # must match password set in customization-script
+  },
+  bootstrap_options: {
+    protocol: 'winrm',
+    image_name: 'W2K12-STD-64BIT',
+    net: 'M511664989-4904-default-routed',
+    memory: '1024', cpus: '1',
+    customization_script: File.absolute_path("#{current_dir}/install-winrm-vcair.bat"),
+    use_private_ip_for_ssh: true
+  },
+  create_timeout: 600,
+  start_timeout: 600
+}
+
+machine 'windowsdemoapp1' do
+  tag 'demo1'
+  recipe 'iis'
+  machine_options vcair_opts
+end
+
+machine 'windowsdemodb1' do
+  tag 'demo1'
+  recipe 'mysql-windows'
+  machine_options vcair_opts.merge({ memory: '4096', cpus: '2'})
+end
+
+```
+
+#### vcair-windows-destroy.rb
+
+```ruby
+require 'chef/provisioning'
+
+with_driver 'fog:Vcair'
+
+with_chef_server 'https://api.opscode.com/organizations/vulk',
+  :client_name => Chef::Config[:node_name],
+  :signing_key_filename => Chef::Config[:client_key]
+
+machine 'windowsdemoapp1' do
+  action :destroy
+end
+
+machine 'windowsdemodb1' do
   action :destroy
 end
 ```
