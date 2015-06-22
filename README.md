@@ -38,6 +38,7 @@ To give it a spin, install Vagrant and VirtualBox and try this from the `chef-pr
 ```
 gem install chef-provisioning chef-provisioning-vagrant
 export CHEF_DRIVER=vagrant
+export VAGRANT_DEFAULT_PROVIDER=virtualbox
 chef-client -z vagrant_linux.rb simple.rb
 ```
 
@@ -147,8 +148,11 @@ chef-zero comes with a provisioner for Vagrant, an abstraction that covers Virtu
 
 ```ruby
 export CHEF_DRIVER=vagrant
+export VAGRANT_DEFAULT_PROVIDER=virtualbox
 chef-client -z vagrant_linux.rb simple.rb
 ```
+
+To use with VMWare, simply update the prior example to read ```export VAGRANT_DEFAULT_PROVIDER=vmware_fusion```
 
 This is a chef-client run, which runs multiple **recipes.** Chef Provisioning is nothing but resources you put in recipes.
 
@@ -263,10 +267,10 @@ Kitchen
 Chef Provisioning also works with Test Kitchen, allowing you to test entire clusters, not just machines!  The repository for the kitchen-metal gem is https://github.com/doubt72/kitchen-metal.
 
 
-Fixing conflict with chef-zero 3.2.1 and ~> 4.0 
+Fixing conflict with chef-zero 3.2.1 and ~> 4.0
 -----------------------------------------------
 
-If you run into the error `Unable to activate cheffish-1.0.0, because chef-zero-3.2.1 conflicts with chef-zero (~> 4.0)` you'll need to update the version of the chef gem included in the ChefDK.  Follow the instructions @ [https://github.com/fnichol/chefdk-update-app](https://github.com/fnichol/chefdk-update-app) and update chef to ~>12.2.1 
+If you run into the error `Unable to activate cheffish-1.0.0, because chef-zero-3.2.1 conflicts with chef-zero (~> 4.0)` you'll need to update the version of the chef gem included in the ChefDK.  Follow the instructions @ [https://github.com/fnichol/chefdk-update-app](https://github.com/fnichol/chefdk-update-app) and update chef to ~>12.2.1
 
 Bugs and The Plan
 -----------------
