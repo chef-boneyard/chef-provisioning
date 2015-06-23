@@ -1,38 +1,46 @@
-[![Stories in Ready](https://badge.waffle.io/opscode/chef-metal.png?label=ready&title=Ready)](https://waffle.io/opscode/chef-metal)
-Chef Metal
+[![Stories in Ready](https://badge.waffle.io/chef/chef-provisioning.png?label=ready&title=Ready)](https://waffle.io/chef/chef-provisioning)
+Chef Provisioning
 ==========
+
+[![Join the chat at https://gitter.im/chef/chef-provisioning](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/chef/chef-provisioning?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/chef/chef-provisioning?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This library solves the problem of repeatably creating machines and infrastructures in Chef.  It has a plugin model that lets you write bootstrappers for your favorite infrastructures, including VirtualBox, EC2, LXC, bare metal, and many more!
 
-[This video](https://www.youtube.com/watch?v=Yb8QdL30WgM) explains the basics of chef-metal (though provisioners are now called drivers).  Slides (more up to date) are [here](http://slides.com/jkeiser/chef-metal).
+[This video](https://www.youtube.com/watch?v=Yb8QdL30WgM) explains the basics of chef-provisioning (though provisioners are now called drivers).  Slides (more up to date) are [here](http://slides.com/jkeiser/chef-metal).
 
 Date       | Blog
 -----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-6/3/2014   | [machine_batch and parallelization](https://github.com/opscode/chef-metal/blob/master/docs/blogs/2012-05-28-machine_batch.html.markdown#chef-metal-parallelization)
-6/3/2014   | [Chef Metal, Configuration and Drivers](https://github.com/opscode/chef-metal/blob/master/docs/blogs/2012-05-22-new-driver-interface.html.markdown#chef-metal-configuration-and-drivers)
-3/4/2014   | [Chef Metal 0.2: Overview](http://www.getchef.com/blog/2014/03/04/chef-metal-0-2-release/) - this is a pretty good overview (though dated).
-12/20/2013 | [Chef Metal Alpha](http://www.getchef.com/blog/2013/12/20/chef-metal-alpha/)
+2014-12-15 | [Using Chef Provisioning to Build Chef Server](https://www.chef.io/blog/2014/12/15/sysadvent-day-14-using-chef-provisioning-to-build-chef-server/)
+2014-11-12 | [Chef Launches Policy-Based Provisioning](https://www.chef.io/blog/2014/11/12/chef-launches-policy-based-provisioning/)
+2014-11-12 | [Chef Provisioning: Infrastructure As Code](https://www.chef.io/blog/2014/11/12/chef-provisioning-infrastructure-as-code/)
+2014-06-03 | [machine_batch and parallelization](https://github.com/chef/chef-provisioning/blob/master/docs/blogs/2012-05-28-machine_batch.html.markdown#chef-provisioning-parallelization)
+2014-06-03 | [Chef Provisioning, Configuration and Drivers](https://github.com/chef/chef-provisioning/blob/master/docs/blogs/2012-05-22-new-driver-interface.html.markdown#chef-provisioning-configuration-and-drivers)
+2014-03-04 | [Chef Metal 0.2: Overview](http://www.chef.io/blog/2014/03/04/chef-metal-0-2-release/) - this is a pretty good overview (though dated).
+2013-12-20 | [Chef Metal Alpha](http://www.chef.io/blog/2013/12/20/chef-metal-alpha/)
 
 Documentation
 -------------
-* [Frequently Asked Questions](https://github.com/opscode/chef-metal/blog/master/docs/faq.md)
-* [Configuration](https://github.com/opscode/chef-metal/blob/master/docs/configuration.md#configuring-and-using-metal-drivers)
-* [Writing Drivers](https://github.com/opscode/chef-metal/blob/master/docs/building_drivers.md#writing-drivers)
-* [Embedding](https://github.com/opscode/chef-metal/blob/master/docs/embedding.md)
-* [Providers](https://github.com/opscode/chef-metal/blob/master/docs/providers)
+* [Chef Docs](https://docs.chef.io/provisioning.html)
+* [Frequently Asked Questions](https://github.com/chef/chef-provisioning/blob/master/docs/faq.md)
+* [Configuration](https://github.com/chef/chef-provisioning/blob/master/docs/configuration.md#configuring-and-using-provisioning-drivers)
+* [Writing Drivers](https://github.com/chef/chef-provisioning/blob/master/docs/building_drivers.md#writing-drivers)
+* [Embedding](https://github.com/chef/chef-provisioning/blob/master/docs/embedding.md)
+* [Providers](https://github.com/chef/chef-provisioning/blob/master/docs/providers)
 
 Try It Out
 ----------
 
-You can try out Metal in many different flavors.
+You can try out Chef Provisioning in many different flavors.
 
 ### Vagrant
 
-To give it a spin, install Vagrant and VirtualBox and try this from the `chef-metal/docs/examples` directory:
+To give it a spin, install Vagrant and VirtualBox and try this from the `chef-provisioning/docs/examples` directory:
 
 ```
-gem install chef-metal chef-metal-vagrant
+gem install chef-provisioning chef-provisioning-vagrant
 export CHEF_DRIVER=vagrant
+export VAGRANT_DEFAULT_PROVIDER=virtualbox
 chef-client -z vagrant_linux.rb simple.rb
 ```
 
@@ -43,8 +51,8 @@ This will create two vagrant precise64 linux boxes, "mario" and "luigi1", in `~/
 If you have an AWS account, you can spin up a machine there like this:
 
 ```
-gem install chef-metal chef-metal-fog
-export CHEF_DRIVER=fog:AWS
+gem install chef-provisioning chef-provisioning-aws
+export CHEF_DRIVER=aws
 chef-client -z simple.rb
 ```
 
@@ -55,7 +63,7 @@ This will create two linux boxes in the AWS account referenced by your default p
 If you are on DigitalOcean and using the `tugboat` gem, you can do this:
 
 ```
-gem install chef-metal chef-metal-fog
+gem install chef-provisioning chef-provisioning-fog
 export CHEF_DRIVER=fog:DigitalOcean
 chef-client -z simple.rb
 ```
@@ -72,18 +80,19 @@ When you are done with the examples, run this to clean up:
 chef-client -z destroy_all.rb
 ```
 
-What Is Chef Metal?
+What Is Chef Provisioning?
 -------------------
 
-Chef Metal has two major abstractions: the machine resource, and drivers.
+Chef Provisioning has two major abstractions: the machine resource, and drivers.
 
 ### The `machine` resource
 
-You declare what your machines do (recipes, tags, etc.) with the `machine` resource, the fundamental unit of Chef Metal.  You will typically declare `machine` resources in a separate, OS/provisioning-independent file that declares the *topology* of your app--your machines and the recipes that will run on them.
+You declare what your machines do (recipes, tags, etc.) with the `machine` resource, the fundamental unit of Chef Provisioning.  You will typically declare `machine` resources in a separate, OS/provisioning-independent file that declares the *topology* of your app--your machines and the recipes that will run on them.
 
-The machine resources from the example [myapp::small](https://github.com/opscode/chef-metal/blob/master/cookbooks/myapp/recipes/small.rb) are pretty straightforward.  Here's a copy/paste:
+The machine resources from the [cluster.rb example](https://github.com/chef/chef-provisioning/blob/master/docs/examples/cluster.rb) are pretty straightforward.  Here's a copy/paste:
 
 ```ruby
+# Database!
 machine 'mario' do
   recipe 'postgresql'
   recipe 'mydb'
@@ -92,6 +101,7 @@ end
 
 num_webservers = 1
 
+# Web servers!
 1.upto(num_webservers) do |i|
   machine "luigi#{i}" do
     recipe 'apache'
@@ -117,17 +127,21 @@ Drivers save their data in the Chef node itself, so that they will be accessible
 Drivers each have their own repository.  Current drivers:
 
 **Cloud:**
-- [FOG: EC2, DigitalOcean, OpenStack, etc.](https://github.com/opscode/chef-metal-fog)
+- [AWS](https://github.com/chef/chef-provisioning-aws)
+- [Azure](https://github.com/chef/chef-provisioning-azure)
+- [FOG: EC2, DigitalOcean, OpenStack, etc.](https://github.com/chef/chef-provisioning-fog)
 
 **Virtualization:**
-- [Vagrant: VirtualBox, VMWare Fusion, etc.](https://github.com/opscode/chef-metal-vagrant)
-- [VSphere](https://github.com/RallySoftware-cookbooks/chef-metal-vsphere) (not yet up to date with 0.11)
+- [Vagrant: VirtualBox, VMWare Fusion, etc.](https://github.com/chef/chef-provisioning-vagrant)
+- [VSphere](https://github.com/CenturyLinkCloud/chef-provisioning-vsphere)
 
 **Containers:**
-- [LXC](https://github.com/opscode/chef-metal-lxc) (not yet up to date with 0.11)
-- [Docker](https://github.com/opscode/chef-metal-docker)
+- [Docker](https://github.com/chef/chef-provisioning-docker)
+- [LXC](https://github.com/chef/chef-provisioning-lxc)
 
 **Bare Metal:**
+- [Hanlon](https://github.com/chef/chef-provisioning-hanlon)
+- [OpenCrowbar](https://github.com/newgoliath/chef-provisioning-crowbar) OpenCrowbar controls your real metal.  It discovers, inventories, configs RAID & BIOS and networks, and installs your OS.  [OpenCrowbar website](http://www.opencrowbar.org) [OpenCrowbar github](https://github.com/opencrowbar/core)
 - [SSH (no PXE)](https://github.com/double-z/chef-metal-ssh) (not yet up to date with 0.11)
 
 ### Anatomy of a Recipe
@@ -136,17 +150,20 @@ chef-zero comes with a provisioner for Vagrant, an abstraction that covers Virtu
 
 ```ruby
 export CHEF_DRIVER=vagrant
+export VAGRANT_DEFAULT_PROVIDER=virtualbox
 chef-client -z vagrant_linux.rb simple.rb
 ```
 
-This is a chef-client run, which runs multiple **recipes.** Chef Metal is nothing but resources you put in recipes.
+To use with VMWare, simply update the prior example to read ```export VAGRANT_DEFAULT_PROVIDER=vmware_fusion```
 
-The driver is specified on the command line.  Drivers are URLs.  You could use `vagrant:~/vms` or `fog:AWS:default:us-east-1' as driver URLs.  More information [here.](https://github.com/opscode/chef-metal/blob/master/docs/configuration.md#setting-the-driver-with-a-driver-url)
+This is a chef-client run, which runs multiple **recipes.** Chef Provisioning is nothing but resources you put in recipes.
+
+The driver is specified on the command line.  Drivers are URLs.  You could use `vagrant:~/vms` or `fog:AWS:default:us-east-1' as driver URLs.  More information [here.](https://github.com/chef/chef-provisioning/blob/master/docs/configuration.md#setting-the-driver-with-a-driver-url)
 
 The `vagrant_linux.rb` recipe handles the physical specification of the machines and Vagrant box:
 
 ```ruby
-require 'chef_metal_vagrant'
+require 'chef/provisioning/vagrant_driver'
 
 vagrant_box 'precise64' do
   url 'http://files.vagrantup.com/precise64.box'
@@ -157,11 +174,11 @@ with_machine_options :vagrant_options => {
 }
 ```
 
-`require 'chef_metal_vagrant'` is how we bring in the `vagrant_box` resource.
+`require 'chef/provisioning/vagrant_driver'` is how we bring in the `vagrant_box` resource.
 
 `vagrant_box` makes sure a particular vagrant box exists, and lets you specify `machine_options` for things like port forwarding, OS definitions, and any other vagrant-isms.
 
-Typically, you declare these in separate files from your machine resources.  Chef Metal picks up the drivers and machine_options you have declared, and uses them to instantiate the machines you request.  The actual machine definitions, in this case, are in `simple.rb`, and are generic--you could use them against Azure or EC2 as well:
+Typically, you declare these in separate files from your machine resources.  Chef Provisioning picks up the drivers and machine_options you have declared, and uses them to instantiate the machines you request.  The actual machine definitions, in this case, are in `simple.rb`, and are generic--you could use them against Azure or EC2 as well:
 
 ```ruby
 machine 'mario' do
@@ -173,7 +190,7 @@ Other directives, like `recipe 'apache'`, help you set run lists and other infor
 
 ### Fog (EC2, Openstack and friends)
 
-chef-metal also comes with a [Fog](http://fog.io/) provisioner that handles provisioning to Openstack, Rackspace, Amazon's EC2 and other cloud drivers.  Before you begin, you will need to put your AWS credentials in ~/.aws/config in the format [mentioned in Option 1 here](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#d0e726).  There are other ways to specify your credentials, but this is the standard one for the Amazon CLI.
+chef-provisioning also comes with a [Fog](http://fog.io/) provisioner that handles provisioning to Openstack, Rackspace, Amazon's EC2 and other cloud drivers.  Before you begin, you will need to put your AWS credentials in ~/.aws/config in the format [mentioned in Option 1 here](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#d0e726).  There are other ways to specify your credentials, but this is the standard one for the Amazon CLI.
 
 Once your credentials are in, basic usage looks like this:
 
@@ -184,12 +201,12 @@ chef-client -z simple.rb
 
 Other valid URLs include `fog:AWS:myprofilename` and `fog:AWS:profilename:us-west-2`.
 
-Most Chef Metal drivers try hard to provide reasonable defaults so you can get started easily.  Once you have specified your credentials, AMIs and other things are chosen for you.
+Most Chef Provisioning drivers try hard to provide reasonable defaults so you can get started easily.  Once you have specified your credentials, AMIs and other things are chosen for you.
 
 You will usually want to create or input a custom key pair for bootstrap. To customize, specify keys and AMI and other options, you can make recipes like this:
 
 ```ruby
-require 'chef_metal_fog'
+require 'chef/provisioning/fog_driver'
 
 fog_key_pair 'my_bootstrap_key'
 
@@ -208,7 +225,7 @@ You will notice that we are still using `simple.rb` here.  Machine definitions a
 
 ### Pointing Boxes at Chef Servers
 
-By default, Chef Metal will put your boxes on the same Chef server you started chef-client with (in the case of -z, that's a local chef-zero server). Sometimes you want to put your boxes on different servers.  There are a couple of ways to do that:
+By default, Chef Provisioning will put your boxes on the same Chef server you started chef-client with (in the case of -z, that's a local chef-zero server). Sometimes you want to put your boxes on different servers.  There are a couple of ways to do that:
 
 ```ruby
 with_chef_local_server :chef_repo_path => '~/repo'
@@ -249,11 +266,17 @@ This can also be done through the Chef Server web UI (Administration tab > Group
 Kitchen
 -------
 
-Chef Metal also works with Test Kitchen, allowing you to test entire clusters, not just machines!  The repository for the kitchen-metal gem is https://github.com/doubt72/kitchen-metal.
+Chef Provisioning also works with Test Kitchen, allowing you to test entire clusters, not just machines!  The repository for the kitchen-metal gem is https://github.com/doubt72/kitchen-metal.
+
+
+Fixing conflict with chef-zero 3.2.1 and ~> 4.0
+-----------------------------------------------
+
+If you run into the error `Unable to activate cheffish-1.0.0, because chef-zero-3.2.1 conflicts with chef-zero (~> 4.0)` you'll need to update the version of the chef gem included in the ChefDK.  Follow the instructions @ [https://github.com/fnichol/chefdk-update-app](https://github.com/fnichol/chefdk-update-app) and update chef to ~>12.2.1
 
 Bugs and The Plan
 -----------------
 
-Please submit bugs, gripes and feature requests at [https://github.com/opscode/chef-metal/issues](https://twitter.com/jkeiser2), contact jkeiser on Twitter at @jkeiser2, email at [jkeiser@getchef.com](mailto:jkeiser@getchef.com)
+Please submit bugs, gripes and feature requests at [https://github.com/chef/chef-provisioning/issues](https://github.com/chef/chef-provisioning/issues), contact John Keiser on Twitter at [@jkeiser2](https://twitter.com/jkeiser2), email at [jkeiser@chef.io](mailto:jkeiser@chef.io)
 
-To contribute, just make a PR in the appropriate repo--also, make sure you've [signed the Chef Contributor License Agreement](https://secure.echosign.com/public/hostedForm?formid=PJIF5694K6L) (quick couple of minutes online), since this is going into core Chef eventually. It takes some time to process, so if you've just done it, let me know in the PR :)  If you already signed this for a Chef contribution, you don't need to do so again--if you're not sure, you can check for your name [here](https://wiki.opscode.com/display/chef/Approved+Contributors)!
+To contribute, just make a PR in the appropriate repo--also, make sure you've [signed the Chef Contributor License Agreement](https://supermarket.chef.io) (through your Chef Supermarket profile), since this is going into core Chef eventually. If you already signed this for a Chef contribution, you don't need to do so again--if you're not sure, you can check for your name [here](https://supermarket.chef.io/contributors) or if you signed up long ago check the [old list](https://github.com/chef/chef/blob/master/CLA_ARCHIVE.md)!
