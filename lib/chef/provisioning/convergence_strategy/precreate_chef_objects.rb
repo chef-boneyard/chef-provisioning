@@ -27,7 +27,9 @@ module Provisioning
 
         # Create client.rb and client.pem on machine
         content = client_rb_content(chef_server_url, machine.node['name'])
-        machine.write_file(action_handler, convergence_options[:client_rb_path], content, :ensure_dir => true)
+        unless machine.file_exists?(convergence_options[:client_rb_path])
+          machine.write_file(action_handler, convergence_options[:client_rb_path], content, :ensure_dir => true)
+        end
       end
 
       def converge(action_handler, machine)
