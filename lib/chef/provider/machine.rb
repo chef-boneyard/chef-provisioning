@@ -146,6 +146,7 @@ class Machine < Chef::Provider::LWRPBase
         end
     }
 
+    configs << { from_image: new_resource.from_image } if new_resource.from_image
     configs << new_resource.machine_options if new_resource.machine_options
     configs << driver.config[:machine_options] if driver.config[:machine_options]
     Cheffish::MergedConfig.new(*configs)
