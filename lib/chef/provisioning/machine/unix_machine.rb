@@ -226,10 +226,17 @@ elif test "x$os" = "xAIX"; then
 platform="aix"
 platform_version=`uname -v`
 machine="ppc"
-# Linux supporting /etc/os-release
 elif test -f "/etc/os-release"; then
-platform=`awk -F'=' '/^ID=/ { print $2 }' /etc/os-release`
-platform_version=`awk -F'=' '/^VERSION_ID=/ { print $2 }' /etc/os-release`
+. /etc/os-release
+if test "x$ID_LIKE" != "x"; then
+case $ID_LIKE in
+"cisco-wrlinux")
+platform="cisco-wrlinux"
+# 3.4.43-WR5.0.1.13_standard  -->  5
+platform_version=`uname -r | sed 's/.*-WR\([0-9]\+\).*/\1/'`
+;;
+esac
+fi
 fi
 
 if test "x$platform" = "x"; then

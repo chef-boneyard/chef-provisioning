@@ -71,7 +71,7 @@ module Provisioning
         package_file = download_package_for_platform(action_handler, machine, platform, platform_version, machine_architecture)
         remote_package_file = "#{@tmp_dir}/#{File.basename(package_file)}"
         machine.upload_file(action_handler, package_file, remote_package_file)
-        install_package(action_handler, machine, remote_package_file)
+        install_package(action_handler, machine, platform, remote_package_file)
       end
 
       def converge(action_handler, machine)
@@ -156,12 +156,11 @@ module Provisioning
         metadata
       end
 
-      def install_package(action_handler, machine, remote_package_file)
+      def install_package(action_handler, machine, platform, remote_package_file)
         extension = File.extname(remote_package_file)
         result = case extension
         when '.rpm'
-          # Use yum if available, rpm if not
-          if machine.execute_always("command -v yum").exitstatus == 0
+          if platform == "cisco-wrlinux"
             machine.execute(action_handler, "yum install -yv \"#{remote_package_file}\"")
           else
             machine.execute(action_handler, "rpm -Uvh --oldpackage --replacepkgs \"#{remote_package_file}\"")
