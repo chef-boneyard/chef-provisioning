@@ -110,13 +110,13 @@ module Provisioning
             end
 
             # Download actual package desired by metadata
-            package_file = "#{@package_cache_path}/#{URI(metadata['url']).path.split('/')[-1]}"
+            package_file = "#{@package_cache_path}/#{URI(metadata[:url]).path.split('/')[-1]}"
 
             Chef::Log.debug("Package metadata: #{metadata}")
             Chef::Provisioning.inline_resource(action_handler) do
               remote_file package_file do
-                source metadata['url']
-                checksum metadata['sha256']
+                source metadata[:url]
+                checksum metadata[:sha256]
               end
             end
 
@@ -151,7 +151,7 @@ module Provisioning
         metadata = {}
         metadata_str.each_line do |line|
           key, value = line.split("\t", 2)
-          metadata[key] = value.chomp
+          metadata[key.to_sym] = value.chomp
         end
         metadata
       end
