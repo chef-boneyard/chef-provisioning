@@ -1,5 +1,12 @@
 # Chef Provisioning Changelog
 
+## 1.2.1 (7/17/2015)
+
+- Added support for `options[:scp_temp_dir]` to permit specifying a directory other than `/tmp` to copy files to via SCP. ([#339][])
+- Removing acceptance tests because they are super stale. ([#363][])
+- Fix arrity mismatch on `Driver#destroy_image` method. ([#364][])
+- Doc updates ([#344][], [#346][], [#352][], [#369][])
+
 ## 1.2.0 (5/27/2015)
 
 - Updating for newly introduced Socketless mode.  If the local chef-zero url is `chefzero://...` then we replace it with `http://...` on the target VM ([#337][])
@@ -301,6 +308,13 @@
 [#321]: https://github.com/chef/chef-provisioning/issues/321
 [#332]: https://github.com/chef/chef-provisioning/issues/332
 [#337]: https://github.com/chef/chef-provisioning/issues/337
+[#339]: https://github.com/chef/chef-provisioning/issues/339
+[#344]: https://github.com/chef/chef-provisioning/issues/344
+[#346]: https://github.com/chef/chef-provisioning/issues/346
+[#352]: https://github.com/chef/chef-provisioning/issues/352
+[#363]: https://github.com/chef/chef-provisioning/issues/363
+[#364]: https://github.com/chef/chef-provisioning/issues/364
+[#369]: https://github.com/chef/chef-provisioning/issues/369
 [@MrMMorris]: https://github.com/MrMMorris
 [@causton1]: https://github.com/causton1
 [@chef]: https://github.com/chef
