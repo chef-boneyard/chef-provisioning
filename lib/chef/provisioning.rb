@@ -50,6 +50,9 @@ module Provisioning
       begin
         require "chef_metal/driver_init/#{scheme}"
       rescue LoadError
+        # try the doomed require again so the stack trace shows the first LoadError and not the second (which
+        # would throw a confusing "chef_metal" into the error output of what is now chef-provisioning). one
+        # could also experiment with saving the first LoadError and re-raising it.
         require "chef/provisioning/driver_init/#{scheme}"
       end
     end
