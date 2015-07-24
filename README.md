@@ -239,6 +239,14 @@ with_chef_server "https://chef-server.example.org",
   :signing_key_filename => Chef::Config[:client_key]
 ```
 
+Finally, you can specify a Chef Server for an individual machine by using the `chef_server` attribute.  This attribute takes the same additional options (`:client_name`, `:signing_key_filename`) that `with_chef_server` does.
+
+```ruby
+machine 'mario' do
+  chef_server :chef_server_url => "https://chef-server.example.org"
+end
+```
+
 **Note for Hosted/Enterprise Chef Servers**
 
 Currently, you will need to add the 'clients' group to the 'admin' group in order for machine provisioning to work:
