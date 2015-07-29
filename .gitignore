@@ -2,7 +2,6 @@ docs/work
 work
 pkg
 doc
-bin
 Gemfile.lock
 .yardoc
 *.gem
