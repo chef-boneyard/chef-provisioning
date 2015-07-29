@@ -4,6 +4,12 @@ Chef Provisioning
 [![Stories in Ready](https://badge.waffle.io/chef/chef-provisioning.png?label=ready&title=Ready)](https://waffle.io/chef/chef-provisioning)
 [![Status](https://travis-ci.org/chef/chef-provisioning.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning)
 
+Driver build status:
+
+AWS | Azure | Docker | Fog | Hanlon | LXC | ssh | Vagrant
+---- | ---- | ---- | ---- | ---- | ---- | ---- | ----
+[![Status](https://travis-ci.org/chef/chef-provisioning-aws.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-aws)| [![Status](https://travis-ci.org/chef/chef-provisioning-azure.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-azure) | [![Status](https://travis-ci.org/chef/chef-provisioning-docker.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-docker) | [![Status](https://travis-ci.org/chef/chef-provisioning-fog.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-fog) | [![Status](https://travis-ci.org/chef/chef-provisioning-hanlon.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-hanlon) | [![Status](https://travis-ci.org/chef/chef-provisioning-lxc.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-lxc) | [![Status](https://travis-ci.org/chef/chef-provisioning-ssh.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-ssh) | [![Status](https://travis-ci.org/chef/chef-provisioning-vagrant.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-vagrant)
+
 This library solves the problem of repeatably creating machines and infrastructures in Chef.  It has a plugin model that lets you write bootstrappers for your favorite infrastructures, including VirtualBox, EC2, LXC, bare metal, and many more!
 
 [This video](https://www.youtube.com/watch?v=Yb8QdL30WgM) explains the basics of chef-provisioning (though provisioners are now called drivers).  Slides (more up to date) are [here](http://slides.com/jkeiser/chef-metal).
