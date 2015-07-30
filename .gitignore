@@ -1,4 +1,7 @@
 docs/work
+bin
+!bin/generate_driver
+!bin/metal
 work
 pkg
 doc
