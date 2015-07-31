@@ -12,6 +12,20 @@ AWS | Azure | Docker | Fog | Hanlon | LXC | ssh | Vagrant
 
 This library solves the problem of repeatably creating machines and infrastructures in Chef.  It has a plugin model that lets you write bootstrappers for your favorite infrastructures, including VirtualBox, EC2, LXC, bare metal, and many more!
 
+Documentation
+-------------
+
+These are the primary documents to help learn about using Provisioning and creating Provisioning drivers:
+
+* [Chef Docs](https://docs.chef.io/provisioning.html)
+* [Frequently Asked Questions](https://github.com/chef/chef-provisioning/blob/master/docs/faq.md)
+* [Configuration](https://github.com/chef/chef-provisioning/blob/master/docs/configuration.md#configuring-and-using-provisioning-drivers)
+* [Writing Drivers](https://github.com/chef/chef-provisioning/blob/master/docs/building_drivers.md#writing-drivers)
+* [Embedding](https://github.com/chef/chef-provisioning/blob/master/docs/embedding.md)
+* [Providers](https://github.com/chef/chef-provisioning/blob/master/docs/providers)
+
+Media
+-----
 [This video](https://www.youtube.com/watch?v=Yb8QdL30WgM) explains the basics of chef-provisioning (though provisioners are now called drivers).  Slides (more up to date) are [here](http://slides.com/jkeiser/chef-metal).
 
 Date       | Blog
@@ -23,15 +37,6 @@ Date       | Blog
 2014-06-03 | [Chef Provisioning, Configuration and Drivers](https://github.com/chef/chef-provisioning/blob/master/docs/blogs/2012-05-22-new-driver-interface.html.markdown#chef-provisioning-configuration-and-drivers)
 2014-03-04 | [Chef Metal 0.2: Overview](http://www.chef.io/blog/2014/03/04/chef-metal-0-2-release/) - this is a pretty good overview (though dated).
 2013-12-20 | [Chef Metal Alpha](http://www.chef.io/blog/2013/12/20/chef-metal-alpha/)
-
-Documentation
--------------
-* [Chef Docs](https://docs.chef.io/provisioning.html)
-* [Frequently Asked Questions](https://github.com/chef/chef-provisioning/blob/master/docs/faq.md)
-* [Configuration](https://github.com/chef/chef-provisioning/blob/master/docs/configuration.md#configuring-and-using-provisioning-drivers)
-* [Writing Drivers](https://github.com/chef/chef-provisioning/blob/master/docs/building_drivers.md#writing-drivers)
-* [Embedding](https://github.com/chef/chef-provisioning/blob/master/docs/embedding.md)
-* [Providers](https://github.com/chef/chef-provisioning/blob/master/docs/providers)
 
 Try It Out
 ----------
@@ -253,28 +258,6 @@ machine 'mario' do
   chef_server :chef_server_url => "https://chef-server.example.org"
 end
 ```
-
-**Note for Hosted/Enterprise Chef Servers**
-
-Currently, you will need to add the 'clients' group to the 'admin' group in order for machine provisioning to work:
-
-```
-knife edit /groups/admin.json -e <editor>
-```
-Then add:
-```
-{
-  "users": [
-    "pivotal" # This is an internal superuser for Hosted/Enterprise Chef
-  ],
-  "groups": [
-    "clients" # This is what you need to add
-  ]
-}
-```
-
-This can also be done through the Chef Server web UI (Administration tab > Groups > select admins Group > Add 'clients'
-
 
 Kitchen
 -------
