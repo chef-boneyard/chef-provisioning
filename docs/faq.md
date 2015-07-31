@@ -111,3 +111,59 @@ end
 ```
 
 This will converge twice: the first converge will run the `base` cookbook and the second will run `my_web_app`.
+
+**Q:** I used a rather insecure `admins` group workaround recommended in the early days of Provisioning, can I reverse that?
+
+**A:** The Provisioning README had a neglected section giving bad security advice for a long while. Specifically, it suggested if you were using Hosted or Enterprise Chef, that you would need to add `clients` group to the `admins` group. To find out for sure whether you used that advice, you can check pretty easily by running:
+
+```
+knife show /groups/admins.json | grep clients
+```
+
+If you get no output, you're good. If you see "clients," then you probably added `clients` to the `admins` group. This can increase the attack surface of your organization, and the time to lock it back down is now.
+
+In order to clean up the permissions and keep your nodes running, you need to remove `clients` from the `admins` group, and give each client `read` and `update` permissions to their corresponding node, explicitly. We've created a recipe to help you do this, so you can take these steps:
+
+1. Go to the directory for your organization where you run `knife`.
+
+2. Grab the [clean_acls.rb](https://github.com/chef/chef-provisioning/blob/master/docs/examples/clean_acls.rb) recipe, for example by running:
+
+   ```
+   curl https://raw.githubusercontent.com/chef/chef-provisioning/master/docs/examples/clean_acls.rb
+   ```
+
+3. Run this command to see what it would change (without actually making the changes):
+
+   ```
+   chef-client clean_acls.rb --why-run -l error -o "" -c .chef/knife.rb
+   ```
+
+   You should see something like:
+
+   ```
+   * chef_group[admins] action create
+     - Would update group admins at https://api.opscode.com/organizations/chef-provisioning
+     -   update groups from ["clients"] to []
+   * chef_acl[nodes/mario] action create
+     - Would update acl nodes/mario at nodes/mario
+     -   read:  update actors from ["pivotal", "jkeiser"] to ["mario", "pivotal", "jkeiser"] 
+   ```
+
+4. If you're satisfied with the changes that would be made, run it for real by removing `--why-run`:
+
+   ```
+   chef-client clean_acls.rb -l error -o "" -c .chef/knife.rb
+   ```
+   
+   You should see something like:
+
+  ```
+  * chef_group[admins] action create
+    - update group admins at https://api.opscode.com/organizations/chef-provisioning
+    -   update groups from ["clients"] to []
+  * chef_acl[nodes/mario] action create
+    - update acl nodes/mario at nodes/mario
+    -   read:  update actors from ["pivotal", "jkeiser"] to ["mario", "pivotal", "jkeiser"] 
+  ```
+
+5. Make sure your nodes are still able to run chef-client by going to the node and seeing if the run completes or not.
