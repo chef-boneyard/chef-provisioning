@@ -2,6 +2,7 @@ source "https://rubygems.org"
 gemfile
 gemspec
 
+#gem 'mixlib-install', path: '../mixlib-install'
 #gem 'net-ssh', :path => '../net-ssh'
 #gem 'chef', :path => '../chef'
 #gem 'ohai', :path => '../ohai'

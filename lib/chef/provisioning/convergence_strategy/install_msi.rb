@@ -1,4 +1,5 @@
 require 'chef/provisioning/convergence_strategy/precreate_chef_objects'
+require 'mixlib/install'
 require 'pathname'
 
 class Chef
@@ -9,8 +10,6 @@ module Provisioning
         super
         @chef_version ||= convergence_options[:chef_version]
         @prerelease ||= convergence_options[:prerelease]
-        @install_msi_url = convergence_options[:install_msi_url] || 'https://www.chef.io/chef/install.msi'
-        @install_msi_path = convergence_options[:install_msi_path] || "$env:TEMP\\#{File.basename(@install_msi_url)}"
         @chef_client_timeout = convergence_options.has_key?(:chef_client_timeout) ? convergence_options[:chef_client_timeout] : 120*60 # Default: 2 hours
       end
 
@@ -28,35 +27,16 @@ module Provisioning
           })
         end
 
+        opts = {"prerelease" => prerelease}
+        if convergence_options[:bootstrap_proxy]
+          opts["http_proxy"] = convergence_options[:bootstrap_proxy]
+          opts["https_proxy"] = convergence_options[:bootstrap_proxy]
+        end
+        opts["install_msi_url"] = convergence_options[:install_msi_url] if convergence_options[:install_msi_url]
         super
 
-        # Check for existing chef client.
-        version = machine.execute_always('chef-client -v')
-
-        # Don't do install/upgrade if a chef client exists and
-        # no chef version is defined by user configs or
-        # the chef client's version already matches user config
-        if version.exitstatus == 0
-          version = version.stdout.strip
-          if !chef_version
-            return
-          elsif version =~ /Chef: #{chef_version}$/
-            Chef::Log.debug "Already installed chef version #{version}"
-            return
-          elsif version.include?(chef_version)
-            Chef::Log.warn "Installed chef version #{version} contains desired version #{chef_version}.  " +
-              "If you see this message on consecutive chef runs tighten your desired version constraint to prevent " +
-              "multiple convergence."
-          end
-        end
-
-        # Install chef client
-        # TODO ssh verification of install.msi before running arbtrary code would be nice?
-        # TODO find a way to cache this on the host like with the Unix stuff.
-        # Limiter is we don't know how to efficiently upload large files to
-        # the remote machine with WMI.
-        machine.execute(action_handler, "(New-Object System.Net.WebClient).DownloadFile(#{machine.escape(install_msi_url)}, #{machine.escape(install_msi_path)})")
-        machine.execute(action_handler, "msiexec /qn /i #{machine.escape(install_msi_path)}")
+        install_command = Mixlib::Install.new(chef_version, true, opts).install_command
+        machine.execute(action_handler, install_command)
       end
 
       def converge(action_handler, machine)
@@ -73,6 +53,7 @@ module Provisioning
           end
         end
       end
+
     end
   end
 end
