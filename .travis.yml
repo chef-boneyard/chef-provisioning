@@ -1,0 +1,10 @@
+sudo: false
+language: ruby
+rvm:
+- 2.1.2
+script:
+  - bundle exec rake build
+  - bundle exec ./bin/generate_driver fake && cd chef-provisioning-fake && bundle exec rspec
+notifications:
+  slack:
+    secure: Ueimquh2DjsPZ24PX+yI9a4QzI0rxNInq8xWkIlbhkrhWtdnnZQT4Rk2Bg89gZkHjvp7NZLvHh5hLc39QlYDEycbx3+BdEryEg+33WpdCnShlzQjcMmOvOXBhs6nyOKvIZAjkrcFwfp/4cftk/2dXoE0Za6B3RBOD2yxeHV/nO0=
