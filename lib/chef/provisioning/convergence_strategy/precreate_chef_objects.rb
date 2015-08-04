@@ -3,7 +3,7 @@ require 'pathname'
 require 'cheffish'
 require 'chef_zero/socketless_server_map'
 
-# class Chef
+class Chef
 module Provisioning
   class ConvergenceStrategy
     class PrecreateChefObjects < ConvergenceStrategy
@@ -217,10 +217,10 @@ module Provisioning
 
         ssl_verify_mode = convergence_options[:ssl_verify_mode]
         ssl_verify_mode ||= if chef_server_url.downcase.start_with?("https")
-          :verify_none
-        else
-          :verify_none
-        end
+                              :verify_peer
+                            else
+                              :verify_none
+                            end
 
         content = <<-EOM
         chef_server_url #{chef_server_url.inspect}
@@ -274,4 +274,4 @@ module Provisioning
     end
   end
 end
-# end
+end
