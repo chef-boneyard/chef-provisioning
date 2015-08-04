@@ -197,7 +197,11 @@ module Provisioning
             raise "You are running Chef Zero and have policyfiles enabled " +
               "however Chef Zero does not currently support the use " +
               "of policyfile nativemode which is required for this option. " +
-              "To use this feature you must use chef-server 12.1 plus or hosted chef."
+              "To use this feature you must use chef-server 12.1 or later, or hosted-chef. " +
+              "The compatible on-premise chef-server version can be be download here: " +
+              "  - https://downloads.chef.io/chef-server/ " +
+              "or if hosted-chef is preferred you can create an account here: " +
+              "  - https://manage.chef.io"
           end
           if !Chef::Config[:listen]
             raise "The remote host is configured to access the local chefzero host, but " +
@@ -250,9 +254,9 @@ module Provisioning
       end
 
       def validate_policy_if_enabled
-        raise "Policy_name was given but no Policy_group. Both are required" if (convergence_options[:policy_name] &&
+        raise "policy_name was given but no policy_group. Both are required" if (convergence_options[:policy_name] &&
                                                                                  !convergence_options[:policy_group])
-        raise "Policy_group was given but no Policy_name. Both are required" if (convergence_options[:policy_group] &&
+        raise "policy_group was given but no policy_name. Both are required" if (convergence_options[:policy_group] &&
                                                                                  !convergence_options[:policy_name])
         if convergence_options[:policy_name] && convergence_options[:chef_config]
           entry_in_chef_config = []
