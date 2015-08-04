@@ -223,24 +223,24 @@ module Provisioning
                             end
 
         content = <<-EOM
-        chef_server_url #{chef_server_url.inspect}
-        node_name #{node_name.inspect}
-        client_key #{convergence_options[:client_pem_path].inspect}
-        ssl_verify_mode #{ssl_verify_mode.to_sym.inspect}
+          chef_server_url #{chef_server_url.inspect}
+          node_name #{node_name.inspect}
+          client_key #{convergence_options[:client_pem_path].inspect}
+          ssl_verify_mode #{ssl_verify_mode.to_sym.inspect}
         EOM
         if convergence_options[:bootstrap_proxy]
           content << <<-EOM
-          http_proxy #{convergence_options[:bootstrap_proxy].inspect}
-          https_proxy #{convergence_options[:bootstrap_proxy].inspect}
+            http_proxy #{convergence_options[:bootstrap_proxy].inspect}
+            https_proxy #{convergence_options[:bootstrap_proxy].inspect}
           EOM
         end
         if convergence_options[:policy_name]
           content << <<-EOM
-          # Policyfile Settings:
-          use_policyfile true
-          policy_document_native_api true
-          policy_group "#{convergence_options[:policy_group]}"
-          policy_name "#{convergence_options[:policy_name]}"
+            # Policyfile Settings:
+            use_policyfile true
+            policy_document_native_api true
+            policy_group "#{convergence_options[:policy_group]}"
+            policy_name "#{convergence_options[:policy_name]}"
           EOM
         end
 
