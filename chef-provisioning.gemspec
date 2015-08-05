@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'inifile', '~> 2.0'
   s.add_dependency 'cheffish', '~> 1.1'
   s.add_dependency 'winrm', '~> 1.3'
-  s.add_dependency "mixlib-install",  "~> 0.4"
+  s.add_dependency "mixlib-install",  "~> 0.6"
 
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rake'
