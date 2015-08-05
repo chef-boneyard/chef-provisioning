@@ -1,5 +1,10 @@
 # Chef Provisioning Changelog
 
+## 1.3.0 (8/5/2015)
+
+- Expose machine_spec.from_image to allocate_machine ([#366][], [@mwrock][])
+- Use mixlib-install to install from omnitruck ([#389][], [@thommay][])
+
 ## 1.2.1 (7/17/2015)
 
 - Added support for `options[:scp_temp_dir]` to permit specifying a directory other than `/tmp` to copy files to via SCP. ([#339][])
@@ -314,7 +319,9 @@
 [#352]: https://github.com/chef/chef-provisioning/issues/352
 [#363]: https://github.com/chef/chef-provisioning/issues/363
 [#364]: https://github.com/chef/chef-provisioning/issues/364
+[#366]: https://github.com/chef/chef-provisioning/issues/366
 [#369]: https://github.com/chef/chef-provisioning/issues/369
+[#389]: https://github.com/chef/chef-provisioning/issues/389
 [@MrMMorris]: https://github.com/MrMMorris
 [@causton1]: https://github.com/causton1
 [@chef]: https://github.com/chef
@@ -330,6 +337,7 @@
 [@mivok]: https://github.com/mivok
 [@mwrock]: https://github.com/mwrock
 [@segv]: https://github.com/segv
+[@thommay]: https://github.com/thommay
 [@tyler-ball]: https://github.com/tyler-ball
 [@xeon22]: https://github.com/xeon22
 [@xorl]: https://github.com/xorl
