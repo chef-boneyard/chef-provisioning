@@ -13,7 +13,7 @@ driver_dir = "#{ENV['PWD']}/chef-provisioning-#{driver_name}"
 camel_name = snake_name.split(/[_-]/).collect(&:capitalize).join
 
 # gross.
-`mkdir #{driver_dir} || true`
+`mkdir -p #{driver_dir}`
 Dir.chdir driver_dir
 
 def prefix(subpath)
@@ -41,6 +41,7 @@ file prefix("#{snake_driver}.rb") do
   content <<-EOS
 require 'chef/provisioning'
 require 'chef/provisioning/#{snake_driver}/driver'
+require 'chef/provisioning/resource/#{snake_name}_example_resource'
   EOS
 end
 
@@ -93,6 +94,29 @@ end
 end
 
 # -----------------------------------------
+# resource/ and provider/
+%w(resource provider).each { |dir| directory prefix(dir) }
+
+# -----------------------------------------
+# resource skeleton.
+resource_name = "#{snake_name}_example_resource"
+
+file prefix("resource/#{resource_name}.rb") do
+  content <<-EOS
+# For details on LWRPs, please see the documentation at http://docs.getchef.com/lwrp.html.
+class Chef::Resource::#{camel_name}ExampleResource < Chef::Resource::LWRPBase
+end
+EOS
+end
+
+file prefix("provider/#{resource_name}.rb") do
+  content <<-EOS
+class Chef::Provider::#{camel_name}ExampleProvider < Chef::Provider::LWRPBase
+end
+EOS
+end
+
+# -----------------------------------------
 execute "rspec --init" do
   cwd driver_dir
   not_if { File.exist?("spec") }
@@ -110,8 +134,10 @@ end
 # spec/spec_helper.rb
 file "spec/spec_helper.rb" do
   content <<-EOS
-require '#{snake_name}_support'
+require 'chef/provisioning/rspec'
+require 'chef/provisioning/#{snake_driver}'
 
+# These are some conventional RSpec options. Feel free to change them.
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
     # This option will default to `true` in RSpec 4. It makes the `description`
@@ -139,14 +165,36 @@ end
 file "spec/#{snake_name}_spec.rb" do
   content <<-EOS
 describe "Chef::Provisioning::#{camel_name}" do
-  extend #{camel_name}Support
-  # include #{camel_name}Config   # uncomment to get `chef_config` or to mix in code.
+  include_context "run with driver", :driver_string => "#{snake_name}"
 
-  when_the_chef_12_server "exists", server_scope: :context, port: 8900..9000 do
-    with_#{snake_name} "integration tests" do
-      context "machine resource" do
-        it "doesn't run any tests" do
-        end
+  with_chef_server do
+    context "the test environment" do
+      let(:let_var) { "a let variable in the enclosing context"}
+
+      it "can use a #{snake_name}_example_resource" do
+        expect_converge {
+          #{snake_name}_example_resource "should load the resource with no errors" do
+            action :nothing
+          end
+        }.not_to raise_error
+      end
+
+      it "can use a let variable in a recipe, no matter what kind of RSpec-ception we engage in" do
+        expect_converge {
+          log "should be able to use let_var as '\#{let_var}' with no error."
+        }.not_to raise_error
+      end
+
+      it "has access to the driver object" do
+        expect(provisioning_driver.driver_url).to start_with("#{snake_name}:")
+      end
+
+      it "has a running Chef-Zero server available" do
+        expect_recipe {
+          chef_data_bag "spec-\#{Time.now.to_i}" do
+            action :delete
+          end
+        }.to be_truthy
       end
     end
   end
@@ -157,61 +205,7 @@ end
 # -----------------------------------------
 # spec/dummy_support.rb
 file "spec/#{snake_name}_support.rb" do
-  content <<-EOS
-module #{camel_name}Support
-
-  # your top-level context blocks will use this file like so:
-  # require "#{snake_name}_support"
-  #
-  # describe "Chef::Provisioning::#{camel_name}" do
-  #   extend #{camel_name}Support
-  #   # include #{camel_name}Config   # optional, gives you a `chef_config` object.
-
-  require 'cheffish/rspec/chef_run_support'
-
-  # when you `extend #{camel_name}Support`, your RSpec-context-extending-`#{camel_name}Support` with then
-  # further `extend ChefRunSupport` to acquire all of the latter's Lucky Charms.
-  def self.extended(other)
-    other.extend Cheffish::RSpec::ChefRunSupport
-  end
-
-  # this creates a `with_#{snake_name}` block method that saves you the repetition of having to load the
-  # driver code, and gives you a common place to put any other driver setup for your specs.
-  #
-  # subtle stuff here. it looks weird because you're taking a block and putting that inside a new block and
-  # then giving *that* to a Cheffish method which will run it for you in the context of a local chef-zero.
-
-  def with_#{snake_name}(description, *tags, &block)
-
-    # take the block you just passed in, and make a new Proc that will call it after loading the driver...
-    context_block = proc do
-      #{snake_driver} = Chef::Provisioning.driver_for_url("#{snake_name}")
-
-      @@driver = #{snake_driver}
-      def self.driver
-        @@driver
-      end
-
-      # when this Proc runs, this will run the block you just passed to `with_#{snake_name}`...
-      module_eval(&block)
-    end
-
-    # ...now pass that Proc to `Cheffish::RSpec::ChefRunSupport#when_the_repository`, which will:
-    # 1. start up a chef-zero with `*tags` as the parameters, and
-    # 2. run your `context_block` Proc (which contains your original `&block`) using that chef-zero.
-    when_the_repository "exists and \#{description}", *tags, &context_block
-  end
-end
-
-# optional, I'm not sure where I cargo-culted this from.
-module #{camel_name}Config
-  def chef_config
-    @chef_config ||= {
-      driver: Chef::Provisioning.driver_for_url("#{snake_name}"),
-    }
-  end
-end
-EOS
+  action :delete
 end
 
 # -----------------------------------------
@@ -219,9 +213,9 @@ file "Gemfile" do
   content <<-EOS
 source "https://rubygems.org"
 gem "chef", ">= 12.4.1"
-gem "cheffish"
-gem "chef-provisioning"
-  EOS
+gem "cheffish", "~> 1.3", ">= 1.3.1"
+gem "chef-provisioning", "~> 1.3"    # TODO: whichever release has chef/provisioning/rspec.
+EOS
 end
 
 # -----------------------------------------
