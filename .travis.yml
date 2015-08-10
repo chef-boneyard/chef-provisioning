@@ -1,10 +1,31 @@
 sudo: false
 language: ruby
 rvm:
-- 2.1.2
+  - 2.1.2
+
+gemfile:
+  - chef-client-version.gemfile
+
+env:
+  - CHEF_VERSION=master
+  - CHEF_VERSION=12.4.1
+  # - CHEF_VERSION=12.4.0    # we know 12.4.0 doesn't work and specifically exclude it.
+  - CHEF_VERSION=12.3.0
+  - CHEF_VERSION=12.2.1
+  - CHEF_VERSION=12.1.2
+  - CHEF_VERSION=12.1.1
+  - CHEF_VERSION=12.1.0
+
+matrix:
+  # fast_finish: true
+  allow_failures:
+    - env: CHEF_VERSION=master
+
 script:
+  - bundle install --jobs=3 --retry=3
   - bundle exec rake install
   - bundle exec rake cycle
+
 notifications:
   slack:
     secure: Ueimquh2DjsPZ24PX+yI9a4QzI0rxNInq8xWkIlbhkrhWtdnnZQT4Rk2Bg89gZkHjvp7NZLvHh5hLc39QlYDEycbx3+BdEryEg+33WpdCnShlzQjcMmOvOXBhs6nyOKvIZAjkrcFwfp/4cftk/2dXoE0Za6B3RBOD2yxeHV/nO0=
