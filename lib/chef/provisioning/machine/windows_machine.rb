@@ -75,6 +75,10 @@ EOM
         end
       end
 
+      def system_drive
+        transport.execute('$env:SystemDrive').stdout.strip
+      end
+
       # Set file attributes { :owner, :group, :rights }
 #      def set_attributes(action_handler, path, attributes)
 #      end
