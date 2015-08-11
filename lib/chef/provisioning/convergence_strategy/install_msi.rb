@@ -23,8 +23,9 @@ module Provisioning
           system_drive = machine.execute_always('$env:SystemDrive').stdout.strip
           @convergence_options = Cheffish::MergedConfig.new(convergence_options, {
             :client_rb_path => "#{system_drive}\\chef\\client.rb",
-            :client_pem_path => "#{system_drive}\\chef\\client.pem"
-          })
+            :client_pem_path => "#{system_drive}\\chef\\client.pem",
+            :install_script_path => "#{system_drive}\\install.ps1"
+            })
         end
 
         opts = {"prerelease" => prerelease}
@@ -36,7 +37,8 @@ module Provisioning
         super
 
         install_command = Mixlib::Install.new(chef_version, true, opts).install_command
-        machine.execute(action_handler, install_command)
+        machine.write_file(action_handler,convergence_options[:install_script_path],install_command)
+        machine.execute(action_handler, "& '#{convergence_options[:install_script_path]}'")
       end
 
       def converge(action_handler, machine)
