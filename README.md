@@ -3,13 +3,14 @@ Chef Provisioning
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/chef/chef-provisioning?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Stories in Ready](https://badge.waffle.io/chef/chef-provisioning.png?label=ready&title=Ready)](https://waffle.io/chef/chef-provisioning)
 [![Status](https://travis-ci.org/chef/chef-provisioning.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning)
+[![Gem Version](https://badge.fury.io/rb/chef-provisioning.svg)](http://badge.fury.io/rb/chef-provisioning)
 
 Driver build status:
 
 AWS | Azure | Docker | Fog | Hanlon | LXC | ssh | Vagrant
 ---- | ---- | ---- | ---- | ---- | ---- | ---- | ----
 [![Status](https://travis-ci.org/chef/chef-provisioning-aws.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-aws)| [![Status](https://travis-ci.org/chef/chef-provisioning-azure.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-azure) | [![Status](https://travis-ci.org/chef/chef-provisioning-docker.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-docker) | [![Status](https://travis-ci.org/chef/chef-provisioning-fog.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-fog) | [![Status](https://travis-ci.org/chef/chef-provisioning-hanlon.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-hanlon) | [![Status](https://travis-ci.org/chef/chef-provisioning-lxc.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-lxc) | [![Status](https://travis-ci.org/chef/chef-provisioning-ssh.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-ssh) | [![Status](https://travis-ci.org/chef/chef-provisioning-vagrant.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-vagrant)
-
+[![Gem Version](https://badge.fury.io/rb/chef-provisioning-aws.svg)](http://badge.fury.io/rb/chef-provisioning-aws) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-azure.svg)](http://badge.fury.io/rb/chef-provisioning-azure) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-docker.svg)](http://badge.fury.io/rb/chef-provisioning-docker) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-fog.svg)](http://badge.fury.io/rb/chef-provisioning-fog) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-hanlon.svg)](http://badge.fury.io/rb/chef-provisioning-hanlon) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-lxc.svg)](http://badge.fury.io/rb/chef-provisioning-lxc) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-ssh.svg)](http://badge.fury.io/rb/chef-provisioning-ssh) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-vagrant.svg)](http://badge.fury.io/rb/chef-provisioning-vagrant)
 This library solves the problem of repeatably creating machines and infrastructures in Chef.  It has a plugin model that lets you write bootstrappers for your favorite infrastructures, including VirtualBox, EC2, LXC, bare metal, and many more!
 
 Documentation
