@@ -160,7 +160,7 @@ module Provisioning
         extension = File.extname(remote_package_file)
         result = case extension
         when '.rpm'
-          if platform == "cisco-wrlinux"
+          if platform == "wrlinux"
             machine.execute(action_handler, "yum install -yv \"#{remote_package_file}\"")
           else
             machine.execute(action_handler, "rpm -Uvh --oldpackage --replacepkgs \"#{remote_package_file}\"")

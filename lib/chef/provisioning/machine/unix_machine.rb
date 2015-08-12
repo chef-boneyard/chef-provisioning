@@ -228,14 +228,10 @@ platform_version=`uname -v`
 machine="ppc"
 elif test -f "/etc/os-release"; then
 . /etc/os-release
-if test "x$ID_LIKE" != "x"; then
-case $ID_LIKE in
-"cisco-wrlinux")
-platform="cisco-wrlinux"
+if test "x$ID_LIKE" = "xwrlinux" || test "x$ID_LIKE" = "xcisco-wrlinux"; then
+platform="wrlinux"
 # 3.4.43-WR5.0.1.13_standard  -->  5
 platform_version=`uname -r | sed 's/.*-WR\([0-9]\+\).*/\1/'`
-;;
-esac
 fi
 fi
 
