@@ -105,6 +105,7 @@ file prefix("resource/#{resource_name}.rb") do
   content <<-EOS
 # For details on LWRPs, please see the documentation at http://docs.getchef.com/lwrp.html.
 class Chef::Resource::#{camel_name}ExampleResource < Chef::Resource::LWRPBase
+  self.resource_name = "#{resource_name}"
 end
 EOS
 end
