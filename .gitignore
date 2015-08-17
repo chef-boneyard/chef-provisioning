@@ -12,3 +12,6 @@ Gemfile.lock
 docs/examples/nodes
 docs/examples/clients
 docs/examples/data_bags
+chef-provisioning-fake
+coverage
+chef-client-version.gemfile.lock

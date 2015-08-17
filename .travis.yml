@@ -1,7 +1,7 @@
 sudo: false
 language: ruby
 rvm:
-  - 2.1.2
+  - 2.1
 
 gemfile:
   - chef-client-version.gemfile
@@ -18,13 +18,13 @@ env:
 
 matrix:
   # fast_finish: true
-  allow_failures:
-    - env: CHEF_VERSION=master
+  # allow_failures:
+  #   - env: CHEF_VERSION=master
 
 script:
   - bundle install --jobs=3 --retry=3
-  - bundle exec rake install
-  - bundle exec rake cycle
+  - bundle exec rake build
+  - bundle exec rake driver:cycle
 
 notifications:
   slack:
