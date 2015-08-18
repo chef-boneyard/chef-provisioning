@@ -20,6 +20,7 @@ module Provisioning
       # - :chef_client_timeout
       # - :client_rb_path, :client_pem_path
       # - :chef_version, :prerelease, :package_cache_path
+      # - :package_metadata
       def initialize(convergence_options, config)
         convergence_options = Cheffish::MergedConfig.new(convergence_options, {
           :client_rb_path => '/etc/chef/client.rb',
@@ -34,6 +35,7 @@ module Provisioning
         @chef_client_timeout = convergence_options.has_key?(:chef_client_timeout) ? convergence_options[:chef_client_timeout] : 120*60 # Default: 2 hours
         FileUtils.mkdir_p(@package_cache_path)
         @package_cache_lock = Mutex.new
+        @package_metadata ||= convergence_options[:package_metadata]
       end
 
       attr_reader :client_rb_path
@@ -69,7 +71,7 @@ module Provisioning
         package_file = download_package_for_platform(action_handler, machine, platform, platform_version, machine_architecture)
         remote_package_file = "#{@tmp_dir}/#{File.basename(package_file)}"
         machine.upload_file(action_handler, package_file, remote_package_file)
-        install_package(action_handler, machine, remote_package_file)
+        install_package(action_handler, machine, platform, remote_package_file)
       end
 
       def converge(action_handler, machine)
@@ -101,15 +103,20 @@ module Provisioning
             #
             # Grab metadata
             #
-            metadata = download_metadata_for_platform(machine, platform, platform_version, machine_architecture)
+            metadata = @package_metadata
+            if !metadata
+              Chef::Log.info("No metadata supplied, downloading it...")
+              metadata = download_metadata_for_platform(machine, platform, platform_version, machine_architecture)
+            end
 
             # Download actual package desired by metadata
-            package_file = "#{@package_cache_path}/#{URI(metadata['url']).path.split('/')[-1]}"
+            package_file = "#{@package_cache_path}/#{URI(metadata[:url]).path.split('/')[-1]}"
 
+            Chef::Log.debug("Package metadata: #{metadata}")
             Chef::Provisioning.inline_resource(action_handler) do
               remote_file package_file do
-                source metadata['url']
-                checksum metadata['sha256']
+                source metadata[:url]
+                checksum metadata[:sha256]
               end
             end
 
@@ -144,16 +151,20 @@ module Provisioning
         metadata = {}
         metadata_str.each_line do |line|
           key, value = line.split("\t", 2)
-          metadata[key] = value.chomp
+          metadata[key.to_sym] = value.chomp
         end
         metadata
       end
 
-      def install_package(action_handler, machine, remote_package_file)
+      def install_package(action_handler, machine, platform, remote_package_file)
         extension = File.extname(remote_package_file)
         result = case extension
         when '.rpm'
-          machine.execute(action_handler, "rpm -Uvh --oldpackage --replacepkgs \"#{remote_package_file}\"")
+          if platform == "wrlinux"
+            machine.execute(action_handler, "yum install -yv \"#{remote_package_file}\"")
+          else
+            machine.execute(action_handler, "rpm -Uvh --oldpackage --replacepkgs \"#{remote_package_file}\"")
+          end
         when '.deb'
           machine.execute(action_handler, "dpkg -i \"#{remote_package_file}\"")
         when '.solaris'
