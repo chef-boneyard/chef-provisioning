@@ -8,6 +8,7 @@ require 'chef/provisioning/machine_spec'
 class Chef
 class Provider
 class MachineBatch < Chef::Provider::LWRPBase
+  provides :machine_batch
 
   def action_handler
     @action_handler ||= Provisioning::ChefProviderActionHandler.new(self)
