@@ -2,11 +2,20 @@ require 'chef/provisioning/convergence_strategy'
 require 'pathname'
 require 'cheffish'
 require 'chef_zero/socketless_server_map'
+require_relative 'ignore_convergence_failure'
 
 class Chef
 module Provisioning
   class ConvergenceStrategy
     class PrecreateChefObjects < ConvergenceStrategy
+
+      def initialize(convergence_options, config)
+        super
+        if convergence_options[:ignore_failure]
+          extend IgnoreConvergenceFailure
+        end
+      end
+
       def chef_server
         @chef_server ||= convergence_options[:chef_server] || Cheffish.default_chef_server(config)
       end

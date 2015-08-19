@@ -155,6 +155,55 @@ Drivers each have their own repository.  Current drivers:
 - [OpenCrowbar](https://github.com/newgoliath/chef-provisioning-crowbar) OpenCrowbar controls your real metal.  It discovers, inventories, configs RAID & BIOS and networks, and installs your OS.  [OpenCrowbar website](http://www.opencrowbar.org) [OpenCrowbar github](https://github.com/opencrowbar/core)
 - [SSH (no PXE)](https://github.com/double-z/chef-metal-ssh) (not yet up to date with 0.11)
 
+### Machine options
+
+You can pass machine options that will be used by `machine`, `machine_batch` and `machine_image` to
+configure the machine:
+
+```ruby
+with_machine_options({
+  convergence_options: {
+    chef_version: "12.4.1",
+    prerelease: "false",
+    chef_client_timeout: 120*60, # Default: 2 hours
+    chef_config: "log_level :debug\\n", # String containing additional text to inject into client.rb
+    chef_server: "http://my.chef.server/", # TODO could conflict with https://github.com/chef/chef-provisioning#pointing-boxes-at-chef-servers
+    bootstrap_proxy: "http://localhost:1234",
+    ssl_verify_mode: :verify_peer,
+    client_rb_path: "/etc/chef/client.rb", # <- DEFAULT, overwrite if necessary
+    client_pem_path: "/etc/chef/client.pem", # <- DEFAULT, overwrite if necessary
+    allow_overwrite_keys: false, # If there is an existing client.pem this needs to be true to overwrite it
+    private_key_options: {}, # TODO ????? Something to do with creating node object
+    source_key: "", # ?????
+    source_key_pass_phrase: "", # ?????
+    source_key_path: "", # ?????
+    public_key_path: "", # ?????
+    public_key_format: "", # ?????
+    admin: "", # ?????
+    validator: "", # ?????
+    ohai_hints: { :ec2 => { :key => :value } }, # Map from hint file name to file contents, this would create /etc/chef/ohai/hints/ec2.json,
+    ignore_failure: [1, 5..10, SomeSpecificError], # If true don't let a convergence failure on provisioned machine stop the provisioning workstation converge.  Can also provide a single exit code to ignore (no array) or `true` to ignore all RuntimeErrors
+    # The following are only available for Linux machines
+    install_sh_url: "https://www.chef.io/chef/install.sh", # <- DEFAULT, overwrite if necessary
+    install_sh_path: "/tmp/chef-install.sh", # <- DEFAULT, overwrite if necessary
+    install_sh_arguments: "-P chef-dk", # Additional commands to pass to install.sh
+    # The following are only available for Windows machines
+    install_msi_url: "foo://bar.com"
+  },
+  ssh_username: "ubuntu", # Username to use for ssh and WinRM
+  ssh_options: { # a list of options to Net::SSH.start
+    :auth_methods => [ 'publickey' ], # DEFAULT
+    :keys_only => true, # DEFAULT
+    :host_key_alias => "#{instance.id}.AWS" # DEFAULT
+  }
+})
+```
+
+This options hash can be supplied to either `with_machine_options` or directly into the `machine_options`
+attribute.
+
+Individual drivers will often add their own driver specific config.  For example, AWS expects a `:bootstrap_options` hash at the same level as `:convergence_options`.
+
 ### Anatomy of a Recipe
 
 chef-zero comes with a provisioner for Vagrant, an abstraction that covers VirtualBox, VMWare and other Virtual Machine drivers. In docs/examples, you can run this to try it:
@@ -198,41 +247,6 @@ end
 ```
 
 Other directives, like `recipe 'apache'`, help you set run lists and other information about the machine.
-
-### Fog (EC2, Openstack and friends)
-
-chef-provisioning also comes with a [Fog](http://fog.io/) provisioner that handles provisioning to Openstack, Rackspace, Amazon's EC2 and other cloud drivers.  Before you begin, you will need to put your AWS credentials in ~/.aws/config in the format [mentioned in Option 1 here](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#d0e726).  There are other ways to specify your credentials, but this is the standard one for the Amazon CLI.
-
-Once your credentials are in, basic usage looks like this:
-
-```
-export CHEF_DRIVER=fog:AWS
-chef-client -z simple.rb
-```
-
-Other valid URLs include `fog:AWS:myprofilename` and `fog:AWS:profilename:us-west-2`.
-
-Most Chef Provisioning drivers try hard to provide reasonable defaults so you can get started easily.  Once you have specified your credentials, AMIs and other things are chosen for you.
-
-You will usually want to create or input a custom key pair for bootstrap. To customize, specify keys and AMI and other options, you can make recipes like this:
-
-```ruby
-require 'chef/provisioning/fog_driver'
-
-fog_key_pair 'my_bootstrap_key'
-
-with_machine_options :bootstrap_options => {
-  :key_name => 'my_bootstrap_key',
-  :image_id => 'ami-59a4a230',
-  :flavor_id => 't1.micro'
-}
-```
-
-`fog_key_pair` creates a new key pair (if the files do not already exist) and uploads it to AWS (it will toss an error if the key pair already exists and does not match). By default, `fog_key_pair` will look for matching key files in .chef/keys, ~/.chef/keys and ~/.ssh.  If it does not find one, it will place the key in `.chef/keys`.  You can override this path in fog_key_pair, but if you do, you will want to modify `private_key_paths` in your configuration to match.
-
-`with_machine_options` specifies machine_options that will be applied to any `machine` resources chef-client encounters.
-
-You will notice that we are still using `simple.rb` here.  Machine definitions are generally driver-independent.  This is an important feature that allows you to spin up your clusters in different places to create staging, test or miniature dev environments.
 
 ### Pointing Boxes at Chef Servers
 
