@@ -17,7 +17,7 @@ class Chef
       end
 
       def new_driver
-        @new_driver ||= run_context.chef_metal.driver_for(new_resource.driver)
+        @new_driver ||= run_context.chef_provisioning.driver_for(new_resource.driver)
       end
 
       def chef_managed_entry_store
