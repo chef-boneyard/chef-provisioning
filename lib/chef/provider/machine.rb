@@ -147,10 +147,27 @@ class Machine < Chef::Provider::LWRPBase
         end
     }
 
+    # The current use case for this is adding a new attribute `aws_tags` to
+    # the machine resource from the chef-provisioning-aws driver.  Because we
+    # want that attribute to work for the recipe DSL, it needs to be added at the
+    # Chef::Resource::Machine class level and not at an instance level.  Thus we
+    # also need to pull the additional_machine_option_keys (:aws_tags) from the
+    # Chef::Resource::Machine class level.  If you use two drivers (like AWS and
+    # Azure) then all machine instances will still have the `aws_tags` attribute
+    # DSL and will pass `:aws_tags` in on the machine_options.  They can simply
+    # be ignored by the Azure driver.
+    (self.class.additional_machine_option_keys || []).each do |k|
+      configs << { k => new_resource.send(k)}
+    end
+
     configs << { from_image: new_resource.from_image } if new_resource.from_image
     configs << new_resource.machine_options if new_resource.machine_options
     configs << driver.config[:machine_options] if driver.config[:machine_options]
     Cheffish::MergedConfig.new(*configs)
+  end
+
+  def self.additional_machine_option_keys
+    @@additional_machine_option_keys ||= []
   end
 
   def load_current_resource
