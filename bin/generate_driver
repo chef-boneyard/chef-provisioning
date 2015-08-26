@@ -118,6 +118,16 @@ EOS
 end
 
 # -----------------------------------------
+# machine resource basics.
+
+# -----------------------------------------
+# machine_spec basics.
+
+# machine_for
+# transport_for
+# machine_spec
+
+# -----------------------------------------
 execute "rspec --init" do
   cwd driver_dir
   not_if { File.exist?("spec") }
@@ -135,6 +145,9 @@ end
 # spec/spec_helper.rb
 file "spec/spec_helper.rb" do
   content <<-EOS
+require 'simplecov'
+SimpleCov.start
+
 require 'chef/provisioning/rspec'
 require 'chef/provisioning/#{snake_driver}'
 
@@ -180,6 +193,29 @@ describe "Chef::Provisioning::#{camel_name}" do
         }.not_to raise_error
       end
 
+      it "can use machine:allocate to crash on 'Driver does not implement'" do
+        expect_converge {
+          machine "glug" do
+            action :allocate
+          end
+        }.to raise_error(RuntimeError, /Driver does not implement allocate_machine/)
+      end
+
+      it "correctly overrides the default driver (to fail in a different way)" do
+        expect_converge {
+          machine "glug" do
+            driver "bogus_nonexistent_driver"
+            action :allocate
+          end
+        }.to raise_error(LoadError, /cannot load such file -- chef\\/provisioning\\/driver_init/)
+      end
+
+      # it "can use a machine_spec resource" do
+      # end
+
+      # it "can use a machine_image resource" do
+      # end
+
       it "can use a let variable in a recipe, no matter what kind of RSpec-ception we engage in" do
         expect_converge {
           log "should be able to use let_var as '\#{let_var}' with no error."
@@ -216,6 +252,10 @@ source "https://rubygems.org"
 gem "chef", ">= 12.4.1"
 gem "cheffish", "~> 1.3", ">= 1.3.1"
 gem "chef-provisioning", "~> 1.3"    # TODO: whichever release has chef/provisioning/rspec.
+
+group(:development, :test) do
+  gem "simplecov"
+end
 EOS
 end
 

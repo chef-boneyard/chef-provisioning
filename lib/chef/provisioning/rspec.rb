@@ -6,9 +6,12 @@ RSpec.shared_context "run with driver" do |driver_args|
 
   driver_object = Chef::Provisioning.driver_for_url(driver_args[:driver_string])
 
+  # globally set this as the driver. overridden by a resource's :driver attribute.
+  before { Chef::Config.driver(driver_object) }
+
   let(:provisioning_driver) { driver_object }
 
-  # has to be a class method to be available outside of examples.
+  # only class methods are available outside of examples.
   def self.with_chef_server(description = "is running", *options, &block)
 
     # no need to repeat these every time.
