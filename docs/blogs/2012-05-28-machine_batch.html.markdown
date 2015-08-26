@@ -98,3 +98,20 @@ end
 ```
 
 Even machines with different drivers and chef_servers can be mixed and parallelized. 50 in AWS and 50 in Azure?  No problem!  Run them all at once, in the same batch.
+
+### max_simultaneous
+
+Specify the maximum number of threads to use with the `max_simultaneous` attribute on the `machine_batch` resource:
+
+```ruby
+machine_batch do
+  1.upto(50) do |i|
+    machine "#{web}#{i}" do
+      recipe 'apache'
+    end
+  end
+  max_simultaneous 10
+end
+```
+
+This will only create 10 machines at a time.
