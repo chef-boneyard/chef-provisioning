@@ -74,11 +74,30 @@ module Provisioning
         install_package(action_handler, machine, platform, remote_package_file)
       end
 
+      class Tee
+        def initialize(*streams)
+          @streams = streams
+        end
+        attr_reader :streams
+        def method_missing(name, *args)
+          streams.each { |s| s.send(name, *args) }
+        end
+        def respond_to_missing?(name)
+          streams.size > 0 && streams[0].respond_to(name)
+        end
+      end
+
       def converge(action_handler, machine)
         super
 
         action_handler.open_stream(machine.node['name']) do |stdout|
           action_handler.open_stream(machine.node['name']) do |stderr|
+            if convergence_options[:machine_output_path]
+              Dir.mkdir(convergence_options[:machine_output_path]) if !File.exist?(convergence_options[:machine_output_path])
+              client_output = IO.open(File.expand_path(machine.node['name'], convergence_options[:machine_output_path], 'w')
+              stdout = Tee.new(stdout, client_output)
+              stderr = Tee.new(stderr, client_output)
+            end
             command_line = "chef-client"
             command_line << " -l #{config[:log_level].to_s}" if config[:log_level]
             machine.execute(action_handler, command_line,
