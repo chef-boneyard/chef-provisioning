@@ -127,6 +127,8 @@ module Provisioning
           convergence_options[:ohai_hints].each_pair do |hint, data|
             # The location of the ohai hint
             ohai_hint = "/etc/chef/ohai/hints/#{hint}.json"
+            # It's in a different path on windows
+            ohai_hint = ChefConfig::Config.platform_specific_path(ohai_hint)
             machine.write_file(action_handler, ohai_hint, data.to_json, :ensure_dir => true)
           end
         end

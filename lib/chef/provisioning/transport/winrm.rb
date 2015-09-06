@@ -1,6 +1,7 @@
 require 'chef/provisioning/transport'
 require 'base64'
 require 'timeout'
+require 'winrm'
 
 class Chef
 module Provisioning
