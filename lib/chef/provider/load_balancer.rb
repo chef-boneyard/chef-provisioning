@@ -52,7 +52,20 @@ class Chef
       end
 
       def lb_options
-        new_resource.load_balancer_options
+        @lb_options ||= begin
+          configs = []
+          configs << new_resource.load_balancer_options if new_resource.load_balancer_options
+
+          # See documentation in machine.rb provider
+          (self.class.additional_lb_option_keys || []).each do |k|
+            configs << { k => new_resource.public_send(k)} if new_resource.public_send(k)
+          end
+          Cheffish::MergedConfig.new(*configs)
+        end
+      end
+
+      def self.additional_lb_option_keys
+        @@additional_lb_option_keys ||= []
       end
 
     end
