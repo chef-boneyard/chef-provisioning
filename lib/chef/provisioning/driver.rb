@@ -308,3 +308,16 @@ module Provisioning
   end
 end
 end
+
+# In chef-provisioning we don't perform resource cloning
+# This fixes resource cloning when the ResourceBuilder is present
+
+class Chef
+  class ResourceBuilder
+    if defined?(:prior_resource)
+      def prior_resource
+        # NOOP
+      end
+    end
+  end
+end

@@ -157,7 +157,7 @@ class Machine < Chef::Provider::LWRPBase
     # DSL and will pass `:aws_tags` in on the machine_options.  They can simply
     # be ignored by the Azure driver.
     (self.class.additional_machine_option_keys || []).each do |k|
-      configs << { k => new_resource.send(k)}
+      configs << { k => new_resource.send(k)} if new_resource.send(k)
     end
 
     configs << { from_image: new_resource.from_image } if new_resource.from_image

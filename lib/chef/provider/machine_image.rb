@@ -29,6 +29,7 @@ class MachineImage < Chef::Provider::LWRPBase
     image_spec = chef_managed_entry_store.get_or_new(:machine_image, new_resource.name)
     if image_spec.reference
       # TODO check for real existence and maybe update
+      new_driver.ready_image(action_handler, image_spec, new_image_options)
     else
       #
       # Create a new image
@@ -78,11 +79,23 @@ class MachineImage < Chef::Provider::LWRPBase
   end
 
   def new_image_options
-    @new_image_options ||= (new_resource.image_options || {}).to_hash.dup
+    @new_image_options ||= begin
+      configs = []
+      configs << new_resource.image_options if new_resource.image_options
+      # See documentation in machine.rb provider
+      (self.class.additional_image_option_keys || []).each do |k|
+        configs << { k => new_resource.send(k)} if new_resource.send(k)
+      end
+      Cheffish::MergedConfig.new(*configs)
+    end
   end
 
   def new_machine_options
-    @new_machine_options ||= (new_resource.machine_options || {}).to_hash.dup
+    @new_machine_options ||= new_resource.machine_options
+  end
+
+  def self.additional_image_option_keys
+    @@additional_image_option_keys ||= []
   end
 
 end
