@@ -20,10 +20,11 @@ module Provisioning
 
       def setup_convergence(action_handler, machine)
         if !convergence_options.has_key?(:client_rb_path) || !convergence_options.has_key?(:client_pem_path)
-          system_drive = machine.execute_always('$env:SystemDrive').stdout.strip
+          system_drive = machine.system_drive
           @convergence_options = Cheffish::MergedConfig.new(convergence_options, {
             :client_rb_path => "#{system_drive}\\chef\\client.rb",
-            :client_pem_path => "#{system_drive}\\chef\\client.pem"
+            :client_pem_path => "#{system_drive}\\chef\\client.pem",
+            :install_script_path => "#{system_drive}\\chef\\\install.ps1"
           })
         end
 
@@ -36,7 +37,16 @@ module Provisioning
         super
 
         install_command = Mixlib::Install.new(chef_version, true, opts).install_command
-        machine.execute(action_handler, install_command)
+        machine.write_file(action_handler, convergence_options[:install_script_path], install_command)
+
+        action_handler.open_stream(machine.node['name']) do |stdout|
+          action_handler.open_stream(machine.node['name']) do |stderr|
+            machine.execute(action_handler, "powershell.exe -ExecutionPolicy Unrestricted -NoProfile \"& \"\"#{convergence_options[:install_script_path]}\"\"\"",
+              :raw => true,
+              :stream_stdout => stdout,
+              :stream_stderr => stderr)
+          end
+        end
       end
 
       def converge(action_handler, machine)
@@ -47,6 +57,7 @@ module Provisioning
             command_line = "chef-client"
             command_line << " -l #{config[:log_level].to_s}" if config[:log_level]
             machine.execute(action_handler, command_line,
+              :raw => true,
               :stream_stdout => stdout,
               :stream_stderr => stderr,
               :timeout => @chef_client_timeout)
