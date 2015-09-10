@@ -11,7 +11,7 @@ In order to be complete, resources in this library must have the following prope
   1. If the object specified by the resource already exists, and the `:create` action is called, then the `:create` action must update all available attributes for the specified object.
   1. If the attributes cannot be updated then the `:create` action must function as a `:create_if_missing`.
 1. Each resource must have a full suite of tests.
-  1. Tests must validate `:create` and `:delete` actions.
+  1. Tests must validate `:create` and `:destroy` actions.
   1. Tests must validate that all update-able attribute can be updated on a subsequent `:create` action.
   1. Tests may assume that if the SDK does not return an error, then the call was successful.
 1. The tests must run in a CI system.
