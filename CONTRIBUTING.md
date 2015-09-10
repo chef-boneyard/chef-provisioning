@@ -7,6 +7,7 @@ This is the minimum set of acceptance criteria - individual projects may expand
 these.
 
 In order to be complete, resources in this library must have the following properties:
+
 1. The resource must have fully functional `:create` and `:destroy` actions.
   1. If the object specified by the resource already exists, and the `:create` action is called, then the `:create` action must update all available attributes for the specified object.
   2. If the attributes cannot be updated then the `:create` action must function as a `:create_if_missing`.
