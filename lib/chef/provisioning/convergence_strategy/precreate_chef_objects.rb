@@ -197,11 +197,13 @@ module Provisioning
       end
 
       def client_rb_content(chef_server_url, node_name)
+        validate_policy_if_enabled
         # Chef stores a 'port registry' of chef zero URLs.  If we set the remote host's
         # chef_server_url to a `chefzero` url it will fail because it does not know
         # about the workstation's chef zero server
         uri = URI.parse(chef_server_url)
-        if uri.scheme == 'chefzero' && uri.host == 'localhost'
+        is_chef_zero = (uri.scheme == 'chefzero' && uri.host == 'localhost')
+        if is_chef_zero
           if !Chef::Config[:listen]
             raise "The remote host is configured to access the local chefzero host, but " +
               "the local chefzero host is not configured to listen.  Provide --listen or " +
@@ -218,27 +220,75 @@ module Provisioning
 
         ssl_verify_mode = convergence_options[:ssl_verify_mode]
         ssl_verify_mode ||= if chef_server_url.downcase.start_with?("https")
-                              :verify_peer
-                            else
-                              :verify_none
-                            end
+          :verify_peer
+        else
+          :verify_none
+        end
 
         content = <<-EOM
-          chef_server_url #{chef_server_url.inspect}
-          node_name #{node_name.inspect}
-          client_key #{convergence_options[:client_pem_path].inspect}
-          ssl_verify_mode #{ssl_verify_mode.to_sym.inspect}
+        chef_server_url #{chef_server_url.inspect}
+        node_name #{node_name.inspect}
+        client_key #{convergence_options[:client_pem_path].inspect}
+        ssl_verify_mode #{ssl_verify_mode.to_sym.inspect}
         EOM
         if convergence_options[:bootstrap_proxy]
           content << <<-EOM
-            http_proxy #{convergence_options[:bootstrap_proxy].inspect}
-            https_proxy #{convergence_options[:bootstrap_proxy].inspect}
+          http_proxy #{convergence_options[:bootstrap_proxy].inspect}
+          https_proxy #{convergence_options[:bootstrap_proxy].inspect}
           EOM
+        end
+        if convergence_options[:policy_name]
+          content << <<-EOM
+          # Policyfile Settings:
+          use_policyfile true
+          EOM
+          if is_chef_zero
+            content << <<-EOM
+            policy_document_native_api false
+            deployment_group "#{convergence_options[:policy_group]}_#{convergence_options[:policy_name]}"
+            EOM
+          else
+            content << <<-EOM
+            policy_document_native_api true
+            policy_group "#{convergence_options[:policy_group]}"
+            policy_name "#{convergence_options[:policy_name]}"
+            EOM
+          end
         end
         content.gsub!(/^\s+/, "")
         content << convergence_options[:chef_config] if convergence_options[:chef_config]
         content
       end
+
+      def validate_policy_if_enabled
+        raise RuntimeError, "policy_name was given but no policy_group. Both are required" if (convergence_options[:policy_name] &&
+                                                                                 !convergence_options[:policy_group])
+        raise "policy_group was given but no policy_name. Both are required" if (convergence_options[:policy_group] &&
+                                                                                 !convergence_options[:policy_name])
+        if convergence_options[:policy_name] && convergence_options[:chef_config]
+          #   if chef_server_version < 12.1 raise "policyfiles are enabled but the current chef_server version is unsupported. " +
+          #     "To use this feature you must use chef_zero, chef-server 12.1 and later, or hosted-chef. " +
+          #     "The compatible on-premise chef-server version can be be download here: " +
+          #     "  - https://downloads.chef.io/chef-server/ " +
+          #     "or if hosted-chef is preferred you can create an account here: " +
+          #     "  - https://manage.chef.io"
+
+          entry_in_chef_config = []
+          ["use_policyfile", "policy_document_native_api", "policy_group", "policy_name", "deployment_group"].each do |opts|
+            entry_in_chef_config << opts if convergence_options[:chef_config].include?(opts)
+          end
+
+          if !entry_in_chef_config.empty?
+            exception_string = "Policy is Enabled but"
+            raise_string = ""
+            entry_in_chef_config.each do |string|
+              raise_string << "#{exception_string.chomp} convergence_options[:chef_config] contains #{string}\n"
+            end
+            raise RuntimeError, raise_string
+          end
+        end
+      end
+
     end
   end
 end

@@ -55,6 +55,10 @@ class Machine < Chef::Resource::LWRPBase
   # A string containing extra configuration for the machine
   attribute :chef_config, :kind_of => String
 
+  # Enable Policyfiles
+  attribute :policy_group, :kind_of => String
+  attribute :policy_name, :kind_of => String
+
   # Allows you to turn convergence off in the :create action by writing "converge false"
   # or force it with "true"
   attribute :converge, :kind_of => [TrueClass, FalseClass]

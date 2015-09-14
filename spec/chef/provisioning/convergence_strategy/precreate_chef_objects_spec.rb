@@ -1,6 +1,8 @@
 require 'chef/provisioning/convergence_strategy/precreate_chef_objects'
-
 describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
+  let(:config) { nil }
+  let(:convergence_options) { {} }
+  let(:chef_server_url) { "https://mychefserver.com" }
   let(:action_handler) { double("ActionHandler") }
 
   let(:precreate_chef_objects_class) do
@@ -10,8 +12,6 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
 
   describe "#new" do
     context "when intializing Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects" do
-      let(:config) { nil }
-      let(:convergence_options) { {} }
       it "can initialize described_class" do
         expect(precreate_chef_objects_class).to be_a(Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects)
       end
@@ -19,30 +19,23 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
   end
 
   describe "#chef_server" do
-
     context "when no convergence options are given" do
       let(:config) { {chef_server_url: 'https://mychefserver.com'} }
-      let(:convergence_options) { {} }
       it "returns cheffish value" do
         expect(precreate_chef_objects_class.chef_server).to eq(:chef_server_url => "https://mychefserver.com",
-                                             :options => {:client_name=>nil, :signing_key_filename=>nil})
+                                                               :options => {:client_name=>nil, :signing_key_filename=>nil})
       end
     end
 
-    context "when convergence options chef_server is given" do
-      let(:config) { nil }
+    context "when convergence options given are \"'chef_server' => 'https://mychefserver.com'\"" do
       let(:convergence_options) { {chef_server: "https://mychefserver.com"} }
-      it "returns chef_server value" do
+      it "returns 'https://mychefserver.com'" do
         expect(precreate_chef_objects_class.chef_server).to eq("https://mychefserver.com")
       end
     end
-
   end
 
   describe "#is_localhost" do
-    let(:config) { nil }
-    let(:convergence_options) { {} }
-
     let(:is_localhost) do
       tcrb = precreate_chef_objects_class.send :is_localhost, host
       tcrb
@@ -75,21 +68,17 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
         expect(is_localhost).to eq(false)
       end
     end
-
   end
 
   describe "#client_rb_content" do
     let(:client_rb_config) do
-      tcrb = precreate_chef_objects_class.send :client_rb_content, chef_server_url, "mynode"
-      tcrb
+      precreate_chef_objects_class.send :client_rb_content, chef_server_url, "mynode"
     end
 
-    let(:config) { nil }
-    let(:chef_server_url) { "https://mychefserver.com" }
-    let(:convergence_options) { {} }
-
     context "when no convergence options are given" do
-      it "generates client.rb with nil client_pem_path" do
+      it "generates client.rb with:
+        client_key nil
+        " do
         expected_config = <<-EOM
         chef_server_url "https://mychefserver.com"
         node_name "mynode"
@@ -100,9 +89,11 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
       end
     end
 
-    context "when convergence options client_pem_path is given" do
+    context "when convergence options given are \"'client_pem_path' => '/etc/chef/client.pem'\"" do
       let(:convergence_options) { {client_pem_path: "/etc/chef/client.pem"} }
-      it "generates client.rb with client_pem_path" do
+      it "generates client.rb with:
+        client_key \"/etc/chef/client.pem\"
+        " do
         expected_config = <<-CONFIG
         chef_server_url "https://mychefserver.com"
         node_name "mynode"
@@ -113,9 +104,11 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
       end
     end
 
-    context "when convergence options ssl_verify_mode given is :verify_peer" do
+    context "when convergence options given are \"'ssl_verify_mode' => :verify_peer'\"" do
       let(:convergence_options) { {ssl_verify_mode: :verify_peer} }
-      it "generates client.rb with verify_peer" do
+      it "generates client.rb with:
+        ssl_verify_mode :verify_peer
+        " do
         expected_config = <<-EOM
         chef_server_url "https://mychefserver.com"
         node_name "mynode"
@@ -126,9 +119,11 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
       end
     end
 
-    context "when convergence options ssl_verify_mode given is :verify_none" do
+    context "when convergence options given are \"'ssl_verify_mode' => :verify_none'\"" do
       let(:convergence_options) { {ssl_verify_mode: :verify_none} }
-      it "generates client.rb with verify_none" do
+      it "generates client.rb with:
+        ssl_verify_mode :verify_none
+        " do
         expected_config = <<-EOM
         chef_server_url "https://mychefserver.com"
         node_name "mynode"
@@ -139,9 +134,11 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
       end
     end
 
-    context "when chef_server_url is http" do
+    context "when chef_server_url is HTTP" do
       let(:chef_server_url) { "http://mychefserver.com" }
-      it "generates client.rb with ssl_verify_mode :verify_none and http chef_server_url" do
+      it "generates client.rb with:
+        ssl_verify_mode :verify_none
+        " do
         expected_config = <<-CONFIG
         chef_server_url "http://mychefserver.com"
         node_name "mynode"
@@ -152,9 +149,12 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
       end
     end
 
-    context "when convergence options bootstrap_proxy is given" do
+    context "when convergence options given are \"'bootstrap_proxy' => 'http://myproxy'\"" do
       let(:convergence_options) { {bootstrap_proxy: "http://myproxy"} }
-      it "generates client.rb with bootstrap_proxy" do
+      it "generates client.rb with:
+        http_proxy \"http://myproxy\"
+        https_proxy \"http://myproxy\"
+        " do
         expected_config = <<-EOM
         chef_server_url "https://mychefserver.com"
         node_name "mynode"
@@ -167,33 +167,43 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
       end
     end
 
-    context "when convergence options chef_config given" do
-      let(:convergence_options) { {chef_config: "some_config entry\n"} }
-      it "generates client.rb with chef_config" do
+    context "when convergence options given are \"'chef_config' => 'some_config entry\\nother_config entry\\n'\"" do
+      let(:convergence_options) { {chef_config: "some_config entry\nother_config entry\n",} }
+      it "generates client.rb with:
+        some_config entry
+        other_config entry
+        " do
         expected_config = <<-EOM
         chef_server_url "https://mychefserver.com"
         node_name "mynode"
         client_key nil
         ssl_verify_mode :verify_peer
         some_config entry
+        other_config entry
         EOM
         expect(client_rb_config).to eq(expected_config.gsub!(/^\s+/, ""))
       end
     end
 
-    context "when convergence options client_pem_path, bootstrap_proxy and chef_config are given" do
-      let(:convergence_options) { {client_pem_path: "/etc/chef/client.pem",
-                                   bootstrap_proxy: "http://myproxy",
-                                   chef_config: "some_config entry\n"}}
-      it "generates client.rb with client_pem_path, bootstrap_proxy and chef_config" do
+    context "when convergence options given are \"'policy_group' => 'mygroup'\" and \"'policy_name' => 'myname'\"" do
+      let(:convergence_options) { {policy_group: "mygroup",
+                                   policy_name: "myname"}}
+      it "generates client.rb with:
+        use_policyfile true
+        policy_document_native_api true
+        policy_group \"mygroup\"
+        policy_name \"myname\"
+        " do
         expected_config = <<-EOM
         chef_server_url "https://mychefserver.com"
         node_name "mynode"
-        client_key "/etc/chef/client.pem"
+        client_key nil
         ssl_verify_mode :verify_peer
-        http_proxy "http://myproxy"
-        https_proxy "http://myproxy"
-        some_config entry
+        # Policyfile Settings:
+        use_policyfile true
+        policy_document_native_api true
+        policy_group "mygroup"
+        policy_name "myname"
         EOM
         expect(client_rb_config).to eq(expected_config.gsub!(/^\s+/, ""))
       end
