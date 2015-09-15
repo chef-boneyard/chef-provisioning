@@ -7,10 +7,10 @@ Chef Provisioning
 
 Driver build status:
 
-AWS | Azure | Docker | Fog | Hanlon | LXC | ssh | Vagrant
----- | ---- | ---- | ---- | ---- | ---- | ---- | ----
-[![Status](https://travis-ci.org/chef/chef-provisioning-aws.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-aws)| [![Status](https://travis-ci.org/chef/chef-provisioning-azure.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-azure) | [![Status](https://travis-ci.org/chef/chef-provisioning-docker.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-docker) | [![Status](https://travis-ci.org/chef/chef-provisioning-fog.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-fog) | [![Status](https://travis-ci.org/chef/chef-provisioning-hanlon.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-hanlon) | [![Status](https://travis-ci.org/chef/chef-provisioning-lxc.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-lxc) | [![Status](https://travis-ci.org/chef/chef-provisioning-ssh.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-ssh) | [![Status](https://travis-ci.org/chef/chef-provisioning-vagrant.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-vagrant)
-[![Gem Version](https://badge.fury.io/rb/chef-provisioning-aws.svg)](http://badge.fury.io/rb/chef-provisioning-aws) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-azure.svg)](http://badge.fury.io/rb/chef-provisioning-azure) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-docker.svg)](http://badge.fury.io/rb/chef-provisioning-docker) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-fog.svg)](http://badge.fury.io/rb/chef-provisioning-fog) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-hanlon.svg)](http://badge.fury.io/rb/chef-provisioning-hanlon) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-lxc.svg)](http://badge.fury.io/rb/chef-provisioning-lxc) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-ssh.svg)](http://badge.fury.io/rb/chef-provisioning-ssh) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-vagrant.svg)](http://badge.fury.io/rb/chef-provisioning-vagrant)
+AWS | Azure | Docker | Fog | ssh | Vagrant
+---- | ---- | ---- | ---- | ---- | ----
+[![Status](https://travis-ci.org/chef/chef-provisioning-aws.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-aws)| [![Status](https://travis-ci.org/chef/chef-provisioning-azure.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-azure) | [![Status](https://travis-ci.org/chef/chef-provisioning-docker.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-docker) | [![Status](https://travis-ci.org/chef/chef-provisioning-fog.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-fog) |  [![Status](https://travis-ci.org/chef/chef-provisioning-ssh.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-ssh) | [![Status](https://travis-ci.org/chef/chef-provisioning-vagrant.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-vagrant)
+[![Gem Version](https://badge.fury.io/rb/chef-provisioning-aws.svg)](http://badge.fury.io/rb/chef-provisioning-aws) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-azure.svg)](http://badge.fury.io/rb/chef-provisioning-azure) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-docker.svg)](http://badge.fury.io/rb/chef-provisioning-docker) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-fog.svg)](http://badge.fury.io/rb/chef-provisioning-fog) | [![Gem  Version](https://badge.fury.io/rb/chef-provisioning-ssh.svg)](http://badge.fury.io/rb/chef-provisioning-ssh) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-vagrant.svg)](http://badge.fury.io/rb/chef-provisioning-vagrant)
 This library solves the problem of repeatably creating machines and infrastructures in Chef.  It has a plugin model that lets you write bootstrappers for your favorite infrastructures, including VirtualBox, EC2, LXC, bare metal, and many more!
 
 Documentation
@@ -148,12 +148,15 @@ Drivers each have their own repository.  Current drivers:
 
 **Containers:**
 - [Docker](https://github.com/chef/chef-provisioning-docker)
-- [LXC](https://github.com/chef/chef-provisioning-lxc)
 
 **Bare Metal:**
-- [Hanlon](https://github.com/chef/chef-provisioning-hanlon)
 - [OpenCrowbar](https://github.com/newgoliath/chef-provisioning-crowbar) OpenCrowbar controls your real metal.  It discovers, inventories, configs RAID & BIOS and networks, and installs your OS.  [OpenCrowbar website](http://www.opencrowbar.org) [OpenCrowbar github](https://github.com/opencrowbar/core)
 - [SSH (no PXE)](https://github.com/double-z/chef-metal-ssh) (not yet up to date with 0.11)
+
+**Seeking Maintainers:**
+These repositories are not actively maintained and are seeking maintainers.
+- [LXC](https://github.com/chef/chef-provisioning-lxc)
+- [Hanlon](https://github.com/chef/chef-provisioning-hanlon)
 
 ### Machine options
 
