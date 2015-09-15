@@ -12,7 +12,6 @@ Gem::Specification.new do |s|
   s.email = 'jkeiser@chef.io'
   s.homepage = 'http://github.com/chef/chef-provisioning/README.md'
 
-  s.add_dependency 'chef', '~> 12.1', "!= 12.4.0"  # 12.4.0 is incompatible.
   s.add_dependency 'net-ssh', '~> 2.0'
   s.add_dependency 'net-scp', '~> 1.0'
   s.add_dependency 'net-ssh-gateway', '~> 1.2.0'
@@ -21,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'winrm', '~> 1.3'
   s.add_dependency "mixlib-install",  "~> 0.6"
 
+  s.add_development_dependency 'chef', '~> 12.1', "!= 12.4.0"  # 12.4.0 is incompatible.
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'pry'

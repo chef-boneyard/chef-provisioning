@@ -1,5 +1,4 @@
 source "https://rubygems.org"
-gemfile
 gemspec
 
 #gem 'mixlib-install', path: '../mixlib-install'
