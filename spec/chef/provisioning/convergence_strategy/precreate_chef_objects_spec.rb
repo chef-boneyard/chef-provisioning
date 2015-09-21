@@ -79,12 +79,12 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
       it "generates client.rb with:
         client_key nil
         " do
-        expected_config = <<-EOM
+        expected_config = <<-CONFIG
         chef_server_url "https://mychefserver.com"
         node_name "mynode"
         client_key nil
         ssl_verify_mode :verify_peer
-        EOM
+        CONFIG
         expect(client_rb_config).to eq(expected_config.gsub!(/^\s+/, ""))
       end
     end
@@ -109,12 +109,12 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
       it "generates client.rb with:
         ssl_verify_mode :verify_peer
         " do
-        expected_config = <<-EOM
+        expected_config = <<-CONFIG
         chef_server_url "https://mychefserver.com"
         node_name "mynode"
         client_key nil
         ssl_verify_mode :verify_peer
-        EOM
+        CONFIG
         expect(client_rb_config).to eq(expected_config.gsub!(/^\s+/, ""))
       end
     end
@@ -124,12 +124,12 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
       it "generates client.rb with:
         ssl_verify_mode :verify_none
         " do
-        expected_config = <<-EOM
+        expected_config = <<-CONFIG
         chef_server_url "https://mychefserver.com"
         node_name "mynode"
         client_key nil
         ssl_verify_mode :verify_none
-        EOM
+        CONFIG
         expect(client_rb_config).to eq(expected_config.gsub!(/^\s+/, ""))
       end
     end
@@ -155,14 +155,14 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
         http_proxy \"http://myproxy\"
         https_proxy \"http://myproxy\"
         " do
-        expected_config = <<-EOM
+        expected_config = <<-CONFIG
         chef_server_url "https://mychefserver.com"
         node_name "mynode"
         client_key nil
         ssl_verify_mode :verify_peer
         http_proxy "http://myproxy"
         https_proxy "http://myproxy"
-        EOM
+        CONFIG
         expect(client_rb_config).to eq(expected_config.gsub!(/^\s+/, ""))
       end
     end
@@ -173,14 +173,14 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
         some_config entry
         other_config entry
         " do
-        expected_config = <<-EOM
+        expected_config = <<-CONFIG
         chef_server_url "https://mychefserver.com"
         node_name "mynode"
         client_key nil
         ssl_verify_mode :verify_peer
         some_config entry
         other_config entry
-        EOM
+        CONFIG
         expect(client_rb_config).to eq(expected_config.gsub!(/^\s+/, ""))
       end
     end
@@ -194,7 +194,7 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
         policy_group \"mygroup\"
         policy_name \"myname\"
         " do
-        expected_config = <<-EOM
+        expected_config = <<-CONFIG
         chef_server_url "https://mychefserver.com"
         node_name "mynode"
         client_key nil
@@ -204,7 +204,7 @@ describe Chef::Provisioning::ConvergenceStrategy::PrecreateChefObjects do
         policy_document_native_api true
         policy_group "mygroup"
         policy_name "myname"
-        EOM
+        CONFIG
         expect(client_rb_config).to eq(expected_config.gsub!(/^\s+/, ""))
       end
     end
