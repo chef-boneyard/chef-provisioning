@@ -128,7 +128,7 @@ module Provisioning
             # The location of the ohai hint
             ohai_hint = "/etc/chef/ohai/hints/#{hint}.json"
             # It's in a different path on windows
-            if machine.machine_spec.data['normal']['chef_provisioning']['reference']['is_windows']
+            if machine.machine_spec.reference['is_windows']
               ohai_hint = [machine.system_drive, ohai_hint.split('/')[2..-1]].join('\\')
             end
             machine.write_file(action_handler, ohai_hint, data.to_json, :ensure_dir => true)
