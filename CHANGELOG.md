@@ -1,7 +1,16 @@
 # Change Log
 
-## [1.4.0](https://github.com/chef/chef-provisioning/tree/1.4.0) (2015-09-16)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.3.0...1.4.0)
+## [1.4.1](https://github.com/chef/chef-provisioning/tree/1.4.1) (2015-09-30)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.4.0...1.4.1)
+
+**Fixed bugs:**
+
+- ohai\_hints should be be created at c:\chef\ohai\hints when provisioning windows nodes [\#433](https://github.com/chef/chef-provisioning/issues/433)
+- Fix install\_sh\_arguments passing after the conversion to mixlib-install [\#452](https://github.com/chef/chef-provisioning/pull/452) ([irvingpop](https://github.com/irvingpop))
+- Windows ohai hints, fixes \#433 [\#435](https://github.com/chef/chef-provisioning/pull/435) ([hh](https://github.com/hh))
+
+## [v1.4.0](https://github.com/chef/chef-provisioning/tree/v1.4.0) (2015-09-16)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.3.0...v1.4.0)
 
 **Implemented enhancements:**
 
@@ -140,6 +149,7 @@
 **Closed issues:**
 
 - chef-dk 0.5.1 with chef-zero renders unusable chefzero://localhost:8889 URLs on nodes [\#336](https://github.com/chef/chef-provisioning/issues/336)
+- Updating chef-provisioning-aws breaks chef-client -z functionality with ChefDK 0.4.0 \(current version\). [\#322](https://github.com/chef/chef-provisioning/issues/322)
 - Converging 0 resources - Am I missing something? [\#320](https://github.com/chef/chef-provisioning/issues/320)
 
 **Merged pull requests:**
