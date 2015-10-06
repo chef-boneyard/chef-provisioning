@@ -172,6 +172,7 @@ with_machine_options({
     chef_config: "log_level :debug\\n", # String containing additional text to inject into client.rb
     chef_server: "http://my.chef.server/", # TODO could conflict with https://github.com/chef/chef-provisioning#pointing-boxes-at-chef-servers
     bootstrap_proxy: "http://localhost:1234",
+    bootstrap_no_proxy: "localhost, *.example.com, my.chef.server",
     ssl_verify_mode: :verify_peer,
     client_rb_path: "/etc/chef/client.rb", # <- DEFAULT, overwrite if necessary
     client_pem_path: "/etc/chef/client.pem", # <- DEFAULT, overwrite if necessary
