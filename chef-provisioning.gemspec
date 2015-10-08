@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'inifile', '~> 2.0'
   s.add_dependency 'cheffish', '~> 1.3', '>= 1.3.1'  # 1.3.1 allows 'let' vars in unquoted recipes.
   s.add_dependency 'winrm', '~> 1.3'
-  s.add_dependency "mixlib-install",  "~> 0.6"
+  s.add_dependency "mixlib-install",  "~> 0.6.0"
 
   s.add_development_dependency 'chef', '~> 12.1', "!= 12.4.0"  # 12.4.0 is incompatible.
   s.add_development_dependency 'rspec'
