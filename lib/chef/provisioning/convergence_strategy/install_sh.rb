@@ -14,7 +14,6 @@ module Provisioning
           :client_pem_path => '/etc/chef/client.pem'
         })
         super(convergence_options, config)
-        @install_sh_url = convergence_options[:install_sh_url] || 'https://www.chef.io/chef/install.sh'
         @install_sh_path = convergence_options[:install_sh_path] || '/tmp/chef-install.sh'
         @chef_version = convergence_options[:chef_version]
         @prerelease = convergence_options[:prerelease]
@@ -25,7 +24,6 @@ module Provisioning
 
       attr_reader :chef_version
       attr_reader :prerelease
-      attr_reader :install_sh_url
       attr_reader :install_sh_path
       attr_reader :install_sh_arguments
       attr_reader :bootstrap_env
