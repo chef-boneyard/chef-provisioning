@@ -77,11 +77,15 @@ class Machine < Chef::Provider::LWRPBase
   end
 
   action :converge_only do
-    machine = run_context.chef_provisioning.connect_to_machine(machine_spec, current_machine_options)
-    begin
-      machine.converge(action_handler)
-    ensure
-      machine.disconnect
+    if new_resource.converge == false
+      Chef::Log.debug("Not converging #{machine_spec.name} because 'converge false' is set.")
+    else
+      machine = run_context.chef_provisioning.connect_to_machine(machine_spec, current_machine_options)
+      begin
+        machine.converge(action_handler)
+      ensure
+        machine.disconnect
+      end
     end
   end
 
