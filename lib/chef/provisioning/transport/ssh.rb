@@ -174,8 +174,8 @@ module Provisioning
       end
 
       def available?
-        # If you can't pwd within 10 seconds, you can't pwd
-        execute('pwd', :timeout => 10)
+        timeout = ssh_options[:timeout] || 10
+        execute('pwd', :timeout => timeout)
         true
       rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ENETUNREACH, Errno::EHOSTDOWN, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, Net::SSH::Disconnect
         Chef::Log.debug("#{username}@#{host} unavailable: network connection failed or broke: #{$!.inspect}")
@@ -191,10 +191,10 @@ module Provisioning
 
       def session
         @session ||= begin
+          # Small initial connection timeout (10s) to help us fail faster when server is just dead
           ssh_start_opts = { timeout:10 }.merge(ssh_options)
           Chef::Log.debug("Opening SSH connection to #{username}@#{host} with options #{ssh_start_opts.dup.tap {
                               |ssh| ssh.delete(:key_data) }.inspect}")
-          # Small initial connection timeout (10s) to help us fail faster when server is just dead
           begin
             if gateway? then gateway.ssh(host, username, ssh_start_opts)
             else Net::SSH.start(host, username, ssh_start_opts)
