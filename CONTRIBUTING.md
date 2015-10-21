@@ -43,7 +43,7 @@ This release process applies to all chef-provisioning(-*) projects, but each pro
   3. For example, if we are releasing version `1.5.0` of `chef_provisioning` the command would look like `github_changelog_generator -t 123 --future-release 1.5.0 --enhancement-labels "enhancement,Enhancement,New Feature" --bug-labels "bug,Bug,Improvement" chef/chef_provisioning --exclude-labels "Exclude From Changelog"`
   4. This will poll Github for issues and PRs to format into the changelog, then it will automatically update the changelog.
 6. Parse the changelog and look for any issues/PRs that do not need to be included.  These should be tagged with the `Exclude From Changelog` tag in github.  Examples of PRs to exclude are ones that only modify the README in a trivial way.
-7. `git commit` the `version.rb` and `CHANGELOG.md` changes to the branch and setup a PR for them.  Allow the PR to run any automated tests and review the CHANGELOG for accuracy.
+7. `git commit` the `version.rb` and `CHANGELOG.md` changes to the branch and setup a PR for them.  Allow the PR to run any automated tests and review the CHANGELOG for accuracy.  Tag this PR with the `Exclude From Changelog` tag so it doesn't appear in the changelog for the _next_release.
 8. Merge the PR to master after review.
 9. Switch your local copy to the master branch and `git pull` to pull in the release preperation changes.
 9. Run `rake release` on the master branch.
