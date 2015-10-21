@@ -28,3 +28,22 @@ In order to be complete, resources in this library must have the following prope
 1.  Provisioning recipes need to be paramaterized.  This is often done by specifying modifying attributes via environments or roles.  It can also be searched from a 3rd party service, such as a CMDB.  All resources should adhere to this principal.
   1.  This effectively means a user who models an object as a hash or struct should be able to pass that to the resource and have the resource converge it.  If it is a hash, the resource should handle strings vs symbols vs Mashes correctly.
   2.  It could also mean that we add a criteria saying a resource should be able to explode the elements of a hash into the attributes of the resource before converging it.  IE, an `options` hash would accept a JSON object and the resource would use this to populate the `description`, `count` and `style` attributes on the resource.
+  
+# Release Process
+
+This release process applies to all chef-provisioning(-*) projects, but each project may have additional requirements.
+
+1. Perform a Github diff between master and the last released version.  Determine whether included PRs justify a patch, minor or major version release.
+2. Check out the master branch of the project being prepared for release.
+3. Branch into a release-branch of the form `150_release_prep`.
+4. Modify the `version.rb` file to specify the version for releasing.
+5. Update the changelog to include what is being released.
+  1. For these projects we use the [github changelog generator](https://github.com/skywinder/github-changelog-generator).  Install that gem if you don't have it yet.
+  2. Run `github_changelog_generator -t <token> --future-release <version to release> --enhancement-labels "enhancement,Enhancement,New Feature" --bug-labels "bug,Bug,Improvement" <github project> --exclude-labels "Exclude From Changelog"`
+  3. For example, if we are releasing version `1.5.0` of `chef_provisioning` the command would look like `github_changelog_generator -t 123 --future-release 1.5.0 --enhancement-labels "enhancement,Enhancement,New Feature" --bug-labels "bug,Bug,Improvement" chef/chef_provisioning --exclude-labels "Exclude From Changelog"`
+  4. This will poll Github for issues and PRs to format into the changelog, then it will automatically update the changelog.
+6. Parse the changelog and look for any issues/PRs that do not need to be included.  These should be tagged with the `Exclude From Changelog` tag in github.  Examples of PRs to exclude are ones that only modify the README in a trivial way.
+7. `git commit` the `version.rb` and `CHANGELOG.md` changes to the branch and setup a PR for them.  Allow the PR to run any automated tests and review the CHANGELOG for accuracy.
+8. Merge the PR to master after review.
+9. Switch your local copy to the master branch and `git pull` to pull in the release preperation changes.
+9. Run `rake release` on the master branch.
