@@ -1,7 +1,28 @@
 # Change Log
 
-## [1.4.1](https://github.com/chef/chef-provisioning/tree/1.4.1) (2015-09-30)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.4.0...1.4.1)
+## [1.5.0](https://github.com/chef/chef-provisioning/tree/1.5.0) (2015-10-23)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.4.1...1.5.0)
+
+**Fixed bugs:**
+
+- :converge action should not re-install chef-client if the desired version is already installed [\#428](https://github.com/chef/chef-provisioning/issues/428)
+- SSH available timeout needs to be configurable [\#362](https://github.com/chef/chef-provisioning/issues/362)
+- Making available? timeout use provided ssh\_options, fixes \#362 [\#466](https://github.com/chef/chef-provisioning/pull/466) ([tyler-ball](https://github.com/tyler-ball))
+- Pinning to mixlib-install 0.7.0 until 1.0 is out [\#464](https://github.com/chef/chef-provisioning/pull/464) ([tyler-ball](https://github.com/tyler-ball))
+- Added bootstrap\_no\_proxy support [\#458](https://github.com/chef/chef-provisioning/pull/458) ([jsmartt](https://github.com/jsmartt))
+
+**Closed issues:**
+
+- The action "stop" on a Machine resource does not appear to work [\#463](https://github.com/chef/chef-provisioning/issues/463)
+- machine chef-client run output not logging to provisioner chef-client output [\#274](https://github.com/chef/chef-provisioning/issues/274)
+
+**Merged pull requests:**
+
+- Add gemspec files to allow bundler to run from the gem [\#461](https://github.com/chef/chef-provisioning/pull/461) ([ksubrama](https://github.com/ksubrama))
+- Pin mixlib-install more strictly. [\#459](https://github.com/chef/chef-provisioning/pull/459) ([sersut](https://github.com/sersut))
+
+## [v1.4.1](https://github.com/chef/chef-provisioning/tree/v1.4.1) (2015-09-30)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.4.0...v1.4.1)
 
 **Fixed bugs:**
 
