@@ -39,8 +39,8 @@ This release process applies to all chef-provisioning(-*) projects, but each pro
 4. Modify the `version.rb` file to specify the version for releasing.
 5. Update the changelog to include what is being released.
   1. For these projects we use the [github changelog generator](https://github.com/skywinder/github-changelog-generator).  Install that gem if you don't have it yet.
-  2. Run `github_changelog_generator -t <token> --future-release <version to release> --enhancement-labels "enhancement,Enhancement,New Feature" --bug-labels "bug,Bug,Improvement" <github project> --exclude-labels "Exclude From Changelog"`
-  3. For example, if we are releasing version `1.5.0` of `chef_provisioning` the command would look like `github_changelog_generator -t 123 --future-release 1.5.0 --enhancement-labels "enhancement,Enhancement,New Feature" --bug-labels "bug,Bug,Improvement" chef/chef_provisioning --exclude-labels "Exclude From Changelog"`
+  2. Run `github_changelog_generator <github project> -t <token> --future-release <version to release> --enhancement-labels "enhancement,Enhancement,New Feature" --bug-labels "bug,Bug,Improvement" --exclude-labels "Exclude From Changelog"`
+  3. For example, if we are releasing version `1.5.0` of `chef_provisioning` the command would look like `github_changelog_generator chef/chef_provisioning -t 123 --future-release 1.5.0 --enhancement-labels "enhancement,Enhancement,New Feature" --bug-labels "bug,Bug,Improvement" --exclude-labels "Exclude From Changelog"`
   4. This will poll Github for issues and PRs to format into the changelog, then it will automatically update the changelog.
 6. Parse the changelog and look for any issues/PRs that do not need to be included.  These should be tagged with the `Exclude From Changelog` tag in github.  Examples of PRs to exclude are ones that only modify the README in a trivial way.
 7. `git commit` the `version.rb` and `CHANGELOG.md` changes to the branch and setup a PR for them.  Allow the PR to run any automated tests and review the CHANGELOG for accuracy.  Tag this PR with the `Exclude From Changelog` tag so it doesn't appear in the changelog for the _next_release.
