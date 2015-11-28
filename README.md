@@ -198,7 +198,21 @@ with_machine_options({
   ssh_options: { # a list of options to Net::SSH.start
     :auth_methods => [ 'publickey' ], # DEFAULT
     :keys_only => true, # DEFAULT
-    :host_key_alias => "#{instance.id}.AWS" # DEFAULT
+    :host_key_alias => "#{instance.id}.AWS", # DEFAULT
+    :key_data => nil, # use key from ssh-agent instead of a local file; remember to ssh-add your keys!
+    :forward_agent => true, # you may want your ssh-agent to be available on your provisioned machines
+    :remote_forwards => [
+        # Give remote host access to squid proxy on provisioning node
+        {:remote_port => 3128, :local_host => 'localhost', :local_port => 3128,},
+        # Give remote host access to private git server
+        {:remote_port => 2222, :local_host => 'git.example.com', :local_port => 22,},
+    ],
+    # You can send net-ssh log info to the Chef::Log if you are having
+    # trouble with ssh.
+    :logger => Chef::Log,
+    # If you use :logger => Chef::Log and :verbose then your :verbose setting
+    # will override the global Chef::Config. Probably don't want to do this:
+    #:verbose => :warn,
   }
 })
 ```

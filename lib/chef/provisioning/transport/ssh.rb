@@ -42,6 +42,7 @@ module Provisioning
         @ssh_options = ssh_options
         @options = options
         @config = global_config
+        @remote_forwards = ssh_options.delete(:remote_forwards) { Array.new }
       end
 
       attr_reader :host
@@ -51,12 +52,25 @@ module Provisioning
       attr_reader :config
 
       def execute(command, execute_options = {})
-        Chef::Log.info("Executing #{options[:prefix]}#{command} on #{username}@#{host}")
+        Chef::Log.info("#{self.object_id} Executing #{options[:prefix]}#{command} on #{username}@#{host}")
         stdout = ''
         stderr = ''
         exitstatus = nil
         session # grab session outside timeout, it has its own timeout
+
         with_execute_timeout(execute_options) do
+          @remote_forwards.each do |forward_info|
+              # -R flag to openssh client allows optional :remote_host and
+              # requires the other values so let's do that too.
+              remote_host = forward_info.fetch(:remote_host, 'localhost')
+              remote_port = forward_info.fetch(:remote_port)
+              local_host = forward_info.fetch(:local_host)
+              local_port = forward_info.fetch(:local_port)
+
+              actual_port, actual_host = forward_port(local_port, local_host, remote_port, remote_host)
+              Chef::Log.info("#{host} forwarded remote #{actual_host}:#{actual_port} to local #{local_host}:#{local_port}")
+          end
+
           channel = session.open_channel do |channel|
             # Enable PTY unless otherwise specified, some instances require this
             unless options[:ssh_pty_enable] == false
@@ -85,6 +99,20 @@ module Provisioning
           end
 
           channel.wait
+
+          @remote_forwards.each do |forward_info|
+              # -R flag to openssh client allows optional :remote_host and
+              # requires the other values so let's do that too.
+              remote_host = forward_info.fetch(:remote_host, 'localhost')
+              remote_port = forward_info.fetch(:remote_port)
+              local_host = forward_info.fetch(:local_host)
+              local_port = forward_info.fetch(:local_port)
+
+              session.forward.cancel_remote(remote_port, remote_host)
+              session.loop { session.forward.active_remotes.include?([remote_port, remote_host]) }
+
+              Chef::Log.info("#{host} canceled remote forward #{remote_host}:#{remote_port}")
+          end
         end
 
         Chef::Log.info("Completed #{command} on #{username}@#{host}: exit status #{exitstatus}")
@@ -156,15 +184,17 @@ module Provisioning
           end
           uri.host = host
           uri.port = port
+          Chef::Log.info("Port forwarded: local URL #{local_url} is available to #{self.host} as #{uri.to_s} for the duration of this SSH connection.")
+        else
+          Chef::Log.info("#{host} not forwarding non-local #{local_url}")
         end
-        Chef::Log.info("Port forwarded: local URL #{local_url} is available to #{self.host} as #{uri.to_s} for the duration of this SSH connection.")
         uri.to_s
       end
 
       def disconnect
         if @session
           begin
-            Chef::Log.debug("Closing SSH session on #{username}@#{host}")
+            Chef::Log.info("Closing SSH session on #{username}@#{host}")
             @session.close
           rescue
           ensure
@@ -333,7 +363,7 @@ module Provisioning
 
           actual_remote_port, actual_remote_host = session.forward.active_remote_destinations[[local_port, local_host]]
           if !actual_remote_port
-            Chef::Log.debug("Forwarding local server #{local_host}:#{local_port} to #{username}@#{self.host}")
+            Chef::Log.info("Forwarding local server #{local_host}:#{local_port} to #{username}@#{self.host}")
 
             session.forward.remote(local_port, local_host, remote_port, remote_host) do |new_remote_port, new_remote_host|
 							actual_remote_host = new_remote_host
