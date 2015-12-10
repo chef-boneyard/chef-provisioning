@@ -1,7 +1,15 @@
 # Change Log
 
-## [1.5.0](https://github.com/chef/chef-provisioning/tree/1.5.0) (2015-10-23)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.4.1...1.5.0)
+## [1.5.1](https://github.com/chef/chef-provisioning/tree/1.5.1) (2015-12-10)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.5.0...1.5.1)
+
+**Merged pull requests:**
+
+- Require ResourceBuilder file before monkeypatching to ensure it is already defined [\#478](https://github.com/chef/chef-provisioning/pull/478) ([tyler-ball](https://github.com/tyler-ball))
+- Ensure target directory exists when using write\_file with WinRM [\#471](https://github.com/chef/chef-provisioning/pull/471) ([xenolinguist](https://github.com/xenolinguist))
+
+## [v1.5.0](https://github.com/chef/chef-provisioning/tree/v1.5.0) (2015-10-27)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.4.1...v1.5.0)
 
 **Fixed bugs:**
 
@@ -700,7 +708,7 @@
 
 **Merged pull requests:**
 
-- New ohai hints feature allowing the creation hints. [\#38](https://github.com/chef/chef-provisioning/pull/38) ([ligaturee](https://github.com/ligaturee))
+- New ohai hints feature allowing the creation hints. [\#38](https://github.com/chef/chef-provisioning/pull/38) ([ligature](https://github.com/ligature))
 
 ## [v0.8](https://github.com/chef/chef-provisioning/tree/v0.8) (2014-04-08)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v0.7...v0.8)
@@ -738,7 +746,7 @@
 
 - Add owner, group and mode attributes to machine\_file [\#43](https://github.com/chef/chef-provisioning/pull/43) ([irvingpop](https://github.com/irvingpop))
 - Dt/driver surgery [\#36](https://github.com/chef/chef-provisioning/pull/36) ([jkeiser](https://github.com/jkeiser))
-- Ec2 fixes [\#27](https://github.com/chef/chef-provisioning/pull/27) ([ligaturee](https://github.com/ligaturee))
+- Ec2 fixes [\#27](https://github.com/chef/chef-provisioning/pull/27) ([ligature](https://github.com/ligature))
 
 ## [v0.4](https://github.com/chef/chef-provisioning/tree/v0.4) (2014-03-29)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v0.3.1...v0.4)
@@ -755,7 +763,7 @@
 - Fix typo 'pey-pair-name' -\> 'key-pair-name' [\#30](https://github.com/chef/chef-provisioning/pull/30) ([dafyddcrosby](https://github.com/dafyddcrosby))
 - Remove unused variable provisioner\_options [\#26](https://github.com/chef/chef-provisioning/pull/26) ([dafyddcrosby](https://github.com/dafyddcrosby))
 - Update README.md to show how to add per-machine provisioner options [\#25](https://github.com/chef/chef-provisioning/pull/25) ([dafyddcrosby](https://github.com/dafyddcrosby))
-- Added new private\_ip compute\_options attribute. [\#23](https://github.com/chef/chef-provisioning/pull/23) ([ligaturee](https://github.com/ligaturee))
+- Added new private\_ip compute\_options attribute. [\#23](https://github.com/chef/chef-provisioning/pull/23) ([ligature](https://github.com/ligature))
 - double double escape escape to fix RHEL/CentOS platform\_version detection [\#22](https://github.com/chef/chef-provisioning/pull/22) ([irvingpop](https://github.com/irvingpop))
 - Initial Openstack support [\#15](https://github.com/chef/chef-provisioning/pull/15) ([cstewart87](https://github.com/cstewart87))
 
