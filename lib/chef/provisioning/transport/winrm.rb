@@ -86,9 +86,9 @@ $file.Close
         "\"#{string.gsub("\"", "`\"")}\""
       end
 
-      def available?
-        # If you can't pwd within 10 seconds, you can't pwd
-        execute('pwd', :timeout => 10)
+      def available?(timeout=10)
+        # If you can't pwd within timeout (default is 10 seconds), you can't pwd
+        execute('pwd', :timeout => timeout)
         true
       rescue ::WinRM::WinRMAuthorizationError
         Chef::Log.debug("unavailable: winrm authentication error: #{$!.inspect} ")
