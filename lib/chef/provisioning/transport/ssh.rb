@@ -177,7 +177,7 @@ module Provisioning
         timeout = ssh_options[:timeout] || 10
         execute('pwd', :timeout => timeout)
         true
-      rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ENETUNREACH, Errno::EHOSTDOWN, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, Net::SSH::Disconnect
+      rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ENETUNREACH, Errno::EHOSTDOWN, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, Net::SSH::Disconnect, Net::SSH::ConnectionTimeout
         Chef::Log.debug("#{username}@#{host} unavailable: network connection failed or broke: #{$!.inspect}")
         disconnect
         false
@@ -199,7 +199,7 @@ module Provisioning
             if gateway? then gateway.ssh(host, username, ssh_start_opts)
             else Net::SSH.start(host, username, ssh_start_opts)
             end
-          rescue Timeout::Error
+          rescue Timeout::Error, Net::SSH::ConnectionTimeout
             Chef::Log.debug("Timed out connecting to SSH: #{$!}")
             raise InitialConnectTimeout.new($!)
           end
