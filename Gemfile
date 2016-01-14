@@ -13,5 +13,5 @@ gemspec
 group :development do
 #  gem "berkshelf", github: "berkshelf/berkshelf"
   # TODO we depend on the master branch until chef/chef is released
-  gem "chef", github: "chef/chef", branch: "tball/netssh"
+  gem "chef", github: "chef/chef", branch: "master"
 end
