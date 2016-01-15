@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.email = 'jkeiser@chef.io'
   s.homepage = 'http://github.com/chef/chef-provisioning/README.md'
 
-  s.add_dependency 'net-ssh', '~> 2.0'
+  s.add_dependency 'net-ssh', '>= 2.9', '< 4.0'
   s.add_dependency 'net-scp', '~> 1.0'
   s.add_dependency 'net-ssh-gateway', '~> 1.2.0'
   s.add_dependency 'inifile', '~> 2.0'
