@@ -311,12 +311,12 @@ end
 
 # In chef-provisioning we don't perform resource cloning
 # This fixes resource cloning when the ResourceBuilder is present
-
+require 'chef/resource_builder' unless defined?(Chef::ResourceBuilder)
 class Chef
   class ResourceBuilder
     if defined?(:prior_resource)
       def prior_resource
-        # NOOP
+        nil
       end
     end
   end
