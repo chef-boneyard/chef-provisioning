@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'net-scp', '~> 1.0'
   s.add_dependency 'net-ssh-gateway', '~> 1.2.0'
   s.add_dependency 'inifile', '~> 2.0'
-  s.add_dependency 'cheffish', '~> 1.3', '>= 1.3.1'  # 1.3.1 allows 'let' vars in unquoted recipes.
+  s.add_dependency 'cheffish', '>= 1.3.1', '< 3.0'  # 1.3.1 allows 'let' vars in unquoted recipes.
   s.add_dependency 'winrm', '~> 1.3'
   s.add_dependency "mixlib-install",  "~> 0.7.0"
 
