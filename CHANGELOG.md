@@ -1,10 +1,33 @@
 # Change Log
 
-## [1.5.1](https://github.com/chef/chef-provisioning/tree/1.5.1) (2015-12-10)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.5.0...1.5.1)
+## [Unreleased](https://github.com/chef/chef-provisioning/tree/HEAD)
+
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.5.1...HEAD)
+
+**Implemented enhancements:**
+
+- Custom port forwards. [\#445](https://github.com/chef/chef-provisioning/pull/445) ([causton81](https://github.com/causton81))
+
+**Closed issues:**
+
+- Chef::Exceptions::ContentLengthMismatch Response body length XXXX does not match HTTP Content-Length header XXXX [\#446](https://github.com/chef/chef-provisioning/issues/446)
 
 **Merged pull requests:**
 
+- Stop using Chef::Provider::ChefNode directly \(cheffish 2.0 compat\) [\#490](https://github.com/chef/chef-provisioning/pull/490) ([jkeiser](https://github.com/jkeiser))
+- Allow cheffish 2.0 as a dep [\#489](https://github.com/chef/chef-provisioning/pull/489) ([jkeiser](https://github.com/jkeiser))
+- Updating to the latest release of net-ssh to consume net-ssh/net-ssh\#280 [\#485](https://github.com/chef/chef-provisioning/pull/485) ([tyler-ball](https://github.com/tyler-ball))
+
+## [v1.5.1](https://github.com/chef/chef-provisioning/tree/v1.5.1) (2015-12-10)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.5.0...v1.5.1)
+
+**Closed issues:**
+
+- machine resource is broken with 'stock' windows AMI [\#470](https://github.com/chef/chef-provisioning/issues/470)
+
+**Merged pull requests:**
+
+- Release preperation for 1.5.1 [\#479](https://github.com/chef/chef-provisioning/pull/479) ([tyler-ball](https://github.com/tyler-ball))
 - Require ResourceBuilder file before monkeypatching to ensure it is already defined [\#478](https://github.com/chef/chef-provisioning/pull/478) ([tyler-ball](https://github.com/tyler-ball))
 - Ensure target directory exists when using write\_file with WinRM [\#471](https://github.com/chef/chef-provisioning/pull/471) ([xenolinguist](https://github.com/xenolinguist))
 
@@ -13,7 +36,9 @@
 
 **Fixed bugs:**
 
+- Method failed 'StartsWith' [\#460](https://github.com/chef/chef-provisioning/issues/460)
 - :converge action should not re-install chef-client if the desired version is already installed [\#428](https://github.com/chef/chef-provisioning/issues/428)
+- machine converge property - no longer used? [\#427](https://github.com/chef/chef-provisioning/issues/427)
 - SSH available timeout needs to be configurable [\#362](https://github.com/chef/chef-provisioning/issues/362)
 - Making available? timeout use provided ssh\_options, fixes \#362 [\#466](https://github.com/chef/chef-provisioning/pull/466) ([tyler-ball](https://github.com/tyler-ball))
 - Pinning to mixlib-install 0.7.0 until 1.0 is out [\#464](https://github.com/chef/chef-provisioning/pull/464) ([tyler-ball](https://github.com/tyler-ball))
@@ -26,6 +51,7 @@
 
 **Merged pull requests:**
 
+- Preping 1.5.0 release [\#467](https://github.com/chef/chef-provisioning/pull/467) ([tyler-ball](https://github.com/tyler-ball))
 - Add gemspec files to allow bundler to run from the gem [\#461](https://github.com/chef/chef-provisioning/pull/461) ([ksubrama](https://github.com/ksubrama))
 - Pin mixlib-install more strictly. [\#459](https://github.com/chef/chef-provisioning/pull/459) ([sersut](https://github.com/sersut))
 
@@ -35,8 +61,13 @@
 **Fixed bugs:**
 
 - ohai\_hints should be be created at c:\chef\ohai\hints when provisioning windows nodes [\#433](https://github.com/chef/chef-provisioning/issues/433)
+- throw exception if Chef::Provisioning::Transport.:WinRM\#execute command is over 3040 chars [\#432](https://github.com/chef/chef-provisioning/issues/432)
 - Fix install\_sh\_arguments passing after the conversion to mixlib-install [\#452](https://github.com/chef/chef-provisioning/pull/452) ([irvingpop](https://github.com/irvingpop))
 - Windows ohai hints, fixes \#433 [\#435](https://github.com/chef/chef-provisioning/pull/435) ([hh](https://github.com/hh))
+
+**Merged pull requests:**
+
+- Preparing to release 1.4.1 [\#456](https://github.com/chef/chef-provisioning/pull/456) ([tyler-ball](https://github.com/tyler-ball))
 
 ## [v1.4.0](https://github.com/chef/chef-provisioning/tree/v1.4.0) (2015-09-16)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.3.0...v1.4.0)
@@ -73,6 +104,7 @@
 
 **Merged pull requests:**
 
+- IN PROGRESS: 1.4.0 changelog [\#444](https://github.com/chef/chef-provisioning/pull/444) ([jkeiser](https://github.com/jkeiser))
 - Remove dependency on chef gem [\#441](https://github.com/chef/chef-provisioning/pull/441) ([ksubrama](https://github.com/ksubrama))
 - Adding a CONTRIBUTING document [\#437](https://github.com/chef/chef-provisioning/pull/437) ([tyler-ball](https://github.com/tyler-ball))
 - Major generator/spec/Travis improvements [\#426](https://github.com/chef/chef-provisioning/pull/426) ([randomcamel](https://github.com/randomcamel))
