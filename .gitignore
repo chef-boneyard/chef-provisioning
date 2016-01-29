@@ -1,3 +1,4 @@
+.bundle
 docs/work
 bin
 !bin/generate_driver

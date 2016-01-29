@@ -1,6 +1,7 @@
 source "https://rubygems.org"
 gemspec
 
+gem 'github_changelog_generator'
 #gem 'mixlib-install', path: '../mixlib-install'
 #gem 'net-ssh', :path => '../net-ssh'
 #gem 'chef', :path => '../chef'

@@ -13,8 +13,6 @@ env:
   - CHEF_VERSION=12.3.0
   - CHEF_VERSION=12.2.1
   - CHEF_VERSION=12.1.2
-  - CHEF_VERSION=12.1.1
-  - CHEF_VERSION=12.1.0
 
 matrix:
   # fast_finish: true

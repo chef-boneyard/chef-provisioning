@@ -14,6 +14,8 @@
 
 **Merged pull requests:**
 
+- Fix Provisioning with Cheffish 1.x [\#496](https://github.com/chef/chef-provisioning/pull/496) ([jkeiser](https://github.com/jkeiser))
+- Add "rake changelog" task [\#491](https://github.com/chef/chef-provisioning/pull/491) ([jkeiser](https://github.com/jkeiser))
 - Stop using Chef::Provider::ChefNode directly \(cheffish 2.0 compat\) [\#490](https://github.com/chef/chef-provisioning/pull/490) ([jkeiser](https://github.com/jkeiser))
 - Allow cheffish 2.0 as a dep [\#489](https://github.com/chef/chef-provisioning/pull/489) ([jkeiser](https://github.com/jkeiser))
 - Updating to the latest release of net-ssh to consume net-ssh/net-ssh\#280 [\#485](https://github.com/chef/chef-provisioning/pull/485) ([tyler-ball](https://github.com/tyler-ball))
