@@ -1,5 +1,4 @@
 require 'chef/provider/lwrp_base'
-require 'chef/provider/chef_node'
 require 'openssl'
 require 'chef/provisioning/chef_provider_action_handler'
 

@@ -1,5 +1,5 @@
 require 'chef/provider/lwrp_base'
-require 'chef/provider/chef_node'
+require 'chef/resource/chef_node'
 require 'openssl'
 require 'chef/provisioning/chef_provider_action_handler'
 
@@ -175,7 +175,7 @@ class Machine < Chef::Provider::LWRPBase
   end
 
   def load_current_resource
-    node_driver = Chef::Provider::ChefNode.new(new_resource, run_context)
+    node_driver = Chef::Resource::ChefNode.new(new_resource.name, run_context).provider_for_action(:create)
     node_driver.load_current_resource
     json = node_driver.new_json
     json['normal']['chef_provisioning'] = node_driver.current_json['normal']['chef_provisioning']
