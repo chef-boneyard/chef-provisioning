@@ -175,10 +175,16 @@ class Machine < Chef::Provider::LWRPBase
   end
 
   def load_current_resource
-    node_driver = Chef::Resource::ChefNode.new(new_resource.name, run_context).provider_for_action(:create)
-    node_driver.load_current_resource
-    json = node_driver.new_json
-    json['normal']['chef_provisioning'] = node_driver.current_json['normal']['chef_provisioning']
+    if defined?(Chef::Provider::ChefNode)
+      # Cheffish 1.x
+      node_provider = Chef::Provider::ChefNode.new(new_resource, run_context)
+    else
+      # Cheffish 2.x
+      node_provider = Chef::Resource::ChefNode.action_class.new(new_resource, run_context)
+    end
+    node_provider.load_current_resource
+    json = node_provider.new_json
+    json['normal']['chef_provisioning'] = node_provider.current_json['normal']['chef_provisioning']
     @machine_spec = chef_managed_entry_store.new_entry(:machine, new_resource.name, json)
   end
 
