@@ -39,6 +39,8 @@ namespace :driver do
   end
 end
 
+require "chef/provisioning/version"
+
 begin
   require 'github_changelog_generator/task'
 
