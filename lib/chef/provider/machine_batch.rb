@@ -90,6 +90,14 @@ class MachineBatch < Chef::Provider::LWRPBase
     end
   end
 
+  class MachineBatchError < StandardError
+    attr_reader :machine
+    def initialize(machine, msg)
+      @machine = machine
+      super(msg)
+    end
+  end
+
   def with_ready_machines
     action_allocate
     parallel_do(by_new_driver) do |driver, specs_and_options|
@@ -101,6 +109,9 @@ class MachineBatch < Chef::Provider::LWRPBase
         m[:machine] = machine
         begin
           yield m if block_given?
+        rescue StandardError => error
+          Chef::Log.debug("Chef provisioning failed on machine #{machine.name}")
+          raise MachineBatchError.new(machine, error.message)
         ensure
           machine.disconnect
         end
