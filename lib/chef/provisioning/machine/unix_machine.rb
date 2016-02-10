@@ -27,8 +27,11 @@ module Provisioning
 
       def is_directory?(path)
         result = transport.execute("stat -c '%F' #{path}", :read_only => true)
+        unless result.exitstatus == 0
+          result = transport.execute("stat -f '%HT' #{path}", :read_only => true)
+        end
         return nil if result.exitstatus != 0
-        result.stdout.chomp == 'directory'
+        result.stdout.chomp.downcase == 'directory'
       end
 
       # Return true or false depending on whether file exists
@@ -96,6 +99,9 @@ module Provisioning
       # Get file attributes { :mode, :owner, :group }
       def get_attributes(path)
         result = transport.execute("stat -c '%a %U %G %n' #{path}", :read_only => true)
+        unless result.exitstatus == 0
+          result = transport.execute("stat  -f '%OLp %Sg %Su %N' #{path}", :read_only => true)
+        end
         return nil if result.exitstatus != 0
         file_info = result.stdout.split(/\s+/)
         if file_info.size <= 1
