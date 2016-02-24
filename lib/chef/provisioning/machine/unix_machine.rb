@@ -81,7 +81,7 @@ module Provisioning
             end
           end
           if attributes[:owner] && current_attributes[:owner] != attributes[:owner]
-            action_handler.perform_action "change group of #{path} on #{machine_spec.name} from #{current_attributes[:owner]} to #{attributes[:owner]}" do
+            action_handler.perform_action "change owner of #{path} on #{machine_spec.name} from #{current_attributes[:owner]} to #{attributes[:owner]}" do
               transport.execute("chown #{attributes[:owner]} #{path}").error!
             end
           end
