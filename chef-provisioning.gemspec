@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rake'
   s.add_development_dependency 'pry'
   s.add_development_dependency 'simplecov'
-  s.add_development_dependency 'github_changelog_generator', '!= 1.10.2', '!= 1.10.3', '!= 1.10.4', '!= 1.10.5', '!= 1.11.0', '!= 1.11.1', '!= 1.11.2'
+  s.add_development_dependency 'github_changelog_generator', '1.11.3'
 
   s.bindir       = "bin"
   s.executables  = %w( )
