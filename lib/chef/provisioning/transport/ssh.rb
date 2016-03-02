@@ -39,7 +39,7 @@ module Provisioning
       def initialize(host, username, ssh_options, options, global_config)
         @host = host
         @username = username
-        @ssh_options = ssh_options
+        @ssh_options = ssh_options.to_h
         @options = options
         @config = global_config
         @remote_forwards = ssh_options.delete(:remote_forwards) { Array.new }
