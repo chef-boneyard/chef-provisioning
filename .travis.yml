@@ -6,13 +6,19 @@ rvm:
 gemfile:
   - chef-client-version.gemfile
 
+before_install:
+  - gem update --system
+  - gem install bundler
+
 env:
   - CHEF_VERSION=master
+  - CHEF_VERSION=12.8.1
+  - CHEF_VERSION=12.7.2
+  - CHEF_VERSION=12.6.0
   - CHEF_VERSION=12.4.1
   # - CHEF_VERSION=12.4.0    # we know 12.4.0 doesn't work and specifically exclude it.
   - CHEF_VERSION=12.3.0
   - CHEF_VERSION=12.2.1
-  - CHEF_VERSION=12.1.2
 
 matrix:
   # fast_finish: true
