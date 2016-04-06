@@ -1,5 +1,5 @@
 require 'chef/provisioning/convergence_strategy/precreate_chef_objects'
-require 'mixlib/install'
+require 'mixlib/install/script_generator'
 require 'pathname'
 
 class Chef
@@ -36,7 +36,7 @@ module Provisioning
         opts["install_msi_url"] = convergence_options[:install_msi_url] if convergence_options[:install_msi_url]
         super
 
-        install_command = Mixlib::Install.new(chef_version, true, opts).install_command
+        install_command = Mixlib::Install::ScriptGenerator.new(chef_version, true, opts).install_command
         machine.write_file(action_handler, convergence_options[:install_script_path], install_command)
 
         action_handler.open_stream(machine.node['name']) do |stdout|

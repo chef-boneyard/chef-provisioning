@@ -1,6 +1,6 @@
 require 'chef/provisioning/convergence_strategy/precreate_chef_objects'
 require 'pathname'
-require 'mixlib/install'
+require 'mixlib/install/script_generator'
 
 class Chef
 module Provisioning
@@ -41,7 +41,7 @@ module Provisioning
           opts['install_flags'] = convergence_options[:install_sh_arguments]
         end
 
-        install_command = Mixlib::Install.new(chef_version, false, opts).install_command
+        install_command = Mixlib::Install::ScriptGenerator.new(chef_version, false, opts).install_command
         machine.write_file(action_handler, install_sh_path, install_command, :ensure_dir => true)
         machine.set_attributes(action_handler, install_sh_path, :mode => '0755')
         machine.execute(action_handler, "sh -c #{install_sh_path}")
