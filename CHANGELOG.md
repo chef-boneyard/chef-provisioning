@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.7.0](https://github.com/chef/chef-provisioning/tree/1.7.0) (2016-04-06)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.6.0...1.7.0)
+
+**Merged pull requests:**
+
+- Use mixlib-install 1.0 [\#512](https://github.com/chef/chef-provisioning/pull/512) ([jkeiser](https://github.com/jkeiser))
+- Allow newer inifile gem [\#509](https://github.com/chef/chef-provisioning/pull/509) ([pburkholder](https://github.com/pburkholder))
+
 ## [v1.6.0](https://github.com/chef/chef-provisioning/tree/v1.6.0) (2016-02-03)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.5.1...v1.6.0)
 
@@ -7,9 +15,10 @@
 
 - Custom port forwards. [\#445](https://github.com/chef/chef-provisioning/pull/445) ([causton81](https://github.com/causton81))
 
-**Closed issues:**
+**Fixed bugs:**
 
 - Chef::Exceptions::ContentLengthMismatch Response body length XXXX does not match HTTP Content-Length header XXXX [\#446](https://github.com/chef/chef-provisioning/issues/446)
+- Updating to the latest release of net-ssh to consume net-ssh/net-ssh\#280 [\#485](https://github.com/chef/chef-provisioning/pull/485) ([tyler-ball](https://github.com/tyler-ball))
 
 **Merged pull requests:**
 
@@ -18,7 +27,6 @@
 - Add "rake changelog" task [\#491](https://github.com/chef/chef-provisioning/pull/491) ([jkeiser](https://github.com/jkeiser))
 - Stop using Chef::Provider::ChefNode directly \(cheffish 2.0 compat\) [\#490](https://github.com/chef/chef-provisioning/pull/490) ([jkeiser](https://github.com/jkeiser))
 - Allow cheffish 2.0 as a dep [\#489](https://github.com/chef/chef-provisioning/pull/489) ([jkeiser](https://github.com/jkeiser))
-- Updating to the latest release of net-ssh to consume net-ssh/net-ssh\#280 [\#485](https://github.com/chef/chef-provisioning/pull/485) ([tyler-ball](https://github.com/tyler-ball))
 
 ## [v1.5.1](https://github.com/chef/chef-provisioning/tree/v1.5.1) (2015-12-10)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.5.0...v1.5.1)
@@ -198,7 +206,6 @@
 **Closed issues:**
 
 - chef-dk 0.5.1 with chef-zero renders unusable chefzero://localhost:8889 URLs on nodes [\#336](https://github.com/chef/chef-provisioning/issues/336)
-- Updating chef-provisioning-aws breaks chef-client -z functionality with ChefDK 0.4.0 \(current version\). [\#322](https://github.com/chef/chef-provisioning/issues/322)
 - Converging 0 resources - Am I missing something? [\#320](https://github.com/chef/chef-provisioning/issues/320)
 
 **Merged pull requests:**
