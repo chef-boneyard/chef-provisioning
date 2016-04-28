@@ -102,6 +102,7 @@ $file.Close
 
       def make_url_available_to_remote(local_url)
         uri = URI(local_url)
+        uri.scheme = 'http' if uri.scheme == 'chefzero' && uri.host == 'localhost'
         host = Socket.getaddrinfo(uri.host, uri.scheme, nil, :STREAM)[0][3]
         if host == '127.0.0.1' || host == '::1'
           raise 'Unable to converge locally via winrm. Local converge is currently only supported with SSH. You may only converge with winrm against a chef-server.'
