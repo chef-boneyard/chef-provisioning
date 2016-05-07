@@ -14,6 +14,7 @@ module Provisioning
           :client_pem_path => '/etc/chef/client.pem'
         })
         super(convergence_options, config)
+        @client_rb_path ||= convergence_options[:client_rb_path]
         @install_sh_path = convergence_options[:install_sh_path] || '/tmp/chef-install.sh'
         @chef_version = convergence_options[:chef_version]
         @prerelease = convergence_options[:prerelease]
@@ -22,6 +23,7 @@ module Provisioning
         @chef_client_timeout = convergence_options.has_key?(:chef_client_timeout) ? convergence_options[:chef_client_timeout] : 120*60 # Default: 2 hours
       end
 
+      attr_reader :client_rb_path
       attr_reader :chef_version
       attr_reader :prerelease
       attr_reader :install_sh_path
@@ -53,7 +55,7 @@ module Provisioning
         action_handler.open_stream(machine.node['name']) do |stdout|
           action_handler.open_stream(machine.node['name']) do |stderr|
             command_line = "chef-client"
-            command_line << " -l #{config[:log_level].to_s}" if config[:log_level]
+            command_line << " -c #{@client_rb_path} -l #{config[:log_level].to_s}" if config[:log_level]
             machine.execute(action_handler, command_line,
               :stream_stdout => stdout,
               :stream_stderr => stderr,
