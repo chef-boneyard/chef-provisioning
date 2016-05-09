@@ -27,6 +27,7 @@ module Provisioning
           :client_pem_path => '/etc/chef/client.pem'
         })
         super(convergence_options, config)
+        @client_rb_path ||= convergence_options[:client_rb_path]
         @chef_version ||= convergence_options[:chef_version]
         @prerelease ||= convergence_options[:prerelease]
         @package_cache_path ||= convergence_options[:package_cache_path] || "#{ENV['HOME']}/.chef/package_cache"
@@ -80,7 +81,7 @@ module Provisioning
         action_handler.open_stream(machine.node['name']) do |stdout|
           action_handler.open_stream(machine.node['name']) do |stderr|
             command_line = "chef-client"
-            command_line << " -l #{config[:log_level].to_s}" if config[:log_level]
+            command_line << " -c #{@client_rb_path} -l #{config[:log_level].to_s}" if config[:log_level]
             machine.execute(action_handler, command_line,
               :stream_stdout => stdout,
               :stream_stderr => stderr,
