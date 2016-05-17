@@ -1,5 +1,12 @@
 # Change Log
 
+## [1.7.1](https://github.com/chef/chef-provisioning/tree/1.7.1) (2016-05-17)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.7.0...1.7.1)
+
+**Merged pull requests:**
+
+- install_sh and install_cached convergence strategies trigger chef-client with -c flag [\#518](https://github.com/chef/chef-provisioning/pull/518) ([poliva83](https://github.com/poliva83))
+
 ## [1.7.0](https://github.com/chef/chef-provisioning/tree/1.7.0) (2016-04-06)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.6.0...1.7.0)
 
