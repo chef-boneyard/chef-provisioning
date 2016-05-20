@@ -170,7 +170,16 @@ module Provisioning
       def grant_client_node_permissions(action_handler, chef_server, machine, perms, private_key)
         node_name = machine.name
         api = Cheffish.chef_server_api(chef_server)
-        node_perms = api.get("/nodes/#{node_name}/_acl")
+        begin
+          node_perms = api.get("/nodes/#{node_name}/_acl")
+        rescue Net::HTTPServerException => e
+          if e.response.code == "403"
+            # Skip the 403 Forbidden exception
+            # This allows possibility that 2nd machine convergence could be done by a user that does not have grant permission on node object
+            return if convergence_options[:skip_node_acl_forbidden_excp]
+          end
+          raise
+        end
 
         begin
           perms.each do |p|
