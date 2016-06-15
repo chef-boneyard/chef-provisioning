@@ -139,6 +139,7 @@ module Provisioning
       def create_chef_objects(action_handler, machine, private_key, public_key)
         _convergence_options = convergence_options
         _chef_server = chef_server
+        _format =  _convergence_options[:public_key_format]
         # Save the node and create the client keys and client.
         Chef::Provisioning.inline_resource(action_handler) do
           # Create client
@@ -146,7 +147,7 @@ module Provisioning
             chef_server _chef_server
             source_key public_key
             output_key_path _convergence_options[:public_key_path]
-            output_key_format _convergence_options[:public_key_format]
+            output_key_format _format if _format
             admin _convergence_options[:admin]
             validator _convergence_options[:validator]
           end
