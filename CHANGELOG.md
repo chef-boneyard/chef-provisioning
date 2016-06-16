@@ -1,14 +1,28 @@
 # Change Log
 
-## [1.7.1](https://github.com/chef/chef-provisioning/tree/1.7.1) (2016-05-17)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.7.0...1.7.1)
+## [1.8.0](https://github.com/chef/chef-provisioning/tree/1.8.0) (2016-06-16)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.7.1...1.8.0)
+
+**Closed issues:**
+
+- machine\_batch doesn't clearly mention which machine failed [\#499](https://github.com/chef/chef-provisioning/issues/499)
+- Flexible install\_command. Do not assume internet acces.  [\#474](https://github.com/chef/chef-provisioning/issues/474)
 
 **Merged pull requests:**
 
-- install_sh and install_cached convergence strategies trigger chef-client with -c flag [\#518](https://github.com/chef/chef-provisioning/pull/518) ([poliva83](https://github.com/poliva83))
+- Fix WARN: nil is an invalid value for output\_key\_format [\#520](https://github.com/chef/chef-provisioning/pull/520) ([christinedraper](https://github.com/christinedraper))
+- Add support for custom :install\_sh\_url [\#515](https://github.com/chef/chef-provisioning/pull/515) ([SIGUSR2](https://github.com/SIGUSR2))
+- error handling for machine\_batch resource [\#500](https://github.com/chef/chef-provisioning/pull/500) ([ckaushik](https://github.com/ckaushik))
 
-## [1.7.0](https://github.com/chef/chef-provisioning/tree/1.7.0) (2016-04-06)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.6.0...1.7.0)
+## [v1.7.1](https://github.com/chef/chef-provisioning/tree/v1.7.1) (2016-05-17)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.7.0...v1.7.1)
+
+**Merged pull requests:**
+
+- install\_sh and install\_cached convergence strategies trigger chef-client with -c flag [\#518](https://github.com/chef/chef-provisioning/pull/518) ([poliva83](https://github.com/poliva83))
+
+## [v1.7.0](https://github.com/chef/chef-provisioning/tree/v1.7.0) (2016-04-06)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.6.0...v1.7.0)
 
 **Merged pull requests:**
 
