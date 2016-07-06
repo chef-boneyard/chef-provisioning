@@ -195,7 +195,7 @@ with_machine_options({
     install_msi_url: "foo://bar.com"
   },
   ssh_username: "ubuntu", # Username to use for ssh and WinRM
-  ssh_gateway: "user@gateway", " SSH gateway configuration
+  ssh_gateway: "user@gateway", # SSH gateway configuration
   ssh_options: { # a list of options to Net::SSH.start
     :auth_methods => [ 'publickey' ], # DEFAULT
     :keys_only => true, # DEFAULT
