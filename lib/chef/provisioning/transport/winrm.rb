@@ -36,11 +36,12 @@ module Provisioning
       def execute(command, execute_options = {})
         output = with_execute_timeout(execute_options) do
           session.set_timeout(execute_timeout(execute_options))
+          command_executor = ::WinRM::CommandExecutor.new(session)
           block = Proc.new { |stdout, stderr| stream_chunk(execute_options, stdout, stderr) }
           if execute_options[:raw]
-            session.run_cmd(command, &block)
+            command_executor.run_cmd(command, &block)
           else
-            session.run_powershell_script(command, &block)
+            command_executor.run_powershell_script(command, &block)
           end
         end
         WinRMResult.new(command, execute_options, config, output)
