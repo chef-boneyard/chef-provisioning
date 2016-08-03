@@ -1,7 +1,14 @@
 # Change Log
 
-## [1.8.0](https://github.com/chef/chef-provisioning/tree/1.8.0) (2016-06-16)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.7.1...1.8.0)
+## [1.8.1](https://github.com/chef/chef-provisioning/tree/1.8.1) (2016-08-03)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.8.0...1.8.1)
+
+**Merged pull requests:**
+
+- Cleaning up a deprecation warning [\#530](https://github.com/chef/chef-provisioning/pull/530) ([tyler-ball](https://github.com/tyler-ball))
+
+## [v1.8.0](https://github.com/chef/chef-provisioning/tree/v1.8.0) (2016-06-16)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.7.1...v1.8.0)
 
 **Closed issues:**
 
@@ -250,7 +257,7 @@
 
 **Merged pull requests:**
 
-- fix machine\_batch :destroy \#319 [\#321](https://github.com/chef/chef-provisioning/pull/321) ([patrick-wright](https://github.com/patrick-wright))
+- fix machine\_batch :destroy \#319 [\#321](https://github.com/chef/chef-provisioning/pull/321) ([wrightp](https://github.com/wrightp))
 - Install chef-client using Proxy [\#317](https://github.com/chef/chef-provisioning/pull/317) ([afiune](https://github.com/afiune))
 - Allow user to specify a custom stdout in Chef::Config\[:stdout\] [\#311](https://github.com/chef/chef-provisioning/pull/311) ([jkeiser](https://github.com/jkeiser))
 
@@ -376,7 +383,7 @@
 - Update to ignore .idea directories. [\#247](https://github.com/chef/chef-provisioning/pull/247) ([miguelcnf](https://github.com/miguelcnf))
 - Change Metal to Provisioning [\#240](https://github.com/chef/chef-provisioning/pull/240) ([twellspring](https://github.com/twellspring))
 - In simple example, require chef/provisioning [\#239](https://github.com/chef/chef-provisioning/pull/239) ([janeireton](https://github.com/janeireton))
-- MEGA chef-provisioning-test-suite project dump [\#238](https://github.com/chef/chef-provisioning/pull/238) ([patrick-wright](https://github.com/patrick-wright))
+- MEGA chef-provisioning-test-suite project dump [\#238](https://github.com/chef/chef-provisioning/pull/238) ([wrightp](https://github.com/wrightp))
 - Fix ssh driver url [\#233](https://github.com/chef/chef-provisioning/pull/233) ([gravitystorm](https://github.com/gravitystorm))
 - Flip logic on ssl peer validation [\#232](https://github.com/chef/chef-provisioning/pull/232) ([andrewelizondo](https://github.com/andrewelizondo))
 - add chef-provisioning-crowbar to README.md [\#230](https://github.com/chef/chef-provisioning/pull/230) ([newgoliath](https://github.com/newgoliath))
