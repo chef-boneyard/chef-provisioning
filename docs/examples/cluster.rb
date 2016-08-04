@@ -7,7 +7,7 @@ end
 num_webservers = 1
 
 machine_batch do
-  1.upto(num_webservers) do |i|
+  num_webservers.times do |i|
     machine "luigi#{i}" do
 #     recipe 'apache'
 #     recipe 'mywebapp'
