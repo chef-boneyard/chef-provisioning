@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.9.1](https://github.com/chef/chef-provisioning/tree/v1.9.1) (2016-08-11)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.9.0...v1.9.1)
+
+**Merged pull requests:**
+
+- allows cheffish 3.0 to stop pulling in compat\_resource [\#534](https://github.com/chef/chef-provisioning/pull/534) ([lamont-granquist](https://github.com/lamont-granquist))
+
 ## [v1.9.0](https://github.com/chef/chef-provisioning/tree/v1.9.0) (2016-08-11)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.8.1...v1.9.0)
 
