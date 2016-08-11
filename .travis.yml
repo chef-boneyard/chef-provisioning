@@ -15,10 +15,6 @@ env:
   - CHEF_VERSION=12.8.1
   - CHEF_VERSION=12.7.2
   - CHEF_VERSION=12.6.0
-  - CHEF_VERSION=12.4.1
-  # - CHEF_VERSION=12.4.0    # we know 12.4.0 doesn't work and specifically exclude it.
-  - CHEF_VERSION=12.3.0
-  - CHEF_VERSION=12.2.1
 
 matrix:
   # fast_finish: true
