@@ -1,7 +1,14 @@
 # Change Log
 
-## [1.8.1](https://github.com/chef/chef-provisioning/tree/1.8.1) (2016-08-03)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.8.0...1.8.1)
+## [v1.9.0](https://github.com/chef/chef-provisioning/tree/v1.9.0) (2016-08-11)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.8.1...v1.9.0)
+
+**Closed issues:**
+
+- Uninitialized constant Chef::Resource::Machine [\#531](https://github.com/chef/chef-provisioning/issues/531)
+
+## [v1.8.1](https://github.com/chef/chef-provisioning/tree/v1.8.1) (2016-08-03)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.8.0...v1.8.1)
 
 **Merged pull requests:**
 
@@ -234,6 +241,7 @@
 **Closed issues:**
 
 - chef-dk 0.5.1 with chef-zero renders unusable chefzero://localhost:8889 URLs on nodes [\#336](https://github.com/chef/chef-provisioning/issues/336)
+- Updating chef-provisioning-aws breaks chef-client -z functionality with ChefDK 0.4.0 \(current version\). [\#322](https://github.com/chef/chef-provisioning/issues/322)
 - Converging 0 resources - Am I missing something? [\#320](https://github.com/chef/chef-provisioning/issues/320)
 
 **Merged pull requests:**
