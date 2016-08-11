@@ -1,7 +1,9 @@
 sudo: false
 language: ruby
-rvm:
-  - 2.1
+
+branches:
+  only:
+    - master
 
 gemfile:
   - chef-client-version.gemfile
@@ -10,16 +12,20 @@ before_install:
   - gem update --system
   - gem install bundler
 
-env:
-  - CHEF_VERSION=master
-  - CHEF_VERSION=12.8.1
-  - CHEF_VERSION=12.7.2
-  - CHEF_VERSION=12.6.0
-
 matrix:
-  # fast_finish: true
-  # allow_failures:
-  #   - env: CHEF_VERSION=master
+  include:
+    - rvm: 2.3.1
+      env:
+        CHEF_VERSION=master
+    - rvm: 2.1.10
+      env:
+        CHEF_VERSION=12.8.1
+    - rvm: 2.1.10
+      env:
+        CHEF_VERSION=12.7.2
+    - rvm: 2.1.10
+      env:
+        CHEF_VERSION=12.6.0
 
 script:
   - bundle install --jobs=3 --retry=3
