@@ -18,21 +18,6 @@ rvm:
 env:
   CHEF_VERSION=master
 
-matrix:
-  include:
-    - rvm: 2.3.1
-      env:
-        CHEF_VERSION=master
-    - rvm: 2.1.10
-      env:
-        CHEF_VERSION=12.8.1
-    - rvm: 2.1.10
-      env:
-        CHEF_VERSION=12.7.2
-    - rvm: 2.1.10
-      env:
-        CHEF_VERSION=12.6.0
-
 script:
   - bundle install --jobs=3 --retry=3
   - bundle exec rake build
