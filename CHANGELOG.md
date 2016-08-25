@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.0.0](https://github.com/chef/chef-provisioning/tree/2.0.0) (2016-08-24)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.9.1...2.0.0)
+
+**Merged pull requests:**
+
+- Require Ruby 2.2.2+ and Cheffish 4.0 [\#538](https://github.com/chef/chef-provisioning/pull/538) ([jkeiser](https://github.com/jkeiser))
+
 ## [v1.9.1](https://github.com/chef/chef-provisioning/tree/v1.9.1) (2016-08-11)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.9.0...v1.9.1)
 
