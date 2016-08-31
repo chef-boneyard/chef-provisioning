@@ -18,7 +18,7 @@ class MachineFile < Chef::Resource::LWRPBase
   default_action :upload
 
   attribute :path, :kind_of => String, :name_attribute => true
-  attribute :machine, :kind_of => String
+  attribute :machine, :kind_of => String, :required => true
   attribute :local_path, :kind_of => String
   attribute :content
 
