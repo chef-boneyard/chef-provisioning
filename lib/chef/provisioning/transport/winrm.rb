@@ -57,7 +57,12 @@ module Provisioning
       end
 
       def write_file(path, content)
-        execute("New-Item -Type Directory -Force -Path #{escape(::File.dirname(path))}").error!
+        execute("
+if((Test-Path(#{escape(::File.dirname(path))})) -eq 0)
+{
+  New-Item -Type Directory -Force -Path #{escape(::File.dirname(path))}
+}
+").error!
         chunk_size = options[:chunk_size] || 1024
         # TODO if we could marshal this data directly, we wouldn't have to base64 or do this godawful slow stuff :(
         index = 0
