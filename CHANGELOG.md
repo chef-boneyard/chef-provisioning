@@ -1,5 +1,19 @@
 # Change Log
 
+## [2.0.1](https://github.com/chef/chef-provisioning/tree/2.0.1) (2016-09-07)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.0.0...2.0.1)
+
+**Closed issues:**
+
+- Poor error message using winrm and --local-mode [\#516](https://github.com/chef/chef-provisioning/issues/516)
+- machine attribute in both machine\_execute and machine\_file resources should be required. [\#449](https://github.com/chef/chef-provisioning/issues/449)
+
+**Merged pull requests:**
+
+- Use Winrm v2 and let winrm-fs do file uploads [\#543](https://github.com/chef/chef-provisioning/pull/543) ([mwrock](https://github.com/mwrock))
+- Allow machine\_execute resource to run commands that last longer then 15 minutes [\#541](https://github.com/chef/chef-provisioning/pull/541) ([poliva83](https://github.com/poliva83))
+- set scheme to http if it was chefzero [\#517](https://github.com/chef/chef-provisioning/pull/517) ([sclarson](https://github.com/sclarson))
+
 ## [2.0.0](https://github.com/chef/chef-provisioning/tree/2.0.0) (2016-08-24)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.9.1...2.0.0)
 
