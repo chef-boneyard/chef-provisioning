@@ -41,8 +41,7 @@ module Provisioning
 
         action_handler.open_stream(machine.node['name']) do |stdout|
           action_handler.open_stream(machine.node['name']) do |stderr|
-            machine.execute(action_handler, "powershell.exe -ExecutionPolicy Unrestricted -NoProfile \"& \"\"#{convergence_options[:install_script_path]}\"\"\"",
-              :raw => true,
+            machine.execute(action_handler, "& \"#{convergence_options[:install_script_path]}\"",
               :stream_stdout => stdout,
               :stream_stderr => stderr)
           end
@@ -54,10 +53,11 @@ module Provisioning
 
         action_handler.open_stream(machine.node['name']) do |stdout|
           action_handler.open_stream(machine.node['name']) do |stderr|
-            command_line = "chef-client"
+            # We just installed chef in this shell so refresh PATH from System.Environment
+            command_line = "$env:path = [System.Environment]::GetEnvironmentVariable('PATH', 'MACHINE');"
+            command_line << "chef-client"
             command_line << " -l #{config[:log_level].to_s}" if config[:log_level]
             machine.execute(action_handler, command_line,
-              :raw => true,
               :stream_stdout => stdout,
               :stream_stderr => stderr,
               :timeout => @chef_client_timeout)

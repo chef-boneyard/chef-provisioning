@@ -22,27 +22,24 @@ module Provisioning
       # The actual connection is made as ::WinRM::WinRMWebService.new(endpoint, type, options)
       #
       def initialize(endpoint, type, options, global_config)
-        @endpoint = endpoint
-        @type = type
         @options = options
+        @options[:endpoint] = endpoint
+        @options[:transport] = type
+
+        # WinRM v2 switched from :pass to :password
+        # we accept either to avoid having to update every driver
+        @options[:password] = @options[:password] || @options[:pass]
+        
         @config = global_config
       end
 
-      attr_reader :endpoint
-      attr_reader :type
       attr_reader :options
       attr_reader :config
 
       def execute(command, execute_options = {})
         output = with_execute_timeout(execute_options) do
-          session.set_timeout(execute_timeout(execute_options))
-          command_executor = ::WinRM::CommandExecutor.new(session)
           block = Proc.new { |stdout, stderr| stream_chunk(execute_options, stdout, stderr) }
-          if execute_options[:raw]
-            command_executor.run_cmd(command, &block)
-          else
-            command_executor.run_powershell_script(command, &block)
-          end
+          session.run(command, &block)
         end
         WinRMResult.new(command, execute_options, config, output)
       end
@@ -57,25 +54,13 @@ module Provisioning
       end
 
       def write_file(path, content)
-        execute("New-Item -Type Directory -Force -Path #{escape(::File.dirname(path))}").error!
-        chunk_size = options[:chunk_size] || 1024
-        # TODO if we could marshal this data directly, we wouldn't have to base64 or do this godawful slow stuff :(
-        index = 0
-        execute("
-$ByteArray = [System.Convert]::FromBase64String(#{escape(Base64.encode64(content[index..index+chunk_size-1]))})
-$file = [System.IO.File]::Open(#{escape(path)}, 'Create', 'Write')
-$file.Write($ByteArray, 0, $ByteArray.Length)
-$file.Close
-").error!
-        index += chunk_size
-        while index < content.length
-          execute("
-$ByteArray = [System.Convert]::FromBase64String(#{escape(Base64.encode64(content[index..index+chunk_size-1]))})
-$file = [System.IO.File]::Open(#{escape(path)}, 'Append', 'Write')
-$file.Write($ByteArray, 0, $ByteArray.Length)
-$file.Close
-").error!
-          index += chunk_size
+        file = Tempfile.new('provisioning-upload')
+        begin
+           file.write(content)
+           file.close
+           file_transporter.upload(file.path, path)
+        ensure
+           file.unlink
         end
       end
 
@@ -114,9 +99,15 @@ $file.Close
 
       def session
         @session ||= begin
-          require 'kconv' # Really, people? *sigh*
           require 'winrm'
-          ::WinRM::WinRMWebService.new(endpoint, type, options)
+          ::WinRM::Connection.new(options).shell(:powershell)
+        end
+      end
+
+      def file_transporter
+        @file_transporter ||= begin
+          require 'winrm-fs'
+          ::WinRM::FS::Core::FileTransporter.new(session)
         end
       end
 
@@ -125,13 +116,9 @@ $file.Close
           @command = command
           @options = options
           @config = config
-          @exitstatus = output[:exitcode]
-          @stdout = ''
-          @stderr = ''
-          output[:data].each do |data|
-            @stdout << data[:stdout] if data[:stdout]
-            @stderr << data[:stderr] if data[:stderr]
-          end
+          @exitstatus = output.exitcode
+          @stdout = output.stdout
+          @stderr = output.stderr
         end
 
         attr_reader :stdout
