@@ -1,7 +1,14 @@
 # Change Log
 
-## [2.0.1](https://github.com/chef/chef-provisioning/tree/2.0.1) (2016-09-07)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.0.0...2.0.1)
+## [2.0.2](https://github.com/chef/chef-provisioning/tree/2.0.2) (2016-09-22)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.0.1...2.0.2)
+
+**Fixed bugs:**
+
+- Allow mixlib-install 2.0 [\#546](https://github.com/chef/chef-provisioning/pull/546) ([jkeiser](https://github.com/jkeiser))
+
+## [v2.0.1](https://github.com/chef/chef-provisioning/tree/v2.0.1) (2016-09-07)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.0.0...v2.0.1)
 
 **Closed issues:**
 
@@ -14,8 +21,8 @@
 - Allow machine\_execute resource to run commands that last longer then 15 minutes [\#541](https://github.com/chef/chef-provisioning/pull/541) ([poliva83](https://github.com/poliva83))
 - set scheme to http if it was chefzero [\#517](https://github.com/chef/chef-provisioning/pull/517) ([sclarson](https://github.com/sclarson))
 
-## [2.0.0](https://github.com/chef/chef-provisioning/tree/2.0.0) (2016-08-24)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.9.1...2.0.0)
+## [v2.0.0](https://github.com/chef/chef-provisioning/tree/v2.0.0) (2016-08-25)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v1.9.1...v2.0.0)
 
 **Merged pull requests:**
 
