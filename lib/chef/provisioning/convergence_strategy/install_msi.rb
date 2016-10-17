@@ -41,7 +41,7 @@ module Provisioning
 
         action_handler.open_stream(machine.node['name']) do |stdout|
           action_handler.open_stream(machine.node['name']) do |stderr|
-            machine.execute(action_handler, "& \"#{convergence_options[:install_script_path]}\"",
+            machine.execute(action_handler, "& powershell.exe -ExecutionPolicy Unrestricted -NoProfile \"#{convergence_options[:install_script_path]}\"",
               :stream_stdout => stdout,
               :stream_stderr => stderr)
           end
