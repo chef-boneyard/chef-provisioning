@@ -1,6 +1,7 @@
-require 'chef/provisioning/transport'
 require 'base64'
+require 'chef/provisioning/transport'
 require 'timeout'
+require 'winrm-elevated'
 
 class Chef
 module Provisioning
@@ -101,7 +102,7 @@ module Provisioning
       def session
         @session ||= begin
           require 'winrm'
-          ::WinRM::Connection.new(options).shell(:powershell)
+          ::WinRM::Connection.new(options).shell(:elevated)
         end
       end
 
