@@ -100,9 +100,23 @@ module Provisioning
 
       def session
         @session ||= begin
-          require 'winrm'
-          ::WinRM::Connection.new(options).shell(:powershell)
-        end
+                       require 'winrm-elevated'
+                       require 'pry-byebug'
+                       #binding.pry
+                       # look for create_with_defaults
+                       #$unless options.nil?
+                       # options = options.merge({
+                       #                           operation_timeout: '600',
+                       #                           receive_timeout: '700'
+                       #                         })
+                       #  options = options.merge({
+                       @options.merge({
+                         operation_timeout: '600',
+                         receive_timeout: '700'
+                       })
+                       #end
+                       ::WinRM::Connection.new(options).shell(:elevated)
+                     end
       end
 
       def file_transporter
