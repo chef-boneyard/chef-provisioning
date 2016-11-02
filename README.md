@@ -143,8 +143,8 @@ Drivers each have their own repository.  Current drivers:
 - [FOG: EC2, DigitalOcean, OpenStack, etc.](https://github.com/chef/chef-provisioning-fog)
 
 **Virtualization:**
-- [Vagrant: VirtualBox, VMWare Fusion, etc.](https://github.com/chef/chef-provisioning-vagrant)
-- [VSphere](https://github.com/CenturyLinkCloud/chef-provisioning-vsphere)
+- [Vagrant: VirtualBox, VMware Fusion, etc.](https://github.com/chef/chef-provisioning-vagrant)
+- [vSphere](https://github.com/CenturyLinkCloud/chef-provisioning-vsphere)
 
 **Containers:**
 - [Docker](https://github.com/chef/chef-provisioning-docker)
@@ -225,7 +225,7 @@ Individual drivers will often add their own driver specific config.  For example
 
 ### Anatomy of a Recipe
 
-chef-zero comes with a provisioner for Vagrant, an abstraction that covers VirtualBox, VMWare and other Virtual Machine drivers. In docs/examples, you can run this to try it:
+chef-zero comes with a provisioner for Vagrant, an abstraction that covers VirtualBox, VMware and other Virtual Machine drivers. In docs/examples, you can run this to try it:
 
 ```ruby
 export CHEF_DRIVER=vagrant
@@ -233,7 +233,7 @@ export VAGRANT_DEFAULT_PROVIDER=virtualbox
 chef-client -z vagrant_linux.rb simple.rb
 ```
 
-To use with VMWare, simply update the prior example to read ```export VAGRANT_DEFAULT_PROVIDER=vmware_fusion```
+To use with VMware, simply update the prior example to read ```export VAGRANT_DEFAULT_PROVIDER=vmware_fusion```
 
 This is a chef-client run, which runs multiple **recipes.** Chef Provisioning is nothing but resources you put in recipes.
 
