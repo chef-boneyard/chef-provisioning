@@ -293,6 +293,20 @@ machine 'mario' do
 end
 ```
 
+### Configuring ACLs
+
+If you want to run your provisionning recipes from an actual chef node, rather than from your workstation, you need to give that node's client enough rights to create the node and client he'll be provisioning on the chef server. Without those additional rights, the provisioning will fail with a error along the lines of `chef_client[mymachine] had an error: Net::HTTPServerException: 403 "Forbidden"`. 
+
+A clean solution to this problem is to use [knife-acl](https://github.com/chef/knife-acl) to define a `provisioners` group with the required rights, and add your client to it:
+
+```shellsession
+$> chef gem install knife-acl
+$> knife group create provisioners
+$> knife acl add group provisioners containers clients read,create,update,delete,grant
+$> knife acl add group provisioners containers nodes read,create,update,delete,grant
+$> knife group add client my_provisioning_client_name provisioners
+```
+
 Kitchen
 -------
 
