@@ -14,9 +14,9 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = ">= 2.2.2"
 
-  s.add_dependency 'net-ssh', '>= 2.9', '< 4.0'
+  s.add_dependency 'net-ssh', '>= 2.9', '< 5.0'
   s.add_dependency 'net-scp', '~> 1.0'
-  s.add_dependency 'net-ssh-gateway', '~> 1.2.0'
+  s.add_dependency 'net-ssh-gateway', '~> 1.2'
   s.add_dependency 'inifile', '>= 2.0.2'
   s.add_dependency 'cheffish', '~> 4.0'
   s.add_dependency 'winrm-fs', '~> 1.0'
