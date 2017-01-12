@@ -1,11 +1,24 @@
 # Change Log
 
-## [2.0.2](https://github.com/chef/chef-provisioning/tree/2.0.2) (2016-09-22)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.0.1...2.0.2)
+## [v2.1.0](https://github.com/chef/chef-provisioning/tree/v2.1.0) (2017-01-11)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.0.2...v2.1.0)
+
+**Merged pull requests:**
+
+- relax upper bounds on deps [\#556](https://github.com/chef/chef-provisioning/pull/556) ([lamont-granquist](https://github.com/lamont-granquist))
+- Add a section about ACLs in README.me [\#553](https://github.com/chef/chef-provisioning/pull/553) ([elthariel](https://github.com/elthariel))
+- Update README.md [\#548](https://github.com/chef/chef-provisioning/pull/548) ([martinmosegaard](https://github.com/martinmosegaard))
+
+## [v2.0.2](https://github.com/chef/chef-provisioning/tree/v2.0.2) (2016-09-22)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.0.1...v2.0.2)
 
 **Fixed bugs:**
 
 - Allow mixlib-install 2.0 [\#546](https://github.com/chef/chef-provisioning/pull/546) ([jkeiser](https://github.com/jkeiser))
+
+**Merged pull requests:**
+
+- Bump version to 2.0.2 [\#547](https://github.com/chef/chef-provisioning/pull/547) ([jkeiser](https://github.com/jkeiser))
 
 ## [v2.0.1](https://github.com/chef/chef-provisioning/tree/v2.0.1) (2016-09-07)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.0.0...v2.0.1)
