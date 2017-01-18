@@ -1,17 +1,52 @@
 Chef Provisioning
 ==========
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/chef/chef-provisioning?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Stories in Ready](https://badge.waffle.io/chef/chef-provisioning.png?label=ready&title=Ready)](https://waffle.io/chef/chef-provisioning)
 [![Status](https://travis-ci.org/chef/chef-provisioning.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning)
 [![Gem Version](https://badge.fury.io/rb/chef-provisioning.svg)](http://badge.fury.io/rb/chef-provisioning)
 
-Driver build status:
+Please join us in Slack by signing up at http://community-slack.chef.io/ and joining `#chef-provisioning`
 
-AWS | Azure | Docker | Fog | ssh | Vagrant
----- | ---- | ---- | ---- | ---- | ----
-[![Status](https://travis-ci.org/chef/chef-provisioning-aws.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-aws)| [![Status](https://travis-ci.org/chef/chef-provisioning-azure.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-azure) | [![Status](https://travis-ci.org/chef/chef-provisioning-docker.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-docker) | [![Status](https://travis-ci.org/chef/chef-provisioning-fog.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-fog) |  [![Status](https://travis-ci.org/chef/chef-provisioning-ssh.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-ssh) | [![Status](https://travis-ci.org/chef/chef-provisioning-vagrant.svg?branch=master)](https://travis-ci.org/chef/chef-provisioning-vagrant)
-[![Gem Version](https://badge.fury.io/rb/chef-provisioning-aws.svg)](http://badge.fury.io/rb/chef-provisioning-aws) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-azure.svg)](http://badge.fury.io/rb/chef-provisioning-azure) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-docker.svg)](http://badge.fury.io/rb/chef-provisioning-docker) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-fog.svg)](http://badge.fury.io/rb/chef-provisioning-fog) | [![Gem  Version](https://badge.fury.io/rb/chef-provisioning-ssh.svg)](http://badge.fury.io/rb/chef-provisioning-ssh) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-vagrant.svg)](http://badge.fury.io/rb/chef-provisioning-vagrant)
-This library solves the problem of repeatably creating machines and infrastructures in Chef.  It has a plugin model that lets you write bootstrappers for your favorite infrastructures, including VirtualBox, EC2, LXC, bare metal, and many more!
+Overview
+==========
+
+Chef Provisioning is a Cookbook and Recipe based approach for managing your infrastructure. Users can codify their infrastructure and use Chef to converge their infrastructure to the desired state. It has a plugin model (called Drivers) to manage different infrastructures, including AWS, Azure and Fog.
+
+Chef Provisioning is maintained according to the [Chef Maintenance Policy](https://github.com/chef/chef-rfc/blob/master/rfc030-maintenance-policy.md).
+
+Drivers
+-------------
+
+Due to the age and engagement level with different Drivers they have fallen into two categories - maintained and unmaintained.
+
+Maintained drivers have a representative in the maintenance policy and get triaged / discussed during office hours. They are
+
+[AWS](https://github.com/chef/chef-provisioning-aws) | [Azure](https://github.com/chef/chef-provisioning-azure) | [Fog](https://github.com/chef/chef-provisioning-fog)
+---- | ---- | ----
+[![Gem Version](https://badge.fury.io/rb/chef-provisioning-aws.svg)](http://badge.fury.io/rb/chef-provisioning-aws) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-azure.svg)](http://badge.fury.io/rb/chef-provisioning-azure) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-fog.svg)](http://badge.fury.io/rb/chef-provisioning-fog)
+
+One driver is not maintained by Chef:
+
+* [VSphere](https://github.com/CenturyLinkCloud/chef-provisioning-vsphere)
+
+Unmaintained Drivers are at risk of becoming stale. They are:
+
+* [Docker](https://github.com/chef/chef-provisioning-docker)
+* [ssh](https://github.com/chef/chef-provisioning-ssh)
+* [Vagrant](https://github.com/chef/chef-provisioning-vagrant)
+* [LXC](https://github.com/chef/chef-provisioning-lxc)
+* [Hanlon](https://github.com/chef/chef-provisioning-hanlon)
+
+Target Audience
+-------------
+
+Chef Provisioning is a good fit for people who use or want to use the Chef ecosystem to manage their infrastructure. Infrastructure is represented as Chef Resources and managed in Chef Recipes and Cookbooks. These recipes run on a provisioner node and attempt to converge the infrastructure idempotently. The AWS driver is the most used, the most tested and receives the most updates.
+
+Chef Provisioning and its Drivers are maintained by the open source community. They currently have a slow tempo for issue triage and pull request merging. Troubleshooting a bug may require stepping through the Ruby Chef codebase and engaging the community.
+
+If you are new to Chef and Chef Provisioning, learning both can be daunting. If you are not familiar with Ruby as well, double the learning curve. Successful provisioning users know how they want to manage their cookbooks. Generally this is some CI/CD pipeline.
+
+Chef is very flexible which allows customized provisioning solutions at the cost of high complexity. This makes it hard to document all the possible use cases. Patterns (for example, how to manage the provisioning node and run the provisioning recipes) are not well documented.
+
+Chef Provisioning should be used to manage infrastructure (CRUD operations) and register Chef nodes with the server for the first time only. Other use cases (like scheduling chef runs, node inventory or reporting) are not supported.
 
 Documentation
 -------------
@@ -23,7 +58,6 @@ These are the primary documents to help learn about using Provisioning and creat
 * [Configuration](https://github.com/chef/chef-provisioning/blob/master/docs/configuration.md#configuring-and-using-provisioning-drivers)
 * [Writing Drivers](https://github.com/chef/chef-provisioning/blob/master/docs/building_drivers.md#writing-drivers)
 * [Embedding](https://github.com/chef/chef-provisioning/blob/master/docs/embedding.md)
-* [Providers](https://github.com/chef/chef-provisioning/blob/master/docs/providers)
 
 Media
 -----
@@ -46,10 +80,9 @@ You can try out Chef Provisioning in many different flavors.
 
 ### Vagrant
 
-To give it a spin, install Vagrant and VirtualBox and try this from the `chef-provisioning/docs/examples` directory:
+To give it a spin, install the latest ChefDK, Vagrant and VirtualBox. Run the following from the `chef-provisioning/docs/examples` directory:
 
 ```
-gem install chef-provisioning chef-provisioning-vagrant
 export CHEF_DRIVER=vagrant
 export VAGRANT_DEFAULT_PROVIDER=virtualbox
 chef-client -z vagrant_linux.rb simple.rb
@@ -62,7 +95,6 @@ This will create two vagrant precise64 linux boxes, "mario" and "luigi1", in `~/
 If you have an AWS account, you can spin up a machine there like this:
 
 ```
-gem install chef-provisioning chef-provisioning-aws
 export CHEF_DRIVER=aws
 chef-client -z simple.rb
 ```
@@ -74,7 +106,6 @@ This will create two linux boxes in the AWS account referenced by your default p
 If you are on DigitalOcean and using the `tugboat` gem, you can do this:
 
 ```
-gem install chef-provisioning chef-provisioning-fog
 export CHEF_DRIVER=fog:DigitalOcean
 chef-client -z simple.rb
 ```
@@ -134,29 +165,6 @@ Drivers handle the real work of getting those abstract definitions into real, ph
 The driver API is separated out so that new drivers can be made with minimal effort (without having to rewrite ssh, tunneling, bootstrapping, and OS support).  But to the user, they appear as a single thing, so that the machine acquisition can use its smarts to autodetect the other bits (transports, OS's, etc.).
 
 Drivers save their data in the Chef node itself, so that they will be accessible to everyone who is using the Chef server to manage the nodes.
-
-Drivers each have their own repository.  Current drivers:
-
-**Cloud:**
-- [AWS](https://github.com/chef/chef-provisioning-aws)
-- [Azure](https://github.com/chef/chef-provisioning-azure)
-- [FOG: EC2, DigitalOcean, OpenStack, etc.](https://github.com/chef/chef-provisioning-fog)
-
-**Virtualization:**
-- [Vagrant: VirtualBox, VMware Fusion, etc.](https://github.com/chef/chef-provisioning-vagrant)
-- [vSphere](https://github.com/CenturyLinkCloud/chef-provisioning-vsphere)
-
-**Containers:**
-- [Docker](https://github.com/chef/chef-provisioning-docker)
-
-**Bare Metal:**
-- [OpenCrowbar](https://github.com/newgoliath/chef-provisioning-crowbar) OpenCrowbar controls your real metal.  It discovers, inventories, configs RAID & BIOS and networks, and installs your OS.  [OpenCrowbar website](http://www.opencrowbar.org) [OpenCrowbar github](https://github.com/opencrowbar/core)
-- [SSH (no PXE)](https://github.com/double-z/chef-metal-ssh) (not yet up to date with 0.11)
-
-**Seeking Maintainers:**
-These repositories are not actively maintained and are seeking maintainers.
-- [LXC](https://github.com/chef/chef-provisioning-lxc)
-- [Hanlon](https://github.com/chef/chef-provisioning-hanlon)
 
 ### Machine options
 
@@ -225,7 +233,7 @@ Individual drivers will often add their own driver specific config.  For example
 
 ### Anatomy of a Recipe
 
-chef-zero comes with a provisioner for Vagrant, an abstraction that covers VirtualBox, VMware and other Virtual Machine drivers. In docs/examples, you can run this to try it:
+The ChefDK comes with a provisioner for Vagrant, an abstraction that covers VirtualBox, VMware and other Virtual Machine drivers. In docs/examples, you can run this to try it:
 
 ```ruby
 export CHEF_DRIVER=vagrant
@@ -307,20 +315,9 @@ $> knife acl add group provisioners containers nodes read,create,update,delete,g
 $> knife group add client my_provisioning_client_name provisioners
 ```
 
-Kitchen
--------
-
-Chef Provisioning also works with Test Kitchen, allowing you to test entire clusters, not just machines!  The repository for the kitchen-metal gem is https://github.com/doubt72/kitchen-metal.
-
-
-Fixing conflict with chef-zero 3.2.1 and ~> 4.0
------------------------------------------------
-
-If you run into the error `Unable to activate cheffish-1.0.0, because chef-zero-3.2.1 conflicts with chef-zero (~> 4.0)` you'll need to update the version of the chef gem included in the ChefDK.  Follow the instructions @ [https://github.com/fnichol/chefdk-update-app](https://github.com/fnichol/chefdk-update-app) and update chef to ~>12.2.1
-
 Bugs and The Plan
 -----------------
 
-Please submit bugs, gripes and feature requests at [https://github.com/chef/chef-provisioning/issues](https://github.com/chef/chef-provisioning/issues), contact John Keiser on Twitter at [@jkeiser2](https://twitter.com/jkeiser2), email at [jkeiser@chef.io](mailto:jkeiser@chef.io)
+Please submit bugs, gripes and feature requests at [https://github.com/chef/chef-provisioning/issues](https://github.com/chef/chef-provisioning/issues) and join us in the Slack room to chat.
 
-To contribute, just make a PR in the appropriate repo--also, make sure you've [signed the Chef Contributor License Agreement](https://supermarket.chef.io) (through your Chef Supermarket profile), since this is going into core Chef eventually. If you already signed this for a Chef contribution, you don't need to do so again--if you're not sure, you can check for your name [here](https://supermarket.chef.io/contributors) or if you signed up long ago check the [old list](https://github.com/chef/chef/blob/master/CLA_ARCHIVE.md)!
+To contribute, just make a PR in the appropriate repo following the Chef [contribution process](https://github.com/chef/chef/blob/master/CONTRIBUTING.md#contribution-process).
