@@ -21,6 +21,7 @@ module Provisioning
         @install_sh_arguments = convergence_options[:install_sh_arguments]
         @bootstrap_env = convergence_options[:bootstrap_proxy] ? "http_proxy=#{convergence_options[:bootstrap_proxy]} https_proxy=$http_proxy " : ""
         @chef_client_timeout = convergence_options.has_key?(:chef_client_timeout) ? convergence_options[:chef_client_timeout] : 120*60 # Default: 2 hours
+        @chef_command = convergence_options[:chef_command] || "chef-client"
       end
 
       attr_reader :client_rb_path
@@ -56,8 +57,8 @@ module Provisioning
 
         action_handler.open_stream(machine.node['name']) do |stdout|
           action_handler.open_stream(machine.node['name']) do |stderr|
-            command_line = "chef-client"
-            command_line << " -c #{@client_rb_path} -l #{config[:log_level].to_s}" if config[:log_level]
+            command_line = "#{@chef_command} -c #{@client_rb_path}"
+            command_line << " -l #{config[:log_level].to_s}" if config[:log_level]
             machine.execute(action_handler, command_line,
               :stream_stdout => stdout,
               :stream_stderr => stderr,
