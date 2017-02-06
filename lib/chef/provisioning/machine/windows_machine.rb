@@ -51,6 +51,7 @@ $hash = $md5.Hash
 # convert hash bytes to hex formatted string
 $hash | foreach { $hash_txt += $_.ToString("x2") }
 $hash_txt
+$fd.Dispose()
 EOM
         result.error!
         remote_sum = result.stdout.split(' ')[0]
