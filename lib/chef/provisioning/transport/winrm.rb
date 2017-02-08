@@ -1,6 +1,8 @@
 require 'chef/provisioning/transport'
 require 'base64'
 require 'timeout'
+require 'winrm-elevated'
+require 'winrm-fs'
 
 class Chef
 module Provisioning
@@ -29,7 +31,7 @@ module Provisioning
         # WinRM v2 switched from :pass to :password
         # we accept either to avoid having to update every driver
         @options[:password] = @options[:password] || @options[:pass]
-        
+
         @config = global_config
       end
 
@@ -37,10 +39,8 @@ module Provisioning
       attr_reader :config
 
       def execute(command, execute_options = {})
-        output = with_execute_timeout(execute_options) do
-          block = Proc.new { |stdout, stderr| stream_chunk(execute_options, stdout, stderr) }
-          session.run(command, &block)
-        end
+        block = Proc.new { |stdout, stderr| stream_chunk(execute_options, stdout, stderr) }
+        output = session.run(command, &block)
         WinRMResult.new(command, execute_options, config, output)
       end
 
@@ -58,7 +58,7 @@ module Provisioning
         begin
            file.write(content)
            file.close
-           file_transporter.upload(file.path, path)
+           file_manager.upload(file.path, path)
         ensure
            file.unlink
         end
@@ -73,8 +73,7 @@ module Provisioning
       end
 
       def available?
-        # If you can't pwd within 10 seconds, you can't pwd
-        execute('pwd', :timeout => 10)
+        execute('pwd')
         true
       rescue ::WinRM::WinRMAuthorizationError
         Chef::Log.debug("unavailable: winrm authentication error: #{$!.inspect} ")
@@ -99,16 +98,18 @@ module Provisioning
       protected
 
       def session
-        @session ||= begin
-          require 'winrm'
-          ::WinRM::Connection.new(options).shell(:powershell)
-        end
+        @session ||= connection.shell(:elevated)
       end
 
-      def file_transporter
-        @file_transporter ||= begin
-          require 'winrm-fs'
-          ::WinRM::FS::Core::FileTransporter.new(session)
+      def file_manager
+        @file_manager ||= ::WinRM::FS::FileManager.new(connection)
+      end
+
+      private
+
+      def connection
+        @connection ||= begin
+          ::WinRM::Connection.new(@options)
         end
       end
 
