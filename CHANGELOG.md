@@ -1,5 +1,13 @@
 # Change Log
 
+## [2.1.1](https://github.com/chef/chef-provisioning/tree/2.1.1) (2017-02-14)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.1.0...2.1.1)
+
+**Merged pull requests:**
+
+- Leverage winrm-elevated to execute chef install script [\#562](https://github.com/chef/chef-provisioning/pull/562) ([tyler-ball](https://github.com/tyler-ball))
+- Updating various READMEs to try and better call out benefits, drawbacks and the target audience [\#557](https://github.com/chef/chef-provisioning/pull/557) ([tyler-ball](https://github.com/tyler-ball))
+
 ## [v2.1.0](https://github.com/chef/chef-provisioning/tree/v2.1.0) (2017-01-11)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.0.2...v2.1.0)
 
@@ -289,7 +297,6 @@
 **Closed issues:**
 
 - chef-dk 0.5.1 with chef-zero renders unusable chefzero://localhost:8889 URLs on nodes [\#336](https://github.com/chef/chef-provisioning/issues/336)
-- Updating chef-provisioning-aws breaks chef-client -z functionality with ChefDK 0.4.0 \(current version\). [\#322](https://github.com/chef/chef-provisioning/issues/322)
 - Converging 0 resources - Am I missing something? [\#320](https://github.com/chef/chef-provisioning/issues/320)
 
 **Merged pull requests:**
