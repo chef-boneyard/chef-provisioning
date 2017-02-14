@@ -19,13 +19,14 @@ Due to the age and engagement level with different Drivers they have fallen into
 
 Maintained drivers have a representative in the maintenance policy and get triaged / discussed during office hours. They are
 
-[AWS](https://github.com/chef/chef-provisioning-aws) | [Azure](https://github.com/chef/chef-provisioning-azure) | [Fog](https://github.com/chef/chef-provisioning-fog)
+[AWS](https://github.com/chef/chef-provisioning-aws) | [Fog](https://github.com/chef/chef-provisioning-fog)
 ---- | ---- | ----
-[![Gem Version](https://badge.fury.io/rb/chef-provisioning-aws.svg)](http://badge.fury.io/rb/chef-provisioning-aws) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-azure.svg)](http://badge.fury.io/rb/chef-provisioning-azure) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-fog.svg)](http://badge.fury.io/rb/chef-provisioning-fog)
+[![Gem Version](https://badge.fury.io/rb/chef-provisioning-aws.svg)](http://badge.fury.io/rb/chef-provisioning-aws) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-fog.svg)](http://badge.fury.io/rb/chef-provisioning-fog)
 
-One driver is not maintained by Chef:
+Two drivers are not maintained by Chef:
 
 * [VSphere](https://github.com/CenturyLinkCloud/chef-provisioning-vsphere)
+* [AsureRM](https://github.com/pendrica/chef-provisioning-azurerm)
 
 Unmaintained Drivers are at risk of becoming stale. They are:
 
@@ -303,7 +304,7 @@ end
 
 ### Configuring ACLs
 
-If you want to run your provisionning recipes from an actual chef node, rather than from your workstation, you need to give that node's client enough rights to create the node and client he'll be provisioning on the chef server. Without those additional rights, the provisioning will fail with a error along the lines of `chef_client[mymachine] had an error: Net::HTTPServerException: 403 "Forbidden"`. 
+If you want to run your provisionning recipes from an actual chef node, rather than from your workstation, you need to give that node's client enough rights to create the node and client he'll be provisioning on the chef server. Without those additional rights, the provisioning will fail with a error along the lines of `chef_client[mymachine] had an error: Net::HTTPServerException: 403 "Forbidden"`.
 
 A clean solution to this problem is to use [knife-acl](https://github.com/chef/knife-acl) to define a `provisioners` group with the required rights, and add your client to it:
 
