@@ -16,22 +16,9 @@ You'll notice you don't specify where the machine should be or what OS it should
 
 (There are many things you can do with the `machine` resource, but we'll cover that in another post.)
 
-## Installing drivers
+## Drivers
 
-chef-provisioning drivers are generally named chef-provisioning-<drivername>.  To install, just use `gem install chef-provisioning-docker` (for instance).  Fog and Vagrant come pre-installed when you install chef-provisioning.
-
-## Using a driver
-
-To specify *where* the machine should be (AWS, Vagrant, etc.), you need a *driver*. There are several drivers out there, including:
-
-- Fog (which connects with AWS EC2, OpenStack, DigitalOcean and SoftLayer)
-- VMware VSphere
-- Vagrant (VirtualBox and VMware Fusion)
-- LXC
-- Docker
-- Raw SSH (with a list of already-provisioned servers)
-
-(Note: as of this writing, only Fog and Vagrant are up to date with the new Driver interface, but that will change very quickly.)
+To specify *where* the machine should be (AWS, Vagrant, etc.), you need a *driver*. We recommended using the drivers packaged in the latest version of the ChefDK.
 
 #### Setting the driver with a driver URL
 
@@ -127,7 +114,8 @@ There will be easier ways to specify this as Chef profiles and configuration evo
 
 ## Machine options
 
-### Provider specific options [here](https://github.com/chef/chef-provisioning/blob/master/docs/providers)
+### Provider specific options
+See the driver specific Github page for an explanation of the supported options.
 
 Machine options can be specified in Chef configuration or in recipes.  For example:
 
@@ -174,49 +162,9 @@ drivers({
 
 Machine options are *additive*.  If you specify `'vm.box' => 'precise64'` in Chef config, and then specify `'vm.ram' => '8G'` on the machine resource, the vagrant options for that will include *both* sets of option.
 
-### Using Chef profiles
+### Using Chef profiles (DEPRECATED)
 
-You can set the `CHEF_PROFILE` environment variable to identify the profile you want to load.
-
-In Chef config:
-
-```ruby
-# In knife.rb
-profiles({
-  'default' => {
-  },
-  'dev' => {
-    :driver => 'vagrant:',
-    :machine_options => {
-      :vagrant_options => {
-        'vm.box' => 'precise64'
-      }
-    }
-  },
-  'test' => {
-    :driver => 'fog:AWS:test',
-    :machine_options => {
-      :bootstrap_options => {
-        :flavor_id => 'm1.small'
-      }
-    }
-  },
-  'staging' => {
-    :driver => 'fog:AWS:staging',
-    :machine_options => {
-      :bootstrap_options => {
-        :flavor_id => 'm1.small'
-      }
-    }
-  }
-})
-```
-
-This will get better tooling and more integrated Chef support in the future, but it is a good start.  You can set the current profile using the `CHEF_PROFILE` environment variable:
-
-```
-CHEF_PROFILE=dev chef-client -z my_cluster.rb
-```
+It is not recommended to use the `CHEF_PROFILE` environment variable
 
 ### Private keys
 
