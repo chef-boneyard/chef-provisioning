@@ -247,7 +247,7 @@ module Provisioning
         end
         if convergence_options[:rubygems_url]
           content << <<-EOM
-            no_proxy #{convergence_options[:rubygems_url].inspect}
+            rubygems_url #{convergence_options[:rubygems_url].inspect}
           EOM
         end
         content.gsub!(/^\s+/, "")
