@@ -13,5 +13,6 @@ gemspec
 group :development do
 #  gem "berkshelf", github: "berkshelf/berkshelf"
   # TODO we depend on the master branch until chef/chef is released
-  gem "chef", github: "chef/chef", branch: "master"
+  gem "ohai", git: "https://github.com/chef/ohai", branch: "master"
+  gem "chef", git: "https://github.com/chef/chef", branch: "master"
 end
