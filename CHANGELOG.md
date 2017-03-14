@@ -1,7 +1,14 @@
 # Change Log
 
-## [2.1.1](https://github.com/chef/chef-provisioning/tree/2.1.1) (2017-02-14)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.1.0...2.1.1)
+## [v2.2.0](https://github.com/chef/chef-provisioning/tree/v2.2.0) (2017-03-11)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.1.1...v2.2.0)
+
+**Merged pull requests:**
+
+- allow cheffish-5.0 [\#568](https://github.com/chef/chef-provisioning/pull/568) ([lamont-granquist](https://github.com/lamont-granquist))
+
+## [v2.1.1](https://github.com/chef/chef-provisioning/tree/v2.1.1) (2017-02-14)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.1.0...v2.1.1)
 
 **Merged pull requests:**
 
