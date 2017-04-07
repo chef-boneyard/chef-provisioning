@@ -232,6 +232,8 @@ attribute.
 
 Individual drivers will often add their own driver specific config.  For example, AWS expects a `:bootstrap_options` hash at the same level as `:convergence_options`.
 
+An optional property within client_rb you can have an internal rubygems mirror, by adding property `rubygems_url = 'http://mirror.example.org'`  inside `/etc/chef/client.rb`
+
 ### Anatomy of a Recipe
 
 The ChefDK comes with a provisioner for Vagrant, an abstraction that covers VirtualBox, VMware and other Virtual Machine drivers. In docs/examples, you can run this to try it:
