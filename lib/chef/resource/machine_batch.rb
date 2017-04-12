@@ -38,7 +38,7 @@ class MachineBatch < Chef::Resource::LWRPBase
   end
 
   def machine(name, &block)
-    machines << from_recipe.build_resource(:machine, name, caller[0], &block)
+    machines << from_recipe.build_resource(:machine, name, &block)
   end
 
   def add_machine_options(options)
