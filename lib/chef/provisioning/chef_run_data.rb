@@ -99,7 +99,7 @@ module Provisioning
       drivers[driver_url] ||= begin
         if driver_url == @current_driver && @current_driver_options
           # Use the driver options if available
-          merged_config = Cheffish::MergedConfig.new({ :driver_options => @current_driver_options }, config)
+          merged_config = Cheffish::MergedConfig.new({ :driver_options => @current_driver_options }, config.to_hash)
           driver = Chef::Provisioning.driver_for_url(driver_url, merged_config)
         else
           driver = Chef::Provisioning.driver_for_url(driver_url, config)
