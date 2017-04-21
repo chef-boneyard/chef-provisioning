@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'net-scp', '~> 1.0'
   s.add_dependency 'net-ssh-gateway', '~> 1.2'
   s.add_dependency 'inifile', '>= 2.0.2'
-  s.add_dependency 'cheffish', '>= 4.0', '< 14.0'
+  s.add_dependency 'cheffish', '>= 4.0', '< 6.0'
   s.add_dependency 'winrm', '~> 2.0'
   s.add_dependency 'winrm-fs', '~> 1.0'
   s.add_dependency 'winrm-elevated', '~> 1.0'
