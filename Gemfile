@@ -10,9 +10,4 @@ gemspec
 #gem 'chef-provisioning-fog', :path => '../chef-provisioning-fog'
 #gem 'chef-provisioning-aws', :path => '../chef-provisioning-aws'
 #gem 'chef-zero', :path => '../chef-zero'
-group :development do
-#  gem "berkshelf", github: "berkshelf/berkshelf"
-  # TODO we depend on the master branch until chef/chef is released
-  gem "ohai", git: "https://github.com/chef/ohai", branch: "master"
-  gem "chef", git: "https://github.com/chef/chef", branch: "master"
-end
+#gem "berkshelf", github: "berkshelf/berkshelf"
