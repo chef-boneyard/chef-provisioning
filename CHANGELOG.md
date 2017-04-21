@@ -1,7 +1,14 @@
 # Change Log
 
-## [2.3.1](https://github.com/chef/chef-provisioning/tree/2.3.1) (2017-04-21)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.3.0...2.3.1)
+## [2.3.2](https://github.com/chef/chef-provisioning/tree/2.3.2) (2017-04-21)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.3.1...2.3.2)
+
+**Merged pull requests:**
+
+- Putting back in place some development dependencies I removed [\#578](https://github.com/chef/chef-provisioning/pull/578) ([tyler-ball](https://github.com/tyler-ball))
+
+## [v2.3.1](https://github.com/chef/chef-provisioning/tree/v2.3.1) (2017-04-21)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.3.0...v2.3.1)
 
 **Merged pull requests:**
 
