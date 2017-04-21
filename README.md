@@ -19,13 +19,17 @@ Due to the age and engagement level with different Drivers they have fallen into
 
 Maintained drivers have a representative in the maintenance policy and get triaged / discussed during office hours. They are
 
-[AWS](https://github.com/chef/chef-provisioning-aws) | [Fog](https://github.com/chef/chef-provisioning-fog)
----- | ---- | ----
-[![Gem Version](https://badge.fury.io/rb/chef-provisioning-aws.svg)](http://badge.fury.io/rb/chef-provisioning-aws) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-fog.svg)](http://badge.fury.io/rb/chef-provisioning-fog)
+| [AWS](https://github.com/chef/chef-provisioning-aws) | [Fog](https://github.com/chef/chef-provisioning-fog) |
+| ---- | ---- |
+| [![Gem Version](https://badge.fury.io/rb/chef-provisioning-aws.svg)](http://badge.fury.io/rb/chef-provisioning-aws) | [![Gem Version](https://badge.fury.io/rb/chef-provisioning-fog.svg)](http://badge.fury.io/rb/chef-provisioning-fog) |
 
-Two drivers are not maintained by Chef:
+Maintained by Chef-Partners:
 
-* [VSphere](https://github.com/CenturyLinkCloud/chef-provisioning-vsphere)
+* [vSphere](https://github.com/chef-partners/chef-provisioning-vsphere)
+* [vra](https://github.com/chef-partners/chef-provisioning-vra)
+
+One driver are not maintained by Chef:
+
 * [AsureRM](https://github.com/pendrica/chef-provisioning-azurerm)
 
 Unmaintained Drivers are at risk of becoming stale. They are:
