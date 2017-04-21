@@ -59,7 +59,7 @@ class Chef
       def machine_batch(name = nil, &block)
         name ||= machine_batch_default_name
         recipe = self
-        declare_resource(:machine_batch, name, caller[0]) do
+        declare_resource(:machine_batch, name) do
           from_recipe recipe
           instance_eval(&block)
         end
