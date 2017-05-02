@@ -203,7 +203,7 @@ with_machine_options({
     # The following are only available for Linux machines
     install_sh_url: "https://www.chef.io/chef/install.sh", # <- DEFAULT, overwrite if necessary
     install_sh_path: "/tmp/chef-install.sh", # <- DEFAULT, overwrite if necessary
-    install_sh_arguments: "-P chef-dk", # Additional commands to pass to install.sh
+    install_sh_arguments: "-P chefdk", # Additional commands to pass to install.sh
     # The following are only available for Windows machines
     install_msi_url: "foo://bar.com"
   },
