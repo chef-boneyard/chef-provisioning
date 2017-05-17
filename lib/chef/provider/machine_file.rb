@@ -34,12 +34,14 @@ class MachineFile < Chef::Provider::LWRPBase
       machine.upload_file(action_handler, new_resource.local_path, new_resource.path)
     end
 
-    attributes = {}
-    attributes[:group] = new_resource.group if new_resource.group
-    attributes[:owner] = new_resource.owner if new_resource.owner
-    attributes[:mode] = new_resource.mode if new_resource.mode
+    unless machine.kind_of?(Chef::Provisioning::Machine::WindowsMachine)
+      attributes = {}
+      attributes[:group] = new_resource.group if new_resource.group
+      attributes[:owner] = new_resource.owner if new_resource.owner
+      attributes[:mode] = new_resource.mode if new_resource.mode
 
-    machine.set_attributes(action_handler, new_resource.path, attributes)
+      machine.set_attributes(action_handler, new_resource.path, attributes)
+    end
   end
 
   action :download do
