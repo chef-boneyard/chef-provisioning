@@ -21,7 +21,7 @@ module Provisioning
       def setup_convergence(action_handler, machine)
         if !convergence_options.has_key?(:client_rb_path) || !convergence_options.has_key?(:client_pem_path)
           system_drive = machine.system_drive
-          @convergence_options = Cheffish::MergedConfig.new(convergence_options, {
+          @convergence_options = Cheffish::MergedConfig.new(convergence_options.to_hash, {
             :client_rb_path => "#{system_drive}\\chef\\client.rb",
             :client_pem_path => "#{system_drive}\\chef\\client.pem",
             :install_script_path => "#{system_drive}\\chef\\\install.ps1"
