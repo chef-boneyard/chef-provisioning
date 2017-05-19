@@ -22,7 +22,7 @@ module Provisioning
       # - :chef_version, :prerelease, :package_cache_path
       # - :package_metadata
       def initialize(convergence_options, config)
-        convergence_options = Cheffish::MergedConfig.new(convergence_options, {
+        convergence_options = Cheffish::MergedConfig.new(convergence_options.to_hash, {
           :client_rb_path => '/etc/chef/client.rb',
           :client_pem_path => '/etc/chef/client.pem'
         })
