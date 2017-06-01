@@ -11,8 +11,7 @@ gemspec
 #gem 'chef-provisioning-aws', :path => '../chef-provisioning-aws'
 #gem 'chef-zero', :path => '../chef-zero'
 group :development do
-#  gem "berkshelf", github: "berkshelf/berkshelf"
-  # TODO we depend on the master branch until chef/chef is released
+  # TODO we depend on the master branch until 13 is released and used in the ChefDK
   gem "ohai", git: "https://github.com/chef/ohai", branch: "master"
   gem "chef", git: "https://github.com/chef/chef", branch: "master"
 end

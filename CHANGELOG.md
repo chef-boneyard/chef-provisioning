@@ -1,5 +1,30 @@
 # Change Log
 
+## [2.3.2](https://github.com/chef/chef-provisioning/tree/2.3.2) (2017-04-21)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.3.1...2.3.2)
+
+**Merged pull requests:**
+
+- Putting back in place some development dependencies I removed [\#578](https://github.com/chef/chef-provisioning/pull/578) ([tyler-ball](https://github.com/tyler-ball))
+
+## [v2.3.1](https://github.com/chef/chef-provisioning/tree/v2.3.1) (2017-04-21)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.3.0...v2.3.1)
+
+**Merged pull requests:**
+
+- Update README.md [\#575](https://github.com/chef/chef-provisioning/pull/575) ([jjasghar](https://github.com/jjasghar))
+
+## [v2.3.0](https://github.com/chef/chef-provisioning/tree/v2.3.0) (2017-04-20)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.2.1...v2.3.0)
+
+**Merged pull requests:**
+
+- allow cheffish 13.x [\#577](https://github.com/chef/chef-provisioning/pull/577) ([lamont-granquist](https://github.com/lamont-granquist))
+- Fixes for chef13 and cheffish5.x/cheffish-13.x [\#572](https://github.com/chef/chef-provisioning/pull/572) ([jjlimepoint](https://github.com/jjlimepoint))
+
+## [v2.2.1](https://github.com/chef/chef-provisioning/tree/v2.2.1) (2017-03-14)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.2.0...v2.2.1)
+
 ## [v2.2.0](https://github.com/chef/chef-provisioning/tree/v2.2.0) (2017-03-11)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.1.1...v2.2.0)
 

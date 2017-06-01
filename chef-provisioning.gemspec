@@ -18,13 +18,12 @@ Gem::Specification.new do |s|
   s.add_dependency 'net-scp', '~> 1.0'
   s.add_dependency 'net-ssh-gateway', '~> 1.2'
   s.add_dependency 'inifile', '>= 2.0.2'
-  s.add_dependency 'cheffish', '>= 4.0', '< 6.0'
+  s.add_dependency 'cheffish', '>= 4.0', '< 14.0'
   s.add_dependency 'winrm', '~> 2.0'
   s.add_dependency 'winrm-fs', '~> 1.0'
   s.add_dependency 'winrm-elevated', '~> 1.0'
   s.add_dependency "mixlib-install",  ">= 1.0", "< 3.0"
 
-  s.add_development_dependency 'chef', '~> 12.1', "!= 12.4.0"  # 12.4.0 is incompatible.
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'pry'
