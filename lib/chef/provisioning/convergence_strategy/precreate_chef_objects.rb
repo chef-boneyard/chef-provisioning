@@ -245,7 +245,7 @@ module Provisioning
             no_proxy #{convergence_options[:bootstrap_no_proxy].inspect}
           EOM
         end
-        if convergence_options[:rubygems_url] != 'https://rubygems.org'
+        if convergence_options[:rubygems_url]
           content << <<-EOM
             rubygems_url #{convergence_options[:rubygems_url].inspect}
           EOM
