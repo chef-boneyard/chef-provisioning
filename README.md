@@ -30,7 +30,7 @@ Maintained by Chef-Partners:
 
 One driver are not maintained by Chef:
 
-* [AsureRM](https://github.com/pendrica/chef-provisioning-azurerm)
+* [AzureRM](https://github.com/pendrica/chef-provisioning-azurerm)
 
 Unmaintained Drivers are at risk of becoming stale. They are:
 
