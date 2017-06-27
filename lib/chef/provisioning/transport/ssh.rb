@@ -173,7 +173,11 @@ module Provisioning
 
       def make_url_available_to_remote(local_url)
         uri = URI(local_url)
-        if is_local_machine(uri.host)
+        if uri.scheme == 'chefzero' && !ChefZero::SocketlessServerMap.server_on_port(uri.port).server
+          # There is no .server for a socketless, for a socket-d server it would
+          # be a WEBrick::HTTPServer object.
+          raise 'Cannot forward a socketless Chef Zero server, see https://docs.chef.io/deprecations_local_listen.html for more information'
+        elsif is_local_machine(uri.host)
           port, host = forward_port(uri.port, uri.host, uri.port, 'localhost')
           if !port
             # Try harder if the port is already taken
