@@ -46,6 +46,9 @@ module Provisioning
         result = transport.execute("md5sum -b #{path}", :read_only => true)
         unless result.exitstatus == 0
           result = transport.execute("md5 -r #{path}", :read_only => true)
+          unless result.exitstatus == 0
+            result = transport.execute("digest -a md5 #{path}", :read_only => true)
+          end
         end
         result.error!
         remote_sum = result.stdout.split(' ')[0]
