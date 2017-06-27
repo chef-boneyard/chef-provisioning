@@ -34,6 +34,9 @@ class MachineFile < Chef::Provider::LWRPBase
       machine.upload_file(action_handler, new_resource.local_path, new_resource.path)
     end
 
+    # At some point hopefully we will define WindowsMachine.set_attributes
+    # See https://github.com/chef/chef-provisioning/issues/285 for how to get
+    # rid of this unless check
     unless machine.kind_of?(Chef::Provisioning::Machine::WindowsMachine)
       attributes = {}
       attributes[:group] = new_resource.group if new_resource.group
