@@ -1,7 +1,18 @@
 # Change Log
 
-## [2.3.2](https://github.com/chef/chef-provisioning/tree/2.3.2) (2017-04-21)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.3.1...2.3.2)
+## [2.4.0](https://github.com/chef/chef-provisioning/tree/2.4.0) (2017-06-27)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.3.2...2.4.0)
+
+**Merged pull requests:**
+
+- allow newer net-ssh-gateway [\#584](https://github.com/chef/chef-provisioning/pull/584) ([jjlimepoint](https://github.com/jjlimepoint))
+- We can’t forward a socketless Zero server, so show a nice\(ish\) error [\#583](https://github.com/chef/chef-provisioning/pull/583) ([coderanger](https://github.com/coderanger))
+- Ignore group/owner/mode attrs on Windows machine until implemented [\#582](https://github.com/chef/chef-provisioning/pull/582) ([paustin01](https://github.com/paustin01))
+- Fix convergence\_options being steamrolled rather than merged [\#581](https://github.com/chef/chef-provisioning/pull/581) ([paustin01](https://github.com/paustin01))
+- add digest command to unix\_machine.files\_different? [\#570](https://github.com/chef/chef-provisioning/pull/570) ([steversmith](https://github.com/steversmith))
+
+## [v2.3.2](https://github.com/chef/chef-provisioning/tree/v2.3.2) (2017-04-21)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.3.1...v2.3.2)
 
 **Merged pull requests:**
 
