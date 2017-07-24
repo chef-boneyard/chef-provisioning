@@ -1,7 +1,14 @@
 # Change Log
 
-## [2.4.0](https://github.com/chef/chef-provisioning/tree/2.4.0) (2017-06-27)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.3.2...2.4.0)
+## [2.5.0](https://github.com/chef/chef-provisioning/tree/2.5.0) (2017-07-24)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.4.0...2.5.0)
+
+**Merged pull requests:**
+
+- remove normal pessimistic constraint for mixlib install [\#586](https://github.com/chef/chef-provisioning/pull/586) ([wrightp](https://github.com/wrightp))
+
+## [v2.4.0](https://github.com/chef/chef-provisioning/tree/v2.4.0) (2017-06-27)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.3.2...v2.4.0)
 
 **Merged pull requests:**
 
