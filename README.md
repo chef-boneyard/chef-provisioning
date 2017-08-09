@@ -28,9 +28,9 @@ Maintained by Chef-Partners:
 * [vSphere](https://github.com/chef-partners/chef-provisioning-vsphere)
 * [vra](https://github.com/chef-partners/chef-provisioning-vra)
 
-One driver are not maintained by Chef:
+Maintained, not by Chef:
 
-* [AsureRM](https://github.com/pendrica/chef-provisioning-azurerm)
+* [AzureRM](https://github.com/pendrica/chef-provisioning-azurerm)
 
 Unmaintained Drivers are at risk of becoming stale. They are:
 
