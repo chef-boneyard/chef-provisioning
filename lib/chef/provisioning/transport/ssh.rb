@@ -43,6 +43,7 @@ module Provisioning
         @options = options
         @config = global_config
         @remote_forwards = ssh_options.delete(:remote_forwards) { Array.new }
+        @never_forward_localhost = ssh_options.delete(:never_forward_localhost)
       end
 
       attr_reader :host
@@ -173,7 +174,9 @@ module Provisioning
 
       def make_url_available_to_remote(local_url)
         uri = URI(local_url)
-        if uri.scheme == 'chefzero' && !ChefZero::SocketlessServerMap.server_on_port(uri.port).server
+        if @never_forward_localhost
+          return uri.to_s
+        elsif uri.scheme == 'chefzero' && !ChefZero::SocketlessServerMap.server_on_port(uri.port).server
           # There is no .server for a socketless, for a socket-d server it would
           # be a WEBrick::HTTPServer object.
           raise 'Cannot forward a socketless Chef Zero server, see https://docs.chef.io/deprecations_local_listen.html for more information'

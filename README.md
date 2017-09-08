@@ -215,6 +215,7 @@ with_machine_options({
     :host_key_alias => "#{instance.id}.AWS", # DEFAULT
     :key_data => nil, # use key from ssh-agent instead of a local file; remember to ssh-add your keys!
     :forward_agent => true, # you may want your ssh-agent to be available on your provisioned machines
+    :never_forward_localhost => false, # This will, if set, disable SSH forwarding if it does not work/make sense in your envirnoment
     :remote_forwards => [
         # Give remote host access to squid proxy on provisioning node
         {:remote_port => 3128, :local_host => 'localhost', :local_port => 3128,},
