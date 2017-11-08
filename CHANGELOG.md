@@ -1,7 +1,15 @@
 # Change Log
 
-## [2.5.0](https://github.com/chef/chef-provisioning/tree/2.5.0) (2017-07-24)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.4.0...2.5.0)
+## [2.6.0](https://github.com/chef/chef-provisioning/tree/2.6.0) (2017-11-08)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.5.0...2.6.0)
+
+**Merged pull requests:**
+
+- Add an option to never use SSH port forwardin [\#596](https://github.com/chef/chef-provisioning/pull/596) ([jjlimepoint](https://github.com/jjlimepoint))
+- Typo + small wording fix [\#590](https://github.com/chef/chef-provisioning/pull/590) ([jblaine](https://github.com/jblaine))
+
+## [v2.5.0](https://github.com/chef/chef-provisioning/tree/v2.5.0) (2017-07-24)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.4.0...v2.5.0)
 
 **Merged pull requests:**
 
