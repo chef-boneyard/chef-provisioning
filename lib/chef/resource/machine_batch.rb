@@ -50,7 +50,7 @@ class MachineBatch < Chef::Resource::LWRPBase
   def to_text
     ivars = instance_variables.map { |ivar| ivar.to_sym } - HIDDEN_IVARS - [ :@from_recipe, :@machines ]
     text = "# Declared in #{@source_line}\n\n"
-    text << self.class.dsl_name + "(\"#{name}\") do\n"
+    text << self.class.resource_name.to_s + "(\"#{name}\") do\n"
     ivars.each do |ivar|
       if (value = instance_variable_get(ivar)) && !(value.respond_to?(:empty?) && value.empty?)
         value_string = value.respond_to?(:to_text) ? value.to_text : value.inspect
