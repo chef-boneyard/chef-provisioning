@@ -1,7 +1,15 @@
 # Change Log
 
-## [2.6.0](https://github.com/chef/chef-provisioning/tree/2.6.0) (2017-11-08)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.5.0...2.6.0)
+## [2.7.0](https://github.com/chef/chef-provisioning/tree/2.7.0) (2018-01-25)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.6.0...2.7.0)
+
+**Merged pull requests:**
+
+- Added convergance option to allow the setting of a rubygems mirror in… [\#601](https://github.com/chef/chef-provisioning/pull/601) ([devoptimist](https://github.com/devoptimist))
+- chef 13 compat: replacing resource method dsl\_name called in resource… [\#600](https://github.com/chef/chef-provisioning/pull/600) ([devoptimist](https://github.com/devoptimist))
+
+## [v2.6.0](https://github.com/chef/chef-provisioning/tree/v2.6.0) (2017-11-08)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.5.0...v2.6.0)
 
 **Merged pull requests:**
 
@@ -884,7 +892,7 @@
 
 **Merged pull requests:**
 
-- New ohai hints feature allowing the creation hints. [\#38](https://github.com/chef/chef-provisioning/pull/38) ([ligature](https://github.com/ligature))
+- New ohai hints feature allowing the creation hints. [\#38](https://github.com/chef/chef-provisioning/pull/38) ([xorl](https://github.com/xorl))
 
 ## [v0.8](https://github.com/chef/chef-provisioning/tree/v0.8) (2014-04-08)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v0.7...v0.8)
@@ -922,7 +930,7 @@
 
 - Add owner, group and mode attributes to machine\_file [\#43](https://github.com/chef/chef-provisioning/pull/43) ([irvingpop](https://github.com/irvingpop))
 - Dt/driver surgery [\#36](https://github.com/chef/chef-provisioning/pull/36) ([jkeiser](https://github.com/jkeiser))
-- Ec2 fixes [\#27](https://github.com/chef/chef-provisioning/pull/27) ([ligature](https://github.com/ligature))
+- Ec2 fixes [\#27](https://github.com/chef/chef-provisioning/pull/27) ([xorl](https://github.com/xorl))
 
 ## [v0.4](https://github.com/chef/chef-provisioning/tree/v0.4) (2014-03-29)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v0.3.1...v0.4)
@@ -939,7 +947,7 @@
 - Fix typo 'pey-pair-name' -\> 'key-pair-name' [\#30](https://github.com/chef/chef-provisioning/pull/30) ([dafyddcrosby](https://github.com/dafyddcrosby))
 - Remove unused variable provisioner\_options [\#26](https://github.com/chef/chef-provisioning/pull/26) ([dafyddcrosby](https://github.com/dafyddcrosby))
 - Update README.md to show how to add per-machine provisioner options [\#25](https://github.com/chef/chef-provisioning/pull/25) ([dafyddcrosby](https://github.com/dafyddcrosby))
-- Added new private\_ip compute\_options attribute. [\#23](https://github.com/chef/chef-provisioning/pull/23) ([ligature](https://github.com/ligature))
+- Added new private\_ip compute\_options attribute. [\#23](https://github.com/chef/chef-provisioning/pull/23) ([xorl](https://github.com/xorl))
 - double double escape escape to fix RHEL/CentOS platform\_version detection [\#22](https://github.com/chef/chef-provisioning/pull/22) ([irvingpop](https://github.com/irvingpop))
 - Initial Openstack support [\#15](https://github.com/chef/chef-provisioning/pull/15) ([cstewart87](https://github.com/cstewart87))
 
