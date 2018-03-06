@@ -10,7 +10,7 @@ before_install:
   - gem install bundler
 
 rvm:
-  - 2.3.3
+  - 2.4.3
 
 script:
   - bundle install --jobs=3 --retry=3
