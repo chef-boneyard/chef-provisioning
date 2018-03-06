@@ -296,8 +296,10 @@ You can use `with_chef_server` instead if you want to point at OSS, Hosted or En
 
 ```ruby
 with_chef_server "https://chef-server.example.org",
+:options =>{  
   :client_name => Chef::Config[:node_name],
   :signing_key_filename => Chef::Config[:client_key]
+  }
 ```
 
 Finally, you can specify a Chef Server for an individual machine by using the `chef_server` attribute.  This attribute takes the same additional options (`:client_name`, `:signing_key_filename`) that `with_chef_server` does.
