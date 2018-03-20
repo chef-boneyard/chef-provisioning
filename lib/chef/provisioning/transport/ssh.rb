@@ -36,14 +36,14 @@ module Provisioning
       # The options are used in
       #   Net::SSH.start(host, username, ssh_options)
 
-      def initialize(host, username, ssh_options, options, global_config)
+      def initialize(host, username, init_ssh_options, options, global_config)
         @host = host
         @username = username
-        @ssh_options = ssh_options
+        @ssh_options = init_ssh_options.clone
         @options = options
         @config = global_config
         @remote_forwards = ssh_options.delete(:remote_forwards) { Array.new }
-        @never_forward_localhost = ssh_options.delete(:never_forward_localhost)
+        @never_forward_localhost = ssh_options.delete(:never_forward_localhost) unless ssh_options[:never_forward_localhost]
       end
 
       attr_reader :host
