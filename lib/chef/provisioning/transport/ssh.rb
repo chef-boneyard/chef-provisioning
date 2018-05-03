@@ -43,7 +43,7 @@ module Provisioning
         @options = options
         @config = global_config
         @remote_forwards = ssh_options.delete(:remote_forwards) { Array.new }
-        @never_forward_localhost = ssh_options.delete(:never_forward_localhost) unless ssh_options[:never_forward_localhost]
+        @never_forward_localhost = ssh_options.delete(:never_forward_localhost)
       end
 
       attr_reader :host
