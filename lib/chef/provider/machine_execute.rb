@@ -5,6 +5,7 @@ require 'chef/provisioning/machine'
 class Chef
 class Provider
 class MachineExecute < Chef::Provider::LWRPBase
+  provides :machine_execute
 
   def action_handler
     @action_handler ||= Chef::Provisioning::ChefProviderActionHandler.new(self)
