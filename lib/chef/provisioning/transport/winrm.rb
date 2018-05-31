@@ -79,7 +79,7 @@ module Provisioning
         Chef::Log.debug("unavailable: winrm authentication error: #{$!.inspect} ")
         disconnect
         false
-      rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, ::WinRM::WinRMError
+      rescue Timeout::Error, Errno::EHOSTUNREACH, Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::ECONNRESET, ::WinRM::WinRMError, Errno::ECONNABORTED
         Chef::Log.debug("unavailable: network connection failed or broke: #{$!.inspect}")
         disconnect
         false
