@@ -14,4 +14,9 @@ gemspec
 group :development do
   gem "ohai"
   gem "chef"
+  gem "pry"
+  gem "pry-byebug"
+  gem "pry-stack_explorer"
+  gem "simplecov"
+  gem "github_changelog_generator"
 end
