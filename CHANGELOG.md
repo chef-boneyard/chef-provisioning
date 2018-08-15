@@ -1,7 +1,29 @@
 # Change Log
 
-## [2.7.0](https://github.com/chef/chef-provisioning/tree/2.7.0) (2018-01-25)
-[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.6.0...2.7.0)
+## [2.7.2](https://github.com/chef/chef-provisioning/tree/2.7.2) (2018-05-31)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.7.1...2.7.2)
+
+**Closed issues:**
+
+- winrm available? function exception when using SSL [\#605](https://github.com/chef/chef-provisioning/issues/605)
+
+**Merged pull requests:**
+
+- Fix machine execute [\#612](https://github.com/chef/chef-provisioning/pull/612) ([jjlimepoint](https://github.com/jjlimepoint))
+- Add Errno::ECONNABORTED to the list of rescued errors in the available? function [\#606](https://github.com/chef/chef-provisioning/pull/606) ([lomeroe](https://github.com/lomeroe))
+
+## [v2.7.1](https://github.com/chef/chef-provisioning/tree/v2.7.1) (2018-04-24)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.7.0...v2.7.1)
+
+**Merged pull requests:**
+
+- bump cheffish dep to allow 14.x [\#611](https://github.com/chef/chef-provisioning/pull/611) ([lamont-granquist](https://github.com/lamont-granquist))
+- make ssh port forward options continue to work on retry [\#607](https://github.com/chef/chef-provisioning/pull/607) ([jjlimepoint](https://github.com/jjlimepoint))
+- Test on Ruby 2.4.3 in Travis [\#604](https://github.com/chef/chef-provisioning/pull/604) ([tas50](https://github.com/tas50))
+- Add options hash to 'with\_chef\_server' example  [\#588](https://github.com/chef/chef-provisioning/pull/588) ([gregsher88](https://github.com/gregsher88))
+
+## [v2.7.0](https://github.com/chef/chef-provisioning/tree/v2.7.0) (2018-01-26)
+[Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.6.0...v2.7.0)
 
 **Merged pull requests:**
 
