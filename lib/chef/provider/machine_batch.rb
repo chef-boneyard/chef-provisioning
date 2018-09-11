@@ -41,29 +41,37 @@ class MachineBatch < Chef::Provider::LWRPBase
 
   action :setup do
     with_ready_machines do |m|
-      m[:machine].setup_convergence(m[:action_handler])
-      m[:spec].save(m[:action_handler])
-      Chef::Provider::Machine.upload_files(m[:action_handler], m[:machine], m[:files])
+      begin
+        m[:machine].setup_convergence(m[:action_handler])
+        m[:spec].save(m[:action_handler])
+        Chef::Provider::Machine.upload_files(m[:action_handler], m[:machine], m[:files])
+      ensure
+        m[:machine].disconnect
+      end
     end
   end
 
   action :converge do
     with_ready_machines do |m|
-      m[:machine].setup_convergence(m[:action_handler])
-      m[:spec].save(m[:action_handler])
-      Chef::Provider::Machine.upload_files(m[:action_handler], m[:machine], m[:files])
+      begin
+        m[:machine].setup_convergence(m[:action_handler])
+        m[:spec].save(m[:action_handler])
+        Chef::Provider::Machine.upload_files(m[:action_handler], m[:machine], m[:files])
 
-      if m[:resource] && m[:resource].converge
-        Chef::Log.info("Converging #{m[:spec].name} because 'converge true' is set ...")
-        m[:machine].converge(m[:action_handler])
-      elsif (!m[:resource] || m[:resource].converge.nil?) && m[:action_handler].locally_updated
-        Chef::Log.info("Converging #{m[:spec].name} because the resource was updated ...")
-        m[:machine].converge(m[:action_handler])
-      elsif !m[:spec].node['automatic'] || m[:spec].node['automatic'].size == 0
-        Chef::Log.info("Converging #{m[:spec].name} because it has never been converged (automatic attributes are empty) ...")
-        m[:machine].converge(m[:action_handler])
-      elsif m[:resource] && m[:resource].converge == false
-        Chef::Log.debug("Not converging #{m[:spec].name} because 'converge false' is set.")
+        if m[:resource] && m[:resource].converge
+          Chef::Log.info("Converging #{m[:spec].name} because 'converge true' is set ...")
+          m[:machine].converge(m[:action_handler])
+        elsif (!m[:resource] || m[:resource].converge.nil?) && m[:action_handler].locally_updated
+          Chef::Log.info("Converging #{m[:spec].name} because the resource was updated ...")
+          m[:machine].converge(m[:action_handler])
+        elsif !m[:spec].node['automatic'] || m[:spec].node['automatic'].size == 0
+          Chef::Log.info("Converging #{m[:spec].name} because it has never been converged (automatic attributes are empty) ...")
+          m[:machine].converge(m[:action_handler])
+        elsif m[:resource] && m[:resource].converge == false
+          Chef::Log.debug("Not converging #{m[:spec].name} because 'converge false' is set.")
+        end
+      ensure
+        m[:machine].disconnect
       end
     end
   end
@@ -71,7 +79,11 @@ class MachineBatch < Chef::Provider::LWRPBase
   action :converge_only do
     parallel_do(@machines) do |m|
       machine = run_context.chef_provisioning.connect_to_machine(m[:spec])
-      machine.converge(m[:action_handler])
+      begin
+        machine.converge(m[:action_handler])
+      ensure
+        machine.disconnect
+      end
     end
   end
 
