@@ -47,7 +47,7 @@ module Provisioning
 
         # Install::ScriptGenerator will use current by default, unless we specify -c stable
         # So we add this install flag unless 'prerelease' was specified, in which case we do not
-        if (not opts['install_flags'].nil?) and (not opts['install_flags'].include?('-c ')) and (not opts['install_flags'].include?('-channel ') and (not prerelease)
+        if (not opts['install_flags'].nil?) and (not opts['install_flags'].include?('-c ')) and (not opts['install_flags'].include?('-channel ') and (not prerelease))
           opts['install_flags']='' unless opts['install_flags'].nil?
           opts['install_flags']+=' -c stable'
         end
