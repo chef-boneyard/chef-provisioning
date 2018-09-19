@@ -4,7 +4,6 @@ require 'chef/provisioning/version'
 Gem::Specification.new do |s|
   s.name = 'chef-provisioning'
   s.version = Chef::Provisioning::VERSION
-  s.platform = Gem::Platform::RUBY
   s.extra_rdoc_files = ['README.md', 'CHANGELOG.md', 'LICENSE' ]
   s.summary = 'A library for creating machines and infrastructures idempotently in Chef.'
   s.description = s.summary
