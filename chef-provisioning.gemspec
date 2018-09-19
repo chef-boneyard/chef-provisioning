@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.author = 'John Keiser'
   s.email = 'jkeiser@chef.io'
   s.homepage = 'http://github.com/chef/chef-provisioning/README.md'
-
+  s.license = "Apache-2.0"
   s.required_ruby_version = ">= 2.2.2"
 
   s.add_dependency 'net-ssh', '>= 2.9', '< 5.0'
