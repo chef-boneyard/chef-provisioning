@@ -23,9 +23,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'winrm-elevated', '~> 1.0'
   s.add_dependency "mixlib-install",  ">= 1.0"
 
-  s.add_development_dependency 'rspec'
-  s.add_development_dependency 'rake'
-
   s.bindir       = "bin"
   s.executables  = %w( )
 

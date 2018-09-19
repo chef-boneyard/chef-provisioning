@@ -1,4 +1,5 @@
 source "https://rubygems.org"
+
 gemspec
 
 #gem 'mixlib-install', path: '../mixlib-install'
@@ -14,9 +15,20 @@ gemspec
 group :development do
   gem "ohai"
   gem "chef"
+  gem "chefstyle", "~> 0.10.0"
+  gem "rake"
+  gem "rspec", "~> 3.0"
+  gem "simplecov"
+end
+
+group :debug do
   gem "pry"
   gem "pry-byebug"
   gem "pry-stack_explorer"
-  gem "simplecov"
-  gem "github_changelog_generator"
 end
+
+instance_eval(ENV["GEMFILE_MOD"]) if ENV["GEMFILE_MOD"]
+
+# If you want to load debugging tools into the bundle exec sandbox,
+# add these additional dependencies into Gemfile.local
+eval_gemfile(__FILE__ + ".local") if File.exist?(__FILE__ + ".local")
