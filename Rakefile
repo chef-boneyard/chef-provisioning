@@ -1,6 +1,5 @@
-require 'bundler'
-require 'bundler/gem_tasks'
-require 'rspec/core/rake_task'
+require "bundler/gem_tasks"
+require "rspec/core/rake_task"
 
 desc "run specs"
 RSpec::Core::RakeTask.new(:spec) do |task|
@@ -39,17 +38,19 @@ namespace :driver do
   end
 end
 
-require "chef/provisioning/version"
+task :console do
+  require "irb"
+  require "irb/completion"
+  ARGV.clear
+  IRB.start
+end
 
 begin
-  require 'github_changelog_generator/task'
-
-  GitHubChangelogGenerator::RakeTask.new :changelog do |config|
-    config.future_release = Chef::Provisioning::VERSION
-    config.enhancement_labels = "enhancement,Enhancement,New Feature".split(',')
-    config.bug_labels = "bug,Bug,Improvement,Upstream Bug".split(',')
-    config.exclude_labels = "duplicate,question,invalid,wontfix,no_changelog,Exclude From Changelog".split(',')
+  require "chefstyle"
+  require "rubocop/rake_task"
+  RuboCop::RakeTask.new(:chefstyle) do |task|
+    task.options << "--display-cop-names"
   end
 rescue LoadError
-  # It's OK if the github_changelog_generator isn't there, that happens when we're testing older chef versions
+  puts "chefstyle gem is not installed"
 end
