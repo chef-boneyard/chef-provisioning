@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
 $:.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
 require 'chef/provisioning'
 require 'chef/rest'
