@@ -228,30 +228,38 @@ module Provisioning
                               :verify_none
                             end
 
-        content = <<-EOM
+        content = <<~EOM
           chef_server_url #{chef_server_url.inspect}
           node_name #{node_name.inspect}
           client_key #{convergence_options[:client_pem_path].inspect}
           ssl_verify_mode #{ssl_verify_mode.to_sym.inspect}
         EOM
         if convergence_options[:bootstrap_proxy]
-          content << <<-EOM
+          content << <<~EOM
             http_proxy #{convergence_options[:bootstrap_proxy].inspect}
             https_proxy #{convergence_options[:bootstrap_proxy].inspect}
           EOM
         end
         if convergence_options[:bootstrap_no_proxy]
-          content << <<-EOM
+          content << <<~EOM
             no_proxy #{convergence_options[:bootstrap_no_proxy].inspect}
           EOM
         end
         if convergence_options[:rubygems_url]
-          content << <<-EOM
+          content << <<~EOM
             rubygems_url #{convergence_options[:rubygems_url].inspect}
           EOM
         end
-        content.gsub!(/^\s+/, "")
-        content << convergence_options[:chef_config] if convergence_options[:chef_config]
+        if convergence_options[:chef_config].is_a?(String)
+          content << convergence_options[:chef_config]
+        elsif convergence_options[:chef_config].is_a?(Hash)
+          convergence_options[:chef_config].each do |option, value|
+            content << <<~EOM
+              #{option.to_s} #{value.inspect}
+            EOM
+          end
+        end
+
         content
       end
     end
