@@ -46,6 +46,13 @@ module Provisioning
           opts['install_flags'] = convergence_options[:install_sh_arguments]
         end
 
+        # Install::ScriptGenerator will use current by default, unless we specify -c stable
+        # So we add this install flag unless 'prerelease' was specified, in which case we do not
+        if (not opts['install_flags'].nil?) and (not opts['install_flags'].include?('-c ')) and (not opts['install_flags'].include?('-channel ') and (not prerelease))
+          opts['install_flags']='' unless opts['install_flags'].nil?
+          opts['install_flags']+=' -c stable'
+        end
+
         install_command = Mixlib::Install::ScriptGenerator.new(chef_version, false, opts).install_command
         machine.write_file(action_handler, install_sh_path, install_command, :ensure_dir => true)
         machine.set_attributes(action_handler, install_sh_path, :mode => '0755')
