@@ -1,22 +1,20 @@
 # Chef Provisioning Change Log
 
-<!-- latest_release 2.7.4 -->
-## [2.7.4](https://github.com/chef/chef-provisioning/tree/2.7.4) (2018-12-06)
-
-#### Merged Pull Requests
-- Don&#39;t ship the readme or changelog in the gem artifact [#620](https://github.com/chef/chef-provisioning/pull/620) ([tas50](https://github.com/tas50))
+<!-- latest_release -->
 <!-- latest_release -->
 
-<!-- release_rollup since=2.7.2 -->
-### Changes not yet released to rubygems.org
-
-#### Merged Pull Requests
-- Don&#39;t ship the readme or changelog in the gem artifact [#620](https://github.com/chef/chef-provisioning/pull/620) ([tas50](https://github.com/tas50)) <!-- 2.7.4 -->
-- Fix typo in machine provisioning set_attributes [#505](https://github.com/chef/chef-provisioning/pull/505) ([Padgett](https://github.com/Padgett)) <!-- 2.7.3 -->
-- Wire up Expeditor [#619](https://github.com/chef/chef-provisioning/pull/619) ([tas50](https://github.com/tas50)) <!-- 2.7.2 -->
+<!-- release_rollup -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
+## [2.7.4](https://github.com/chef/chef-provisioning/tree/2.7.4) (2018-12-06)
+
+#### Merged Pull Requests
+- Wire up Expeditor [#619](https://github.com/chef/chef-provisioning/pull/619) ([tas50](https://github.com/tas50))
+- Fix typo in machine provisioning set_attributes [#505](https://github.com/chef/chef-provisioning/pull/505) ([Padgett](https://github.com/Padgett))
+- Don&#39;t ship the readme or changelog in the gem artifact [#620](https://github.com/chef/chef-provisioning/pull/620) ([tas50](https://github.com/tas50))
+<!-- latest_stable_release -->
+
 ## [2.7.2](https://github.com/chef/chef-provisioning/tree/2.7.2) (2018-05-31)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.7.1...2.7.2)
 
@@ -28,7 +26,6 @@
 
 - Fix machine execute [\#612](https://github.com/chef/chef-provisioning/pull/612) ([jjlimepoint](https://github.com/jjlimepoint))
 - Add Errno::ECONNABORTED to the list of rescued errors in the available? function [\#606](https://github.com/chef/chef-provisioning/pull/606) ([lomeroe](https://github.com/lomeroe))
-<!-- latest_stable_release -->
 
 ## [v2.7.1](https://github.com/chef/chef-provisioning/tree/v2.7.1) (2018-04-24)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.7.0...v2.7.1)
