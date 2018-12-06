@@ -1,9 +1,17 @@
 # Chef Provisioning Change Log
 
-<!-- latest_release -->
+<!-- latest_release unreleased -->
+## Unreleased
+
+#### Merged Pull Requests
+- Wire up Expeditor [#619](https://github.com/chef/chef-provisioning/pull/619) ([tas50](https://github.com/tas50))
 <!-- latest_release -->
 
-<!-- release_rollup -->
+<!-- release_rollup since=2.7.2 -->
+### Changes not yet released to rubygems.org
+
+#### Merged Pull Requests
+- Wire up Expeditor [#619](https://github.com/chef/chef-provisioning/pull/619) ([tas50](https://github.com/tas50)) <!-- 2.7.2 -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
