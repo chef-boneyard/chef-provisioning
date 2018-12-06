@@ -4,7 +4,6 @@ require 'chef/provisioning/version'
 Gem::Specification.new do |s|
   s.name = 'chef-provisioning'
   s.version = Chef::Provisioning::VERSION
-  s.extra_rdoc_files = ['README.md', 'CHANGELOG.md', 'LICENSE' ]
   s.summary = 'A library for creating machines and infrastructures idempotently in Chef.'
   s.description = s.summary
   s.author = 'John Keiser'
@@ -23,10 +22,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'winrm-elevated', '~> 1.0'
   s.add_dependency "mixlib-install",  ">= 1.0"
 
-  s.bindir       = "bin"
-  s.executables  = %w( )
-
   s.require_path = 'lib'
-  s.files = %w(Gemfile Rakefile LICENSE README.md CHANGELOG.md) + Dir.glob("*.gemspec") +
+  s.files = %w(Gemfile Rakefile LICENSE) + Dir.glob("*.gemspec") +
       Dir.glob("{distro,lib,tasks,spec}/**/*", File::FNM_DOTMATCH).reject {|f| File.directory?(f) }
 end
