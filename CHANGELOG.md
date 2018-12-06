@@ -1,9 +1,10 @@
 # Chef Provisioning Change Log
 
-<!-- latest_release unreleased -->
-## Unreleased
+<!-- latest_release 2.7.3 -->
+## [2.7.3](https://github.com/chef/chef-provisioning/tree/2.7.3) (2018-12-06)
 
 #### Merged Pull Requests
+- Fix typo in machine provisioning set_attributes [#505](https://github.com/chef/chef-provisioning/pull/505) ([Padgett](https://github.com/Padgett))
 - Wire up Expeditor [#619](https://github.com/chef/chef-provisioning/pull/619) ([tas50](https://github.com/tas50))
 <!-- latest_release -->
 
@@ -11,6 +12,7 @@
 ### Changes not yet released to rubygems.org
 
 #### Merged Pull Requests
+- Fix typo in machine provisioning set_attributes [#505](https://github.com/chef/chef-provisioning/pull/505) ([Padgett](https://github.com/Padgett)) <!-- 2.7.3 -->
 - Wire up Expeditor [#619](https://github.com/chef/chef-provisioning/pull/619) ([tas50](https://github.com/tas50)) <!-- 2.7.2 -->
 <!-- release_rollup -->
 
