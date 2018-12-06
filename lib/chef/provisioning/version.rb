@@ -1,5 +1,5 @@
 class Chef
-module Provisioning
-  VERSION = '2.7.2'
-end
+  module Provisioning
+    VERSION = "2.7.4".freeze
+  end
 end
