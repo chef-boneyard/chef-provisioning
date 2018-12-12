@@ -1,16 +1,17 @@
 # Chef Provisioning Change Log
 
-<!-- latest_release 2.7.5 -->
-## [2.7.5](https://github.com/chef/chef-provisioning/tree/2.7.5) (2018-12-12)
+<!-- latest_release 2.7.6 -->
+## [2.7.6](https://github.com/chef/chef-provisioning/tree/2.7.6) (2018-12-12)
 
 #### Merged Pull Requests
-- add ready_only action, to ONLY ready a machine but NEVER allocate it [#618](https://github.com/chef/chef-provisioning/pull/618) ([jjlimepoint](https://github.com/jjlimepoint))
+- Fix get_attributes for macOS machines [#595](https://github.com/chef/chef-provisioning/pull/595) ([rjaros87](https://github.com/rjaros87))
 <!-- latest_release -->
 
 <!-- release_rollup since=2.7.4 -->
 ### Changes not yet released to rubygems.org
 
 #### Merged Pull Requests
+- Fix get_attributes for macOS machines [#595](https://github.com/chef/chef-provisioning/pull/595) ([rjaros87](https://github.com/rjaros87)) <!-- 2.7.6 -->
 - add ready_only action, to ONLY ready a machine but NEVER allocate it [#618](https://github.com/chef/chef-provisioning/pull/618) ([jjlimepoint](https://github.com/jjlimepoint)) <!-- 2.7.5 -->
 <!-- release_rollup -->
 
