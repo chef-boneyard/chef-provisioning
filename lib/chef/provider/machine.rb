@@ -41,6 +41,12 @@ class Machine < Chef::Provider::LWRPBase
     machine
   end
 
+  action :ready_only do
+    machine = current_driver.ready_machine(action_handler, machine_spec, current_machine_options)
+    machine_spec.save(action_handler)
+    machine
+  end
+
   action :setup do
     machine = action_ready
     begin

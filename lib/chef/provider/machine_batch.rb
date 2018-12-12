@@ -38,6 +38,10 @@ class MachineBatch < Chef::Provider::LWRPBase
   action :ready do
     with_ready_machines
   end
+  
+  action :ready_only do
+    with_ready_machines_only
+  end
 
   action :setup do
     with_ready_machines do |m|
@@ -110,8 +114,8 @@ class MachineBatch < Chef::Provider::LWRPBase
     end
   end
 
-  def with_ready_machines
-    action_allocate
+  def with_ready_machines(ready_only: false)
+    action_allocate unless ready_only
     parallel_do(by_new_driver) do |driver, specs_and_options|
       driver.ready_machines(action_handler, specs_and_options, parallelizer) do |machine|
         machine.machine_spec.save(action_handler)
@@ -129,6 +133,10 @@ class MachineBatch < Chef::Provider::LWRPBase
         end
       end
     end
+  end
+
+  def with_ready_machines_only
+    with_ready_machines(ready_only: true)
   end
 
   def by_id

@@ -15,7 +15,7 @@ class MachineBatch < Chef::Resource::LWRPBase
     @machine_options = run_context.chef_provisioning.current_machine_options
   end
 
-  actions :allocate, :ready, :setup, :converge, :converge_only, :destroy, :stop
+  actions :allocate, :ready, :setup, :converge, :converge_only, :destroy, :stop, :ready_only
   default_action :converge
 
   attribute :machines, :kind_of => [ Array ]
