@@ -98,16 +98,22 @@ module Provisioning
 
       # Get file attributes { :mode, :owner, :group }
       def get_attributes(path)
-        result = transport.execute("stat -c '%a %U %G %n' #{path}", :read_only => true)
+        os = transport.execute('uname -s')
+        result = if os.stdout =~ /darwin/i # macOS
+                   transport.execute("stat -f '%Lp %Su %Sg %N' #{path}", read_only: true)
+                 else
+                   transport.execute("stat -c '%a %U %G %n' #{path}", read_only: true)
+                 end
+
         return nil if result.exitstatus != 0
         file_info = result.stdout.split(/\s+/)
-        if file_info.size <= 1
-          raise "#{path} does not exist in set_attributes()"
-        end
-        result = {
-          :mode => file_info[0],
-          :owner => file_info[1],
-          :group => file_info[2]
+
+        raise "#{path} does not exist in set_attributes()" if file_info.size <= 1
+
+        {
+            mode: file_info[0],
+            owner: file_info[1],
+            group: file_info[2]
         }
       end
 
