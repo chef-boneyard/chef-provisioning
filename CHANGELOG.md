@@ -1,28 +1,25 @@
 # Chef Provisioning Change Log
 
-<!-- latest_release 2.7.6 -->
-## [2.7.6](https://github.com/chef/chef-provisioning/tree/2.7.6) (2018-12-12)
-
-#### Merged Pull Requests
-- Fix get_attributes for macOS machines [#595](https://github.com/chef/chef-provisioning/pull/595) ([rjaros87](https://github.com/rjaros87))
+<!-- latest_release -->
 <!-- latest_release -->
 
-<!-- release_rollup since=2.7.4 -->
-### Changes not yet released to rubygems.org
-
-#### Merged Pull Requests
-- Fix get_attributes for macOS machines [#595](https://github.com/chef/chef-provisioning/pull/595) ([rjaros87](https://github.com/rjaros87)) <!-- 2.7.6 -->
-- add ready_only action, to ONLY ready a machine but NEVER allocate it [#618](https://github.com/chef/chef-provisioning/pull/618) ([jjlimepoint](https://github.com/jjlimepoint)) <!-- 2.7.5 -->
+<!-- release_rollup -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
+## [2.7.6](https://github.com/chef/chef-provisioning/tree/2.7.6) (2019-03-08)
+
+#### Merged Pull Requests
+- add ready_only action, to ONLY ready a machine but NEVER allocate it [#618](https://github.com/chef/chef-provisioning/pull/618) ([jjlimepoint](https://github.com/jjlimepoint))
+- Fix get_attributes for macOS machines [#595](https://github.com/chef/chef-provisioning/pull/595) ([rjaros87](https://github.com/rjaros87))
+<!-- latest_stable_release -->
+
 ## [2.7.4](https://github.com/chef/chef-provisioning/tree/2.7.4) (2018-12-06)
 
 #### Merged Pull Requests
 - Wire up Expeditor [#619](https://github.com/chef/chef-provisioning/pull/619) ([tas50](https://github.com/tas50))
 - Fix typo in machine provisioning set_attributes [#505](https://github.com/chef/chef-provisioning/pull/505) ([Padgett](https://github.com/Padgett))
 - Don&#39;t ship the readme or changelog in the gem artifact [#620](https://github.com/chef/chef-provisioning/pull/620) ([tas50](https://github.com/tas50))
-<!-- latest_stable_release -->
 
 ## [2.7.2](https://github.com/chef/chef-provisioning/tree/2.7.2) (2018-05-31)
 [Full Changelog](https://github.com/chef/chef-provisioning/compare/v2.7.1...2.7.2)
