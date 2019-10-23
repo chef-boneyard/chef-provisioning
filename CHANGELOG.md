@@ -1,9 +1,17 @@
 # Chef Provisioning Change Log
 
-<!-- latest_release -->
+<!-- latest_release 2.7.7 -->
+## [2.7.7](https://github.com/chef/chef-provisioning/tree/2.7.7) (2019-10-23)
+
+#### Merged Pull Requests
+- EOL Provisioning [#625](https://github.com/chef/chef-provisioning/pull/625) ([kagarmoe](https://github.com/kagarmoe))
 <!-- latest_release -->
 
-<!-- release_rollup -->
+<!-- release_rollup since=2.7.6 -->
+### Changes not yet released to rubygems.org
+
+#### Merged Pull Requests
+- EOL Provisioning [#625](https://github.com/chef/chef-provisioning/pull/625) ([kagarmoe](https://github.com/kagarmoe)) <!-- 2.7.7 -->
 <!-- release_rollup -->
 
 <!-- latest_stable_release -->
