@@ -24,7 +24,7 @@ chef_acl 'data' do
   rights [ :read, :create ], groups: 'provisioners'
   recursive false
 end
-%w(images load_balancers).each do |data_bag_name|
+%w(images load_balancer).each do |data_bag_name|
   chef_data_bag data_bag_name do
   end
   chef_acl "data/#{data_bag_name}" do
