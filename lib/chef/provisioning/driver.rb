@@ -303,7 +303,7 @@ module Provisioning
     end
 
     def get_private_key(name)
-      Cheffish.get_private_key(name, config)
+      Cheffish.get_private_key(name, config) || Cheffish.get_private_key(name)
     end
   end
 end
